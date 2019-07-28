@@ -17,8 +17,8 @@ namespace COM3D2.i18nEx.BepInEx
             managerObject = new GameObject("i18nExManager");
             DontDestroyOnLoad(managerObject);
 
-            var core = managerObject.AddComponent<InternationalizationCore>();
-            core.Initialize(this);
+            var core = managerObject.AddComponent<Core.Core>();
+            core.Initialize(this, Paths.GameRootPath);
         }
 
         public void LogInfo(object data)

@@ -2,13 +2,13 @@
 
 namespace COM3D2.i18nEx.Core
 {
-    public class InternationalizationCore : MonoBehaviour
+    public class Core : MonoBehaviour
     {
         internal static ILogger Logger { get; private set; }
 
         public bool Initialized { get; private set; }
 
-        public void Initialize(ILogger logger)
+        public void Initialize(ILogger logger, string gameRoot)
         {
             if (Initialized)
                 return;
@@ -16,6 +16,8 @@ namespace COM3D2.i18nEx.Core
             Logger = logger;
             Logger.LogInfo("Initializing i18nEx...");
 
+            Paths.Initialize(gameRoot);
+            ScriptTranslationManager.Initialize();
             TranslationEvents.Initialize();
 
             Logger.LogInfo("i18nEx initialized!");

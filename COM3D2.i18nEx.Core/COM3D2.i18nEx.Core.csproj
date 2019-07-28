@@ -63,9 +63,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Configuration.cs" />
+    <Compile Include="ConfigWrapper.cs" />
     <Compile Include="ILogger.cs" />
     <Compile Include="InternationalizationCore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TextTranslationManager.cs" />
     <Compile Include="TranslationEvents.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -10,7 +10,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
         public string FileName { get; }
         public string FullPath { get; }
 
-        public Dictionary<string, string> Translations { get; } = new Dictionary<string, string>();
+        public Dictionary<string, string> Translations { get; } = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
 
         public ScriptTranslationFile(string fileName, string path)
         {
@@ -25,8 +25,8 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                 string line;
                 while ((line = sr.ReadLine()) != null)
                 {
-                    line = line.Trim();
-                    if (line.Length == 0 || line.StartsWith(";"))
+                    var trimmed = line.Trim();
+                    if (trimmed.Length == 0 || trimmed.StartsWith(";"))
                         continue;
 
                     var parts = line.Split(new[] {'\t'}, StringSplitOptions.RemoveEmptyEntries);
@@ -76,6 +76,9 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             translationFileCache.Clear();
             translationFileLookup.Clear();
 
+            if (!Directory.Exists(textTlPath))
+                Directory.CreateDirectory(textTlPath);
+
             foreach (var file in Directory.GetFiles(textTlPath, "*.txt", SearchOption.AllDirectories))
             {
                 var fileName = Path.GetFileNameWithoutExtension(file);
@@ -107,30 +110,42 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             return null;
         }
 
-        public static void WriteTranslation(string fileName, string original, string translated)
+        public static bool WriteTranslation(string fileName, string original, string translated)
         {
             if (!translationFiles.ContainsKey(fileName))
             {
                 var tlPath = Path.Combine(Paths.TranslationsRoot, currentLanguage);
                 var textTlPath = Path.Combine(tlPath, "Script");
+
+                if(!Directory.Exists(textTlPath))
+                    Directory.CreateDirectory(textTlPath);
+
                 var scriptFilePath = Path.Combine(textTlPath, $"{fileName}.txt");
                 File.WriteAllText(scriptFilePath, $"{original.Escape()}\t{translated.Escape()}");
                 translationFiles.Add(fileName, scriptFilePath);
-                return;
+                return true;
             }
 
             var node = LoadFile(fileName);
 
             if (node.Value.Translations.ContainsKey(original))
-                return;
+                return false;
 
             node.Value.Translations.Add(original, translated);
             File.AppendAllText(translationFiles[fileName],
                 $"{Environment.NewLine}{original.Escape()}\t{translated.Escape()}");
+            return true;
         }
 
         private static LinkedListNode<ScriptTranslationFile> LoadFile(string fileName)
         {
+            if (translationFileLookup.TryGetValue(fileName, out var node))
+            {
+                translationFileCache.Remove(node);
+                translationFileCache.AddFirst(node);
+                return node;
+            }
+
             if (translationFileCache.Count == Configuration.MaxTranslationFilesCached.Value)
             {
                 translationFileLookup.Remove(translationFileCache.Last.Value.FileName);

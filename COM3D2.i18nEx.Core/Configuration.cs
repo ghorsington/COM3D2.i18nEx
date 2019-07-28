@@ -6,12 +6,7 @@ namespace COM3D2.i18nEx.Core
 {
     internal static class Configuration
     {
-        private static readonly IniFile configFile;
-
-        static Configuration()
-        {
-            configFile = File.Exists(Paths.ConfigurationFilePath) ? IniFile.FromFile(Paths.ConfigurationFilePath) : new IniFile();
-        }
+        private static readonly IniFile configFile = File.Exists(Paths.ConfigurationFilePath) ? IniFile.FromFile(Paths.ConfigurationFilePath) : new IniFile();
 
         public static void Reload()
         {
@@ -35,5 +30,11 @@ namespace COM3D2.i18nEx.Core
             "Currently selected language",
             "English"
             );
+
+        public static ConfigWrapper<bool> DumpScriptTranslations = Wrap(
+            "Dump",
+            "DumpScriptLines",
+            "If enabled, dumps untranslated script lines (along with built-in translations, if present).",
+            false);
     }
 }

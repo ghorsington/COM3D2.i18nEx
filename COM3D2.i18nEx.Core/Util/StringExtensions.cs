@@ -1,9 +1,19 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace COM3D2.i18nEx.Core.Util
 {
     internal static class StringExtensions
     {
+        public static KeyValuePair<string, string> SplitTranslation(this string txt)
+        {
+            int pos;
+            if((pos = txt.IndexOf("<E>", StringComparison.InvariantCultureIgnoreCase)) > 0)
+                return new KeyValuePair<string, string>(txt.Substring(0, pos), txt.Substring(pos + 3));
+            return new KeyValuePair<string, string>(txt, string.Empty);
+        }
+
         public static string Escape(this string txt)
         {
             if (string.IsNullOrEmpty(txt))

@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using COM3D2.i18nEx.Core.Hooks;
+using COM3D2.i18nEx.Core.TranslationManagers;
+using UnityEngine;
 
 namespace COM3D2.i18nEx.Core
 {
@@ -18,7 +20,7 @@ namespace COM3D2.i18nEx.Core
 
             Paths.Initialize(gameRoot);
             ScriptTranslationManager.Initialize();
-            TranslationEvents.Initialize();
+            TranslationHooks.Initialize();
 
             Logger.LogInfo("i18nEx initialized!");
             Initialized = true;

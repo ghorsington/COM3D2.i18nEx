@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using COM3D2.i18nEx.Core.Util;
 
-namespace COM3D2.i18nEx.Core
+namespace COM3D2.i18nEx.Core.TranslationManagers
 {
     internal class ScriptTranslationFile
     {
@@ -66,6 +67,7 @@ namespace COM3D2.i18nEx.Core
             {
                 Core.Logger.LogWarning(
                     $"No Scripts translation folder found for language {language}. Skipping loading script translations...");
+                currentLanguage = "Unknown";
                 return;
             }
 

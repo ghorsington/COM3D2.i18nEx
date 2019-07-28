@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace COM3D2.i18nEx.Core
+namespace COM3D2.i18nEx.Core.Util
 {
     internal static class StringExtensions
     {

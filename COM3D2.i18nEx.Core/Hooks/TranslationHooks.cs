@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using BepInEx.Harmony;
 using HarmonyLib;
-using UnityEngine;
 
-namespace COM3D2.i18nEx.Core
+namespace COM3D2.i18nEx.Core.Hooks
 {
-    internal static class TranslationEvents
+    internal static class TranslationHooks
     {
         private static Harmony instance;
         private static bool initialized;
@@ -14,7 +13,7 @@ namespace COM3D2.i18nEx.Core
         {
             if (initialized)
                 return;
-            instance = HarmonyWrapper.PatchAll(typeof(TranslationEvents), "horse.coder.com3d2.i18nex");
+            instance = HarmonyWrapper.PatchAll(typeof(TranslationHooks), "horse.coder.com3d2.i18nex");
             initialized = true;
         }
 

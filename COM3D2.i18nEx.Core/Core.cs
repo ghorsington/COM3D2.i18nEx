@@ -1,5 +1,6 @@
 ﻿using COM3D2.i18nEx.Core.Hooks;
 using COM3D2.i18nEx.Core.TranslationManagers;
+using COM3D2.i18nEx.Core.Util;
 using UnityEngine;
 
 namespace COM3D2.i18nEx.Core
@@ -29,6 +30,11 @@ namespace COM3D2.i18nEx.Core
         void Awake()
         {
             DontDestroyOnLoad(this);
+        }
+
+        void Update()
+        {
+            KeyCommandHandler.UpdateState();
         }
     }
 }

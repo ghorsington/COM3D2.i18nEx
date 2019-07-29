@@ -18,23 +18,29 @@ namespace COM3D2.i18nEx.Core
             return new ConfigWrapper<T>(configFile, Paths.ConfigurationFilePath, section, key, description, @default);
         }
 
-        public static ConfigWrapper<int> MaxTranslationFilesCached = Wrap(
-            "TextTranslations", 
-            "CacheSize",
-            "Specifies how many text translation files should be kept in memory at once\nHaving bigger cache can improve performance at the cost of memory usage",
-            1);
-
-        public static ConfigWrapper<string> ActiveLanguage = Wrap(
-            "General",
-            "ActiveLanguage",
-            "Currently selected language",
-            "English"
+        public static class General
+        {
+            public static ConfigWrapper<string> ActiveLanguage = Wrap(
+                "General",
+                "ActiveLanguage",
+                "Currently selected language",
+                "English"
             );
+        }
 
-        public static ConfigWrapper<bool> DumpScriptTranslations = Wrap(
-            "Dump",
-            "DumpScriptLines",
-            "If enabled, dumps untranslated script lines (along with built-in translations, if present).",
-            false);
+        public static class ScriptTranslations
+        {
+            public static ConfigWrapper<int> MaxTranslationFilesCached = Wrap(
+                "TextTranslations", 
+                "CacheSize",
+                "Specifies how many text translation files should be kept in memory at once\nHaving bigger cache can improve performance at the cost of memory usage",
+                1);
+
+            public static ConfigWrapper<bool> DumpScriptTranslations = Wrap(
+                "Dump",
+                "DumpScriptLines",
+                "If enabled, dumps untranslated script lines (along with built-in translations, if present).",
+                false);
+        }
     }
 }

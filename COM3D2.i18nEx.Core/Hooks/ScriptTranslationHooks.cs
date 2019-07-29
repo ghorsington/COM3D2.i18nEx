@@ -90,7 +90,7 @@ namespace COM3D2.i18nEx.Core.Hooks
 
             if (!string.IsNullOrEmpty(res))
                 translationPair = new KeyValuePair<string, string>(translationPair.Key, res);
-            else if (Configuration.DumpScriptTranslations.Value)
+            else if (Configuration.ScriptTranslations.DumpScriptTranslations.Value)
             {
                 if (ScriptTranslationManager.WriteTranslation(fileName, translationPair.Key, translationPair.Value))
                     Core.Logger.LogInfo($"[{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");

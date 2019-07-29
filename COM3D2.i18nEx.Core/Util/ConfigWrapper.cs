@@ -14,6 +14,9 @@ namespace COM3D2.i18nEx.Core.Util
         private readonly IniKey iniKey;
         private readonly Func<T, string> toStringConvert;
         private readonly Func<string, T> fromStringConvert;
+        private readonly T defaultValue;
+        private T prevValue;
+        private string prevValueRaw;
 
         public ConfigWrapper(IniFile file, string savePath, string section, string key, string description = null,
             T defaultValue = default, Func<T, string> toStringConvert = null, Func<string, T> fromStringConvert = null)
@@ -23,6 +26,7 @@ namespace COM3D2.i18nEx.Core.Util
             this.section = section;
             this.key = key;
             this.description = description;
+            this.defaultValue = defaultValue;
 
             iniKey = file[section][key];
             iniKey.Comments.Comments = description?.Split('\n').ToList();
@@ -44,10 +48,25 @@ namespace COM3D2.i18nEx.Core.Util
 
         public T Value
         {
-            get => fromStringConvert(iniKey.Value);
+            get
+            {
+                try
+                {
+                    if (iniKey.RawValue != prevValueRaw)
+                        prevValue = fromStringConvert(iniKey.Value);
+                }
+                catch (Exception)
+                {
+                    Value = defaultValue;
+                }
+
+                return prevValue;
+            }
             set
             {
                 iniKey.Value = toStringConvert(value);
+                prevValue = value;
+                prevValueRaw = iniKey.RawValue;
                 Save();
             }
         }

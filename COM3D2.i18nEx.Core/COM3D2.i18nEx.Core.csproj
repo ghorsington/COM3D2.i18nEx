@@ -71,6 +71,7 @@
     <Compile Include="Core.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TranslationManagers\ScriptTranslationManager.cs" />
+    <Compile Include="Util\KeyCommand.cs" />
     <Compile Include="Util\StringExtensions.cs" />
     <Compile Include="Hooks\TranslationHooks.cs" />
   </ItemGroup>

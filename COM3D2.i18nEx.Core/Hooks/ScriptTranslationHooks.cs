@@ -86,13 +86,13 @@ namespace COM3D2.i18nEx.Core.Hooks
             }
 
             fileName = Path.GetFileNameWithoutExtension(fileName);
-            var res = ScriptTranslationManager.GetTranslation(fileName, translationPair.Key);
+            var res = Core.ScriptTranslate.GetTranslation(fileName, translationPair.Key);
 
             if (!string.IsNullOrEmpty(res))
                 translationPair = new KeyValuePair<string, string>(translationPair.Key, res);
-            else if (Configuration.ScriptTranslationsConfig.DumpScriptTranslations.Value)
+            else if (Configuration.ScriptTranslations.DumpScriptTranslations.Value)
             {
-                if (ScriptTranslationManager.WriteTranslation(fileName, translationPair.Key, translationPair.Value))
+                if (Core.ScriptTranslate.WriteTranslation(fileName, translationPair.Key, translationPair.Value))
                     Core.Logger.LogInfo($"[{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
             }
         }

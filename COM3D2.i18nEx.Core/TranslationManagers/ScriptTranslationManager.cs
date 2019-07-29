@@ -41,22 +41,21 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
         }
     }
 
-    internal static class ScriptTranslationManager
+    internal class ScriptTranslationManager : TranslationManagerBase
     {
-        private static string currentLanguage = "Unknown";
-
         private static readonly Dictionary<string, string> TranslationFiles =
             new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
         private static readonly LinkedList<ScriptTranslationFile> TranslationFileCache = new LinkedList<ScriptTranslationFile>();
         private static readonly Dictionary<string, LinkedListNode<ScriptTranslationFile>> TranslationFileLookup =
             new Dictionary<string, LinkedListNode<ScriptTranslationFile>>();
 
-        public static void Initialize()
+        void Update()
         {
-            LoadLanguage(Configuration.GeneralConfig.ActiveLanguage.Value);
+            if(Configuration.ScriptTranslations.ReloadTranslationsKey.Value.IsPressed)
+                ReloadActiveTranslations();
         }
 
-        public static void LoadLanguage(string language)
+        public override void LoadLanguage(string language)
         {
             Core.Logger.LogInfo($"Loading script translations for language \"{language}\"");
 
@@ -66,11 +65,9 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             {
                 Core.Logger.LogWarning(
                     $"No Scripts translation folder found for language {language}. Skipping loading script translations...");
-                currentLanguage = "Unknown";
                 return;
             }
 
-            currentLanguage = language;
             TranslationFiles.Clear();
             TranslationFileCache.Clear();
             TranslationFileLookup.Clear();
@@ -92,7 +89,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             }
         }
 
-        public static string GetTranslation(string fileName, string text)
+        public string GetTranslation(string fileName, string text)
         {
             if (!TranslationFiles.ContainsKey(fileName))
                 return null;
@@ -109,11 +106,11 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             return null;
         }
 
-        public static bool WriteTranslation(string fileName, string original, string translated)
+        public bool WriteTranslation(string fileName, string original, string translated)
         {
             if (!TranslationFiles.ContainsKey(fileName))
             {
-                var tlPath = Path.Combine(Paths.TranslationsRoot, currentLanguage);
+                var tlPath = Path.Combine(Paths.TranslationsRoot, Configuration.General.ActiveLanguage.Value);
                 var textTlPath = Path.Combine(tlPath, "Script");
 
                 if(!Directory.Exists(textTlPath))
@@ -136,7 +133,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             return true;
         }
 
-        public static void ReloadActiveTranslations()
+        public override void ReloadActiveTranslations()
         {
             foreach (var scriptTranslationFile in TranslationFileCache)
             {
@@ -145,7 +142,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             }
         }
 
-        private static LinkedListNode<ScriptTranslationFile> LoadFile(string fileName)
+        private LinkedListNode<ScriptTranslationFile> LoadFile(string fileName)
         {
             if (TranslationFileLookup.TryGetValue(fileName, out var node))
             {
@@ -154,7 +151,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                 return node;
             }
 
-            if (TranslationFileCache.Count == Configuration.ScriptTranslationsConfig.MaxTranslationFilesCached.Value)
+            if (TranslationFileCache.Count == Configuration.ScriptTranslations.MaxTranslationFilesCached.Value)
             {
                 TranslationFileLookup.Remove(TranslationFileCache.Last.Value.FileName);
                 TranslationFileCache.RemoveLast();

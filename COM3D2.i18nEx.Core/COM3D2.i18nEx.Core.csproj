@@ -68,6 +68,7 @@
     <Compile Include="Hooks\TextureReplaceHooks.cs" />
     <Compile Include="Paths.cs" />
     <Compile Include="TranslationManagers\TextureReplaceManager.cs" />
+    <Compile Include="TranslationManagers\TranslationManagerBase.cs" />
     <Compile Include="Util\ConfigWrapper.cs" />
     <Compile Include="ILogger.cs" />
     <Compile Include="Core.cs" />

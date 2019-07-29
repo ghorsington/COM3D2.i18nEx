@@ -5,16 +5,16 @@ using System.Text;
 
 namespace COM3D2.i18nEx.Core.TranslationManagers
 {
-    internal static class TextureReplaceManager
+    internal class TextureReplaceManager : TranslationManagerBase
     {
-        public static void Initialize()
-        {
-            LoadLanguage(Configuration.GeneralConfig.ActiveLanguage.Value);
-        }
-
-        private static void LoadLanguage(string language)
+        public override void LoadLanguage(string language)
         {
             Core.Logger.LogInfo($"Loading texture replacements for language \"{language}\"");
+        }
+
+        public override void ReloadActiveTranslations()
+        {
+            throw new NotImplementedException();
         }
     }
 }

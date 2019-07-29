@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using COM3D2.i18nEx.Core.Util;
 using ExIni;
@@ -8,23 +9,34 @@ namespace COM3D2.i18nEx.Core
 {
     internal static class Configuration
     {
-        private static readonly IniFile configFile = File.Exists(Paths.ConfigurationFilePath) ? IniFile.FromFile(Paths.ConfigurationFilePath) : new IniFile();
+        private static readonly IniFile configFile = File.Exists(Paths.ConfigurationFilePath)
+            ? IniFile.FromFile(Paths.ConfigurationFilePath)
+            : new IniFile();
+
+        private static readonly List<IReloadable> reloadableWrappers = new List<IReloadable>();
 
         public static void Reload()
         {
             configFile.Merge(IniFile.FromFile(Paths.TranslationsRoot));
+            foreach (var reloadableWrapper in reloadableWrappers)
+                reloadableWrapper.Reload();
         }
 
-        private static ConfigWrapper<T> Wrap<T>(string section, string key, string description = "", T @default = default, Func<T, string> toStringConvert = null, Func<string, T> fromStringConvert = null)
+        private static ConfigWrapper<T> Wrap<T>(string section, string key, string description = "",
+            T @default = default, Func<T, string> toStringConvert = null, Func<string, T> fromStringConvert = null)
         {
-            return new ConfigWrapper<T>(configFile, Paths.ConfigurationFilePath, section, key, description, @default, toStringConvert, fromStringConvert);
+            var res = new ConfigWrapper<T>(configFile, Paths.ConfigurationFilePath, section, key, description, @default,
+                toStringConvert, fromStringConvert);
+
+            reloadableWrappers.Add(res);
+
+            return res;
         }
 
+        public static readonly GeneralConfig General = new GeneralConfig();
+        public static readonly ScriptTranslationsConfig ScriptTranslations = new ScriptTranslationsConfig();
 
-        public static readonly General GeneralConfig = new General();
-        public static readonly ScriptTranslations ScriptTranslationsConfig = new ScriptTranslations();
-
-        internal class General
+        internal class GeneralConfig
         {
             public ConfigWrapper<string> ActiveLanguage = Wrap(
                 "General",
@@ -32,12 +44,28 @@ namespace COM3D2.i18nEx.Core
                 "Currently selected language",
                 "English"
             );
+
+            public ConfigWrapper<KeyCommand> ReloadConfigKey = Wrap(
+                "General",
+                "ReloadConfigKey",
+                "The key to reload current configuration file",
+                new KeyCommand(KeyCode.LeftControl, KeyCode.F12),
+                KeyCommand.KeyCommandToString,
+                KeyCommand.KeyCommandFromString);
+
+            public ConfigWrapper<KeyCommand> ReloadTranslationsKey = Wrap(
+                "General",
+                "ReloadConfigKey",
+                "The key to reload current configuration file",
+                new KeyCommand(KeyCode.LeftAlt, KeyCode.F12),
+                KeyCommand.KeyCommandToString,
+                KeyCommand.KeyCommandFromString);
         }
 
-        internal class ScriptTranslations
+        internal class ScriptTranslationsConfig
         {
             public ConfigWrapper<int> MaxTranslationFilesCached = Wrap(
-                "ScriptTranslations", 
+                "ScriptTranslations",
                 "CacheSize",
                 "Specifies how many text translation files should be kept in memory at once\nHaving bigger cache can improve performance at the cost of memory usage",
                 1);
@@ -52,7 +80,7 @@ namespace COM3D2.i18nEx.Core
                 "ScriptTranslations",
                 "ReloadTranslationsKey",
                 "The key (or key combination) to reload currently loaded or cached translations.",
-                new KeyCommand(KeyCode.LeftAlt, KeyCode.F12),
+                new KeyCommand(KeyCode.LeftAlt, KeyCode.Keypad1),
                 KeyCommand.KeyCommandToString,
                 KeyCommand.KeyCommandFromString);
         }

@@ -5,7 +5,12 @@ using ExIni;
 
 namespace COM3D2.i18nEx.Core.Util
 {
-    internal class ConfigWrapper<T>
+    internal interface IReloadable
+    {
+        void Reload();
+    }
+
+    internal class ConfigWrapper<T> : IReloadable
     {
         private readonly IniFile file;
         private readonly string savePath;
@@ -15,6 +20,8 @@ namespace COM3D2.i18nEx.Core.Util
         private readonly T defaultValue;
         private T prevValue;
         private string prevValueRaw;
+
+        public event Action<T> ValueChanged; 
 
         public ConfigWrapper(IniFile file, string savePath, string section, string key, string description = null,
             T defaultValue = default, Func<T, string> toStringConvert = null, Func<string, T> fromStringConvert = null)
@@ -39,34 +46,29 @@ namespace COM3D2.i18nEx.Core.Util
 
             if (iniKey.Value == null)
                 Value = defaultValue;
+            else
+            {
+                prevValueRaw = iniKey.RawValue;
+                prevValue = this.fromStringConvert(iniKey.Value);
+            }
         }
 
         public T Value
         {
-            get
-            {
-                try
-                {
-                    if (iniKey.RawValue != prevValueRaw)
-                    {
-                        UnloadValue();
-                        prevValue = fromStringConvert(iniKey.Value);
-                    }
-                }
-                catch (Exception)
-                {
-                    Value = defaultValue;
-                }
-
-                return prevValue;
-            }
+            get => prevValue;
             set
             {
-                iniKey.Value = toStringConvert(value);
+                var val = toStringConvert(value);
+                if (val == prevValueRaw)
+                    return;
+
+                iniKey.Value = val;
                 UnloadValue();
                 prevValue = value;
                 prevValueRaw = iniKey.RawValue;
                 Save();
+
+                ValueChanged?.Invoke(value);
             }
         }
 
@@ -79,6 +81,22 @@ namespace COM3D2.i18nEx.Core.Util
         private void Save()
         {
             file.Save(savePath);
+        }
+
+        public void Reload()
+        {
+            try
+            {
+                if (iniKey.RawValue == prevValueRaw)
+                    return;
+                UnloadValue();
+                prevValue = fromStringConvert(iniKey.Value);
+                ValueChanged?.Invoke(prevValue);
+            }
+            catch (Exception)
+            {
+                Value = defaultValue;
+            }
         }
     }
 }

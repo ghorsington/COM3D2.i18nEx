@@ -1,5 +1,4 @@
-﻿using System;
-using BepInEx.Harmony;
+﻿using BepInEx.Harmony;
 using HarmonyLib;
 
 namespace COM3D2.i18nEx.Core.Hooks

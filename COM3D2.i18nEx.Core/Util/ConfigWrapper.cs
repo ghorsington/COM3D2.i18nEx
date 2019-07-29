@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Linq;
-using System.Security.Cryptography;
 using ExIni;
 
 namespace COM3D2.i18nEx.Core.Util
@@ -10,7 +9,6 @@ namespace COM3D2.i18nEx.Core.Util
     {
         private readonly IniFile file;
         private readonly string savePath;
-        private string section, key, description;
         private readonly IniKey iniKey;
         private readonly Func<T, string> toStringConvert;
         private readonly Func<string, T> fromStringConvert;
@@ -23,9 +21,6 @@ namespace COM3D2.i18nEx.Core.Util
         {
             this.file = file;
             this.savePath = savePath;
-            this.section = section;
-            this.key = key;
-            this.description = description;
             this.defaultValue = defaultValue;
 
             iniKey = file[section][key];

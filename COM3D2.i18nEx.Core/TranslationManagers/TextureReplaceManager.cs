@@ -9,7 +9,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
     {
         public static void Initialize()
         {
-            LoadLanguage(Configuration.General.ActiveLanguage.Value);
+            LoadLanguage(Configuration.GeneralConfig.ActiveLanguage.Value);
         }
 
         private static void LoadLanguage(string language)

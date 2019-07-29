@@ -53,7 +53,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
         public static void Initialize()
         {
-            LoadLanguage(Configuration.General.ActiveLanguage.Value);
+            LoadLanguage(Configuration.GeneralConfig.ActiveLanguage.Value);
         }
 
         public static void LoadLanguage(string language)
@@ -154,7 +154,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                 return node;
             }
 
-            if (TranslationFileCache.Count == Configuration.ScriptTranslations.MaxTranslationFilesCached.Value)
+            if (TranslationFileCache.Count == Configuration.ScriptTranslationsConfig.MaxTranslationFilesCached.Value)
             {
                 TranslationFileLookup.Remove(TranslationFileCache.Last.Value.FileName);
                 TranslationFileCache.RemoveLast();

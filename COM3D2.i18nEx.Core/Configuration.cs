@@ -20,9 +20,13 @@ namespace COM3D2.i18nEx.Core
             return new ConfigWrapper<T>(configFile, Paths.ConfigurationFilePath, section, key, description, @default, toStringConvert, fromStringConvert);
         }
 
-        public static class General
+
+        public static readonly General GeneralConfig = new General();
+        public static readonly ScriptTranslations ScriptTranslationsConfig = new ScriptTranslations();
+
+        internal class General
         {
-            public static ConfigWrapper<string> ActiveLanguage = Wrap(
+            public ConfigWrapper<string> ActiveLanguage = Wrap(
                 "General",
                 "ActiveLanguage",
                 "Currently selected language",
@@ -30,21 +34,21 @@ namespace COM3D2.i18nEx.Core
             );
         }
 
-        public static class ScriptTranslations
+        internal class ScriptTranslations
         {
-            public static ConfigWrapper<int> MaxTranslationFilesCached = Wrap(
+            public ConfigWrapper<int> MaxTranslationFilesCached = Wrap(
                 "ScriptTranslations", 
                 "CacheSize",
                 "Specifies how many text translation files should be kept in memory at once\nHaving bigger cache can improve performance at the cost of memory usage",
                 1);
 
-            public static ConfigWrapper<bool> DumpScriptTranslations = Wrap(
+            public ConfigWrapper<bool> DumpScriptTranslations = Wrap(
                 "ScriptTranslations",
                 "DumpUntranslatedLines",
                 "If enabled, dumps untranslated script lines (along with built-in translations, if present).",
                 false);
 
-            public static ConfigWrapper<KeyCommand> ReloadTranslationsKey = Wrap(
+            public ConfigWrapper<KeyCommand> ReloadTranslationsKey = Wrap(
                 "ScriptTranslations",
                 "ReloadTranslationsKey",
                 "The key (or key combination) to reload currently loaded or cached translations.",

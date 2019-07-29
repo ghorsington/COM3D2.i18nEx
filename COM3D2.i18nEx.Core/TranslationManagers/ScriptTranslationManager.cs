@@ -167,7 +167,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             }
             catch (Exception e)
             {
-                Core.Logger.LogWarning(
+                Core.Logger.LogError(
                     $"Failed to load translations for file {fileName} because: {e.Message}. Skipping file...");
                 TranslationFiles.Remove(fileName);
                 return null;

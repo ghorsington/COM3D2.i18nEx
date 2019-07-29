@@ -35,6 +35,7 @@ namespace COM3D2.i18nEx.Core
 
         public static readonly GeneralConfig General = new GeneralConfig();
         public static readonly ScriptTranslationsConfig ScriptTranslations = new ScriptTranslationsConfig();
+        public static readonly TextureReplacementConfig TextureReplacement = new TextureReplacementConfig();
 
         internal class GeneralConfig
         {
@@ -83,6 +84,27 @@ namespace COM3D2.i18nEx.Core
                 new KeyCommand(KeyCode.LeftAlt, KeyCode.Keypad1),
                 KeyCommand.KeyCommandToString,
                 KeyCommand.KeyCommandFromString);
+        }
+
+        internal class TextureReplacementConfig
+        {
+            public ConfigWrapper<int> MaxTexturesCached = Wrap(
+                "TextureReplacement",
+                "CacheSize",
+                "Specifies how many texture replacements should be kept in memory at once\nHaving bigger cache can improve performance at the cost of memory usage",
+                10);
+
+            public ConfigWrapper<bool> DumpTextures = Wrap(
+                "TextureReplacement",
+                "DumpOriginalTextures",
+                "If enabled, dumps textures that have no replacements.",
+                false);
+
+            public ConfigWrapper<bool> SkipDumpingCMTextures = Wrap(
+                "TextureReplacement",
+                "SkipDumpingCMTextures",
+                "If `DumpOriginalTextures` is enabled, setting this to `True` will disable dumping game's own .tex files\nUse this if you don't want to dump all in-game textures.",
+                false);
         }
     }
 }

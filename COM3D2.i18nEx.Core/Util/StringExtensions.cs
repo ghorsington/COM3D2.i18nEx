@@ -6,6 +6,17 @@ namespace COM3D2.i18nEx.Core.Util
 {
     internal static class StringExtensions
     {
+        public static ulong KnuthHash(this string read)
+        {
+            var hashedValue = 3074457345618258791ul;
+            foreach (var t in read)
+            {
+                hashedValue += t;
+                hashedValue *= 3074457345618258799ul;
+            }
+            return hashedValue;
+        }
+
         public static KeyValuePair<string, string> SplitTranslation(this string txt)
         {
             int pos;

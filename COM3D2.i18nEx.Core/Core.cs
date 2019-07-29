@@ -35,6 +35,9 @@ namespace COM3D2.i18nEx.Core
         void Update()
         {
             KeyCommandHandler.UpdateState();
+
+            if(Configuration.ScriptTranslations.ReloadTranslationsKey.Value.IsPressed)
+                ScriptTranslationManager.ReloadActiveTranslations();
         }
     }
 }

@@ -20,6 +20,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
         public void LoadTranslations()
         {
+            Translations.Clear();
             using (var sr = new StreamReader(FullPath))
             {
                 string line;
@@ -133,6 +134,15 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             File.AppendAllText(TranslationFiles[fileName],
                 $"{Environment.NewLine}{original.Escape()}\t{translated.Escape()}");
             return true;
+        }
+
+        public static void ReloadActiveTranslations()
+        {
+            foreach (var scriptTranslationFile in TranslationFileCache)
+            {
+                Core.Logger.LogInfo($"Reloading translations for {scriptTranslationFile.FileName}.ks");
+                scriptTranslationFile.LoadTranslations();
+            }
         }
 
         private static LinkedListNode<ScriptTranslationFile> LoadFile(string fileName)

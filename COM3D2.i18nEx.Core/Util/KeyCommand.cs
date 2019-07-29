@@ -10,7 +10,7 @@ namespace COM3D2.i18nEx.Core.Util
         public static readonly Func<KeyCommand, string> KeyCommandToString =
             kc => string.Join("+", kc.KeyCodes.Select(k => k.ToString()).ToArray());
 
-        public static readonly Func<string, KeyCommand> StringToKeyCommand = s =>
+        public static readonly Func<string, KeyCommand> KeyCommandFromString = s =>
             new KeyCommand(s.Split(new[] {'+'}, StringSplitOptions.RemoveEmptyEntries)
                 .Select(k => (KeyCode) Enum.Parse(typeof(KeyCode), k, true)).ToArray());
 

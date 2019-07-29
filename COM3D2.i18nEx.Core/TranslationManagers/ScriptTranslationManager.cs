@@ -44,12 +44,10 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
     {
         private static string currentLanguage = "Unknown";
 
-        private static Dictionary<string, string> translationFiles =
+        private static readonly Dictionary<string, string> TranslationFiles =
             new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
-
-        private static LinkedList<ScriptTranslationFile> translationFileCache = new LinkedList<ScriptTranslationFile>();
-
-        private static Dictionary<string, LinkedListNode<ScriptTranslationFile>> translationFileLookup =
+        private static readonly LinkedList<ScriptTranslationFile> TranslationFileCache = new LinkedList<ScriptTranslationFile>();
+        private static readonly Dictionary<string, LinkedListNode<ScriptTranslationFile>> TranslationFileLookup =
             new Dictionary<string, LinkedListNode<ScriptTranslationFile>>();
 
         public static void Initialize()
@@ -72,9 +70,9 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             }
 
             currentLanguage = language;
-            translationFiles.Clear();
-            translationFileCache.Clear();
-            translationFileLookup.Clear();
+            TranslationFiles.Clear();
+            TranslationFileCache.Clear();
+            TranslationFileLookup.Clear();
 
             if (!Directory.Exists(textTlPath))
                 Directory.CreateDirectory(textTlPath);
@@ -82,22 +80,22 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             foreach (var file in Directory.GetFiles(textTlPath, "*.txt", SearchOption.AllDirectories))
             {
                 var fileName = Path.GetFileNameWithoutExtension(file);
-                if (translationFiles.ContainsKey(fileName))
+                if (TranslationFiles.ContainsKey(fileName))
                 {
                     Core.Logger.LogWarning(
-                        $"Script translation file {fileName} is declared twice in different locations ({file} and {translationFiles[fileName]})");
+                        $"Script translation file {fileName} is declared twice in different locations ({file} and {TranslationFiles[fileName]})");
                     continue;
                 }
 
-                translationFiles[fileName] = file;
+                TranslationFiles[fileName] = file;
             }
         }
 
         public static string GetTranslation(string fileName, string text)
         {
-            if (!translationFiles.ContainsKey(fileName))
+            if (!TranslationFiles.ContainsKey(fileName))
                 return null;
-            if (!translationFileLookup.TryGetValue(fileName, out var tlNode))
+            if (!TranslationFileLookup.TryGetValue(fileName, out var tlNode))
             {
                 tlNode = LoadFile(fileName);
 
@@ -112,7 +110,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
         public static bool WriteTranslation(string fileName, string original, string translated)
         {
-            if (!translationFiles.ContainsKey(fileName))
+            if (!TranslationFiles.ContainsKey(fileName))
             {
                 var tlPath = Path.Combine(Paths.TranslationsRoot, currentLanguage);
                 var textTlPath = Path.Combine(tlPath, "Script");
@@ -122,7 +120,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
                 var scriptFilePath = Path.Combine(textTlPath, $"{fileName}.txt");
                 File.WriteAllText(scriptFilePath, $"{original.Escape()}\t{translated.Escape()}");
-                translationFiles.Add(fileName, scriptFilePath);
+                TranslationFiles.Add(fileName, scriptFilePath);
                 return true;
             }
 
@@ -132,39 +130,39 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                 return false;
 
             node.Value.Translations.Add(original, translated);
-            File.AppendAllText(translationFiles[fileName],
+            File.AppendAllText(TranslationFiles[fileName],
                 $"{Environment.NewLine}{original.Escape()}\t{translated.Escape()}");
             return true;
         }
 
         private static LinkedListNode<ScriptTranslationFile> LoadFile(string fileName)
         {
-            if (translationFileLookup.TryGetValue(fileName, out var node))
+            if (TranslationFileLookup.TryGetValue(fileName, out var node))
             {
-                translationFileCache.Remove(node);
-                translationFileCache.AddFirst(node);
+                TranslationFileCache.Remove(node);
+                TranslationFileCache.AddFirst(node);
                 return node;
             }
 
-            if (translationFileCache.Count == Configuration.MaxTranslationFilesCached.Value)
+            if (TranslationFileCache.Count == Configuration.MaxTranslationFilesCached.Value)
             {
-                translationFileLookup.Remove(translationFileCache.Last.Value.FileName);
-                translationFileCache.RemoveLast();
+                TranslationFileLookup.Remove(TranslationFileCache.Last.Value.FileName);
+                TranslationFileCache.RemoveLast();
             }
 
             try
             {
-                var file = new ScriptTranslationFile(fileName, translationFiles[fileName]);
+                var file = new ScriptTranslationFile(fileName, TranslationFiles[fileName]);
                 file.LoadTranslations();
-                var result = translationFileCache.AddFirst(file);
-                translationFileLookup.Add(fileName, result);
+                var result = TranslationFileCache.AddFirst(file);
+                TranslationFileLookup.Add(fileName, result);
                 return result;
             }
             catch (Exception e)
             {
                 Core.Logger.LogWarning(
                     $"Failed to load translations for file {fileName} because: {e.Message}. Skipping file...");
-                translationFiles.Remove(fileName);
+                TranslationFiles.Remove(fileName);
                 return null;
             }
         }

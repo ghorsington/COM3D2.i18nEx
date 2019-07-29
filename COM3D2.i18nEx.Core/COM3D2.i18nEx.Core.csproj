@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration.cs" />
+    <Compile Include="Hooks\ScriptTranslationHooks.cs" />
     <Compile Include="Paths.cs" />
     <Compile Include="Util\ConfigWrapper.cs" />
     <Compile Include="ILogger.cs" />

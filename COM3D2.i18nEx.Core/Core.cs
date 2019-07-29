@@ -25,7 +25,6 @@ namespace COM3D2.i18nEx.Core
             TextureReplaceManager.Initialize();
 
             TranslationHooks.Initialize();
-            TextureReplaceHooks.Initialize();
 
             Logger.LogInfo("i18nEx initialized!");
             Initialized = true;

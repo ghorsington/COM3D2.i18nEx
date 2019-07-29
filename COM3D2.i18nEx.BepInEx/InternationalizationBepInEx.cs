@@ -5,7 +5,7 @@ using ILogger = COM3D2.i18nEx.Core.ILogger;
 
 namespace COM3D2.i18nEx.BepInEx
 {
-    [BepInPlugin("horse.coder.com3d2.i18nex", "InternationaliazationEx", "1.0.0.0")]
+    [BepInPlugin("horse.coder.com3d2.i18nex", "i18nEx", "1.0.0.0")]
     public class InternationalizationBepInEx : BaseUnityPlugin, ILogger
     {
         private GameObject managerObject;

@@ -53,7 +53,10 @@ namespace COM3D2.i18nEx.Core.Util
                 try
                 {
                     if (iniKey.RawValue != prevValueRaw)
+                    {
+                        UnloadValue();
                         prevValue = fromStringConvert(iniKey.Value);
+                    }
                 }
                 catch (Exception)
                 {
@@ -65,10 +68,17 @@ namespace COM3D2.i18nEx.Core.Util
             set
             {
                 iniKey.Value = toStringConvert(value);
+                UnloadValue();
                 prevValue = value;
                 prevValueRaw = iniKey.RawValue;
                 Save();
             }
+        }
+
+        private void UnloadValue()
+        {
+            if(prevValue != null && prevValue is IDisposable disposable)
+                disposable.Dispose();
         }
 
         private void Save()

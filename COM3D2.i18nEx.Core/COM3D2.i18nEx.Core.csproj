@@ -65,7 +65,9 @@
   <ItemGroup>
     <Compile Include="Configuration.cs" />
     <Compile Include="Hooks\ScriptTranslationHooks.cs" />
+    <Compile Include="Hooks\TextureReplaceHooks.cs" />
     <Compile Include="Paths.cs" />
+    <Compile Include="TranslationManagers\TextureReplaceManager.cs" />
     <Compile Include="Util\ConfigWrapper.cs" />
     <Compile Include="ILogger.cs" />
     <Compile Include="Core.cs" />

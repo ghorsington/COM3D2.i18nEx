@@ -27,5 +27,12 @@ namespace COM3D2.i18nEx.Core.Hooks
         {
             __result = true;
         }
+
+        [HarmonyPatch(typeof(Product), nameof(Product.isJapan), MethodType.Getter)]
+        [HarmonyPostfix]
+        private static void IsJapan(ref bool __result)
+        {
+            __result = false;
+        }
     }
 }

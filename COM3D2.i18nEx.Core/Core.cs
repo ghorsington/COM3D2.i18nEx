@@ -2,6 +2,7 @@
 using COM3D2.i18nEx.Core.Hooks;
 using COM3D2.i18nEx.Core.TranslationManagers;
 using COM3D2.i18nEx.Core.Util;
+using I2.Loc;
 using UnityEngine;
 
 namespace COM3D2.i18nEx.Core
@@ -10,6 +11,7 @@ namespace COM3D2.i18nEx.Core
     {
         internal static ScriptTranslationManager ScriptTranslate;
         internal static TextureReplaceManager TextureReplace;
+        internal static I2TranslationManager I2Translation;
         private readonly List<TranslationManagerBase> managers = new List<TranslationManagerBase>();
 
         internal static ILogger Logger { get; private set; }
@@ -42,6 +44,7 @@ namespace COM3D2.i18nEx.Core
         {
             ScriptTranslate = RegisterTranslationManager<ScriptTranslationManager>();
             TextureReplace = RegisterTranslationManager<TextureReplaceManager>();
+            I2Translation = RegisterTranslationManager<I2TranslationManager>();
 
             foreach (var mgr in managers)
                 mgr.LoadLanguage(Configuration.General.ActiveLanguage.Value);
@@ -68,6 +71,14 @@ namespace COM3D2.i18nEx.Core
             if (Configuration.General.ReloadTranslationsKey.Value.IsPressed)
                 foreach (var mgr in managers)
                     mgr.ReloadActiveTranslations();
+
+            if (Input.GetKey(KeyCode.Keypad0))
+            {
+                foreach (var languageSource in LocalizationManager.Sources)
+                {
+                    Logger.LogInfo($"Got source {languageSource}");
+                }
+            }
         }
     }
 }

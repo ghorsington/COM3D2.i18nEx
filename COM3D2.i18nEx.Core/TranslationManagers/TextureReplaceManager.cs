@@ -87,8 +87,6 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                     continue;
                 }
 
-                Core.Logger.LogInfo($"TEX: \"{name}\" => \"{file}\"");
-
                 textureReplacements[name] = file;
             }
         }
@@ -142,10 +140,8 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
             foreach (var lookupName in lookupNames)
             {
-                Core.Logger.LogInfo($"Looking up {lookupName}");
                 if (!textureReplacements.ContainsKey(lookupName))
                     continue;
-                Core.Logger.LogInfo($"FOUND {lookupName}!");
                 return LoadReplacement(lookupName);
             }
 

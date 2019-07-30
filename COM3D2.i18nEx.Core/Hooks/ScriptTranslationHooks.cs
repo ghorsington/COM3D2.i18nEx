@@ -64,14 +64,25 @@ namespace COM3D2.i18nEx.Core.Hooks
             TranslateLine(__instance.GetCurrentFileName(), ref __result);
         }
 
-        private static void TranslateLine(string fileName, ref string text)
+        private static bool TranslateLine(string fileName, ref string text, bool stop = false)
         {
             var translationParts = text.SplitTranslation();
 
             ProcessTranslation(fileName, ref translationParts);
 
             if (!string.IsNullOrEmpty(translationParts.Value))
+            {
                 text = $"{translationParts.Key}<E>{translationParts.Value}";
+                return true;
+            }
+
+            if (!stop)
+            {
+                var t = text.Replace("……", "…");
+                if (t != text && TranslateLine(fileName, ref t, true))
+                    text = t;
+            }
+            return false;
         }
 
         private static void ProcessTranslation(string fileName, ref KeyValuePair<string, string> translationPair)

@@ -136,7 +136,7 @@ namespace COM3D2.i18nEx.Core.Hooks
         [HarmonyPrefix]
         private static void SetSprite(ref Sprite value)
         {
-            if (value.texture == null || string.IsNullOrEmpty(value.texture.name) || value.texture.name.StartsWith("i18n_"))
+            if (value == null || value.texture == null || string.IsNullOrEmpty(value.texture.name) || value.texture.name.StartsWith("i18n_"))
                 return;
 
             var newData = Core.TextureReplace.GetReplacementTextureBytes(value.texture.name, "Image");

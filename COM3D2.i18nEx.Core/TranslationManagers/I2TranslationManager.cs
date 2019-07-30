@@ -1,15 +1,13 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using I2.Loc;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace COM3D2.i18nEx.Core.TranslationManagers
 {
     internal class I2TranslationManager : TranslationManagerBase
     {
-        private GameObject go = new GameObject();
+        private readonly GameObject go = new GameObject();
 
         public override void LoadLanguage(string langName)
         {
@@ -33,15 +31,17 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             {
                 var fullDir = Path.GetFullPath(directory);
 
-                foreach (string file in Directory.GetFiles(fullDir, "*.csv", SearchOption.AllDirectories))
+                foreach (var file in Directory.GetFiles(fullDir, "*.csv", SearchOption.AllDirectories))
                 {
-                    string categoryName = Path.GetFullPath(file).Substring(fullDir.Length + 1).Replace(".csv", "");
+                    var categoryName = Path.GetFullPath(file).Substring(fullDir.Length + 1).Replace(".csv", "");
                     Core.Logger.LogInfo($"Loading category {categoryName}");
-                    source.Import_CSV(categoryName.Replace("\\", "/"), File.ReadAllText(file), eSpreadsheetUpdateMode.Merge);
+                    source.Import_CSV(categoryName.Replace("\\", "/"), File.ReadAllText(file),
+                        eSpreadsheetUpdateMode.Merge);
                 }
-
             }
-            Core.Logger.LogInfo($"Loaded the following languages: {string.Join(",", source.mLanguages.Select(d => d.Name).ToArray())}");
+
+            Core.Logger.LogInfo(
+                $"Loaded the following languages: {string.Join(",", source.mLanguages.Select(d => d.Name).ToArray())}");
             LocalizationManager.Sources.Add(source);
         }
 

@@ -8,9 +8,9 @@ namespace COM3D2.i18nEx.Core.Hooks
 {
     internal static class TextureReplaceHooks
     {
+        private const string FONT_TEX_NAME = "Font Texture";
         private static bool initialized;
         private static Harmony instance;
-        private const string FONT_TEX_NAME = "Font Texture";
         private static readonly byte[] EmptyBytes = new byte[0];
 
         public static void Initialize()
@@ -24,7 +24,8 @@ namespace COM3D2.i18nEx.Core.Hooks
 
         [HarmonyPatch(typeof(ImportCM), nameof(ImportCM.LoadTexture))]
         [HarmonyPrefix]
-        private static bool LoadTexture(ref TextureResource __result, AFileSystemBase f_fileSystem, string f_strFileName, bool usePoolBuffer)
+        private static bool LoadTexture(ref TextureResource __result, AFileSystemBase f_fileSystem,
+            string f_strFileName, bool usePoolBuffer)
         {
             var fileName = Path.GetFileNameWithoutExtension(f_strFileName);
 
@@ -43,7 +44,8 @@ namespace COM3D2.i18nEx.Core.Hooks
 
         [HarmonyPatch(typeof(ImportCM), nameof(ImportCM.LoadTexture))]
         [HarmonyPostfix]
-        private static void OnTexLoaded(ref TextureResource __result, AFileSystemBase f_fileSystem, string f_strFileName, bool usePoolBuffer)
+        private static void OnTexLoaded(ref TextureResource __result, AFileSystemBase f_fileSystem,
+            string f_strFileName, bool usePoolBuffer)
         {
             if (!Configuration.TextureReplacement.DumpTextures.Value ||
                 Configuration.TextureReplacement.SkipDumpingCMTextures.Value) return;
@@ -68,14 +70,15 @@ namespace COM3D2.i18nEx.Core.Hooks
                     break;
             }
 
-            if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("i18n_") || tex.name == FONT_TEX_NAME)
+            if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("i18n_") ||
+                tex.name == FONT_TEX_NAME)
                 return;
 
             var newData = Core.TextureReplace.GetReplacementTextureBytes(tex.name, __instance.GetType().Name);
 
             if (newData == null)
             {
-                if(Configuration.TextureReplacement.DumpTextures.Value)
+                if (Configuration.TextureReplacement.DumpTextures.Value)
                     Core.TextureReplace.DumpTexture(tex.name, tex);
                 return;
             }
@@ -89,7 +92,10 @@ namespace COM3D2.i18nEx.Core.Hooks
                 tex2d.name = $"i18n_{tex2d}";
             }
             else
+            {
                 Core.Logger.LogWarning($"Texture {tex.name} is of type {tex.GetType().FullName} and not tex2d!");
+            }
+
             //__result = newTex;
             //switch (__instance)
             //{
@@ -115,7 +121,7 @@ namespace COM3D2.i18nEx.Core.Hooks
 
             if (newData == null)
             {
-                if(Configuration.TextureReplacement.DumpTextures.Value)
+                if (Configuration.TextureReplacement.DumpTextures.Value)
                     Core.TextureReplace.DumpTexture(tex.name, tex);
                 return;
             }
@@ -129,21 +135,24 @@ namespace COM3D2.i18nEx.Core.Hooks
                 tex2d.name = $"i18n_{tex2d}";
             }
             else
+            {
                 Core.Logger.LogWarning($"Texture {tex.name} is of type {tex.GetType().FullName} and not tex2d!");
+            }
         }
 
         [HarmonyPatch(typeof(Image), nameof(Image.sprite), MethodType.Setter)]
         [HarmonyPrefix]
         private static void SetSprite(ref Sprite value)
         {
-            if (value == null || value.texture == null || string.IsNullOrEmpty(value.texture.name) || value.texture.name.StartsWith("i18n_"))
+            if (value == null || value.texture == null || string.IsNullOrEmpty(value.texture.name) ||
+                value.texture.name.StartsWith("i18n_"))
                 return;
 
             var newData = Core.TextureReplace.GetReplacementTextureBytes(value.texture.name, "Image");
 
             if (newData == null)
             {
-                if(Configuration.TextureReplacement.DumpTextures.Value)
+                if (Configuration.TextureReplacement.DumpTextures.Value)
                     Core.TextureReplace.DumpTexture(value.texture.name, value.texture);
                 return;
             }

@@ -9,13 +9,19 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 {
     internal class TextureReplacement
     {
+        private Texture2D replacement;
+
+        public TextureReplacement(string name, string fullPath)
+        {
+            Name = name;
+            FullPath = fullPath;
+        }
+
         public string Name { get; }
 
         public string FullPath { get; }
 
         public byte[] Data { get; set; }
-
-        private Texture2D replacement;
 
         public Texture2D Replacement
         {
@@ -33,12 +39,6 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             }
         }
 
-        public TextureReplacement(string name, string fullPath)
-        {
-            Name = name;
-            FullPath = fullPath;
-        }
-
         public void Load()
         {
             replacement = null;
@@ -48,10 +48,14 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
     internal class TextureReplaceManager : TranslationManagerBase
     {
-        private readonly Dictionary<string, string> textureReplacements = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
-        private readonly Dictionary<string, LinkedListNode<TextureReplacement>> texReplacementLookup = new Dictionary<string, LinkedListNode<TextureReplacement>>(StringComparer.InvariantCultureIgnoreCase);
-        private readonly LinkedList<TextureReplacement> texReplacementCache = new LinkedList<TextureReplacement>();
         private readonly HashSet<string> dumpedItems = new HashSet<string>();
+        private readonly LinkedList<TextureReplacement> texReplacementCache = new LinkedList<TextureReplacement>();
+
+        private readonly Dictionary<string, LinkedListNode<TextureReplacement>> texReplacementLookup =
+            new Dictionary<string, LinkedListNode<TextureReplacement>>(StringComparer.InvariantCultureIgnoreCase);
+
+        private readonly Dictionary<string, string> textureReplacements =
+            new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
 
 
         public override void LoadLanguage(string language)
@@ -83,7 +87,8 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
                 if (textureReplacements.ContainsKey(name))
                 {
-                    Core.Logger.LogWarning($"Found duplicate replacements for texture \"{name}\". Please name all your textures uniquely. If there are name collisions, name them by hash.");
+                    Core.Logger.LogWarning(
+                        $"Found duplicate replacements for texture \"{name}\". Please name all your textures uniquely. If there are name collisions, name them by hash.");
                     continue;
                 }
 

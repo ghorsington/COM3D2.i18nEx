@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using BepInEx.Harmony;
-using COM3D2.i18nEx.Core.TranslationManagers;
 using COM3D2.i18nEx.Core.Util;
 using HarmonyLib;
 
@@ -10,7 +9,7 @@ namespace COM3D2.i18nEx.Core.Hooks
     internal static class ScriptTranslationHooks
     {
         private static Harmony instance;
-        private static string curScriptFileName = null;
+        private static string curScriptFileName;
         private static bool initialized;
 
         public static void Initialize()
@@ -18,7 +17,8 @@ namespace COM3D2.i18nEx.Core.Hooks
             if (initialized)
                 return;
 
-            instance = HarmonyWrapper.PatchAll(typeof(ScriptTranslationHooks), "horse.coder.com3d2.i18nex.hooks.scripts");
+            instance = HarmonyWrapper.PatchAll(typeof(ScriptTranslationHooks),
+                "horse.coder.com3d2.i18nex.hooks.scripts");
             initialized = true;
         }
 
@@ -82,6 +82,7 @@ namespace COM3D2.i18nEx.Core.Hooks
                 if (t != text && TranslateLine(fileName, ref t, true))
                     text = t;
             }
+
             return false;
         }
 
@@ -102,10 +103,8 @@ namespace COM3D2.i18nEx.Core.Hooks
             if (!string.IsNullOrEmpty(res))
                 translationPair = new KeyValuePair<string, string>(translationPair.Key, res);
             else if (Configuration.ScriptTranslations.DumpScriptTranslations.Value)
-            {
                 if (Core.ScriptTranslate.WriteTranslation(fileName, translationPair.Key, translationPair.Value))
                     Core.Logger.LogInfo($"[{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
-            }
         }
     }
 }

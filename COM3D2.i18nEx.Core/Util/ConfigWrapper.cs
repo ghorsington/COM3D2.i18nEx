@@ -12,16 +12,14 @@ namespace COM3D2.i18nEx.Core.Util
 
     internal class ConfigWrapper<T> : IReloadable
     {
-        private readonly IniFile file;
-        private readonly string savePath;
-        private readonly IniKey iniKey;
-        private readonly Func<T, string> toStringConvert;
-        private readonly Func<string, T> fromStringConvert;
         private readonly T defaultValue;
+        private readonly IniFile file;
+        private readonly Func<string, T> fromStringConvert;
+        private readonly IniKey iniKey;
+        private readonly string savePath;
+        private readonly Func<T, string> toStringConvert;
         private T prevValue;
         private string prevValueRaw;
-
-        public event Action<T> ValueChanged; 
 
         public ConfigWrapper(IniFile file, string savePath, string section, string key, string description = null,
             T defaultValue = default, Func<T, string> toStringConvert = null, Func<string, T> fromStringConvert = null)
@@ -41,11 +39,13 @@ namespace COM3D2.i18nEx.Core.Util
             if (toStringConvert == null && !cvt.CanConvertTo(typeof(string)))
                 throw new ArgumentException("Default TypeConverter can't convert to String");
 
-            this.toStringConvert = toStringConvert ?? (v => cvt.ConvertToInvariantString(v));
-            this.fromStringConvert = fromStringConvert ?? (v => (T) cvt.ConvertFromInvariantString(v));
+            this.toStringConvert = toStringConvert ?? v => cvt.ConvertToInvariantString(v);
+            this.fromStringConvert = fromStringConvert ?? v => (T) cvt.ConvertFromInvariantString(v);
 
             if (iniKey.Value == null)
+            {
                 Value = defaultValue;
+            }
             else
             {
                 prevValueRaw = iniKey.RawValue;
@@ -72,17 +72,6 @@ namespace COM3D2.i18nEx.Core.Util
             }
         }
 
-        private void UnloadValue()
-        {
-            if(prevValue != null && prevValue is IDisposable disposable)
-                disposable.Dispose();
-        }
-
-        private void Save()
-        {
-            file.Save(savePath);
-        }
-
         public void Reload()
         {
             try
@@ -97,6 +86,19 @@ namespace COM3D2.i18nEx.Core.Util
             {
                 Value = defaultValue;
             }
+        }
+
+        public event Action<T> ValueChanged;
+
+        private void UnloadValue()
+        {
+            if (prevValue != null && prevValue is IDisposable disposable)
+                disposable.Dispose();
+        }
+
+        private void Save()
+        {
+            file.Save(savePath);
         }
     }
 }

@@ -7,16 +7,17 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 {
     internal class ScriptTranslationFile
     {
-        public string FileName { get; }
-        public string FullPath { get; }
-
-        public Dictionary<string, string> Translations { get; } = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
-
         public ScriptTranslationFile(string fileName, string path)
         {
             FileName = fileName;
             FullPath = path;
         }
+
+        public string FileName { get; }
+        public string FullPath { get; }
+
+        public Dictionary<string, string> Translations { get; } =
+            new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
 
         public void LoadTranslations()
         {
@@ -45,13 +46,16 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
     {
         private static readonly Dictionary<string, string> TranslationFiles =
             new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
-        private static readonly LinkedList<ScriptTranslationFile> TranslationFileCache = new LinkedList<ScriptTranslationFile>();
+
+        private static readonly LinkedList<ScriptTranslationFile> TranslationFileCache =
+            new LinkedList<ScriptTranslationFile>();
+
         private static readonly Dictionary<string, LinkedListNode<ScriptTranslationFile>> TranslationFileLookup =
             new Dictionary<string, LinkedListNode<ScriptTranslationFile>>();
 
-        void Update()
+        private void Update()
         {
-            if(Configuration.ScriptTranslations.ReloadTranslationsKey.Value.IsPressed)
+            if (Configuration.ScriptTranslations.ReloadTranslationsKey.Value.IsPressed)
                 ReloadActiveTranslations();
         }
 
@@ -113,7 +117,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                 var tlPath = Path.Combine(Paths.TranslationsRoot, Configuration.General.ActiveLanguage.Value);
                 var textTlPath = Path.Combine(tlPath, "Script");
 
-                if(!Directory.Exists(textTlPath))
+                if (!Directory.Exists(textTlPath))
                     Directory.CreateDirectory(textTlPath);
 
                 var scriptFilePath = Path.Combine(textTlPath, $"{fileName}.txt");

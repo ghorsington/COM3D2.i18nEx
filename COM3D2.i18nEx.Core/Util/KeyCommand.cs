@@ -14,9 +14,6 @@ namespace COM3D2.i18nEx.Core.Util
             new KeyCommand(s.Split(new[] {'+'}, StringSplitOptions.RemoveEmptyEntries)
                 .Select(k => (KeyCode) Enum.Parse(typeof(KeyCode), k, true)).ToArray());
 
-        private KeyCode[] KeyCodes { get; }
-        private bool[] KeyStates { get; }
-
         public KeyCommand(params KeyCode[] keyCodes)
         {
             KeyCodes = keyCodes;
@@ -25,7 +22,16 @@ namespace COM3D2.i18nEx.Core.Util
             KeyCommandHandler.Register(this);
         }
 
+        private KeyCode[] KeyCodes { get; }
+        private bool[] KeyStates { get; }
+
         public bool IsPressed => KeyStates.All(k => k);
+
+        public void Dispose()
+        {
+            ReleaseUnmanagedResources();
+            GC.SuppressFinalize(this);
+        }
 
         public void UpdateState()
         {
@@ -39,12 +45,6 @@ namespace COM3D2.i18nEx.Core.Util
         private void ReleaseUnmanagedResources()
         {
             KeyCommandHandler.Unregister(this);
-        }
-
-        public void Dispose()
-        {
-            ReleaseUnmanagedResources();
-            GC.SuppressFinalize(this);
         }
 
         ~KeyCommand()

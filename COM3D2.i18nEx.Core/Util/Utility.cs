@@ -7,7 +7,10 @@ namespace COM3D2.i18nEx.Core.Util
 {
     public static class Utility
     {
-        public static string CombinePaths(string part1, string part2) => Path.Combine(part1, part2);
+        public static string CombinePaths(string part1, string part2)
+        {
+            return Path.Combine(part1, part2);
+        }
 
         public static string CombinePaths(params string[] parts)
         {

@@ -14,13 +14,14 @@ namespace COM3D2.i18nEx.Core.Util
                 hashedValue += t;
                 hashedValue *= 3074457345618258799ul;
             }
+
             return hashedValue;
         }
 
         public static KeyValuePair<string, string> SplitTranslation(this string txt)
         {
             int pos;
-            if((pos = txt.IndexOf("<E>", StringComparison.InvariantCultureIgnoreCase)) > 0)
+            if ((pos = txt.IndexOf("<E>", StringComparison.InvariantCultureIgnoreCase)) > 0)
                 return new KeyValuePair<string, string>(txt.Substring(0, pos), txt.Substring(pos + 3));
             return new KeyValuePair<string, string>(txt, string.Empty);
         }
@@ -30,7 +31,7 @@ namespace COM3D2.i18nEx.Core.Util
             if (string.IsNullOrEmpty(txt))
                 return txt;
             var stringBuilder = new StringBuilder(txt.Length + 2);
-            foreach (char c in txt)
+            foreach (var c in txt)
                 switch (c)
                 {
                     case '\0':
@@ -70,6 +71,7 @@ namespace COM3D2.i18nEx.Core.Util
                         stringBuilder.Append(c);
                         break;
                 }
+
             return stringBuilder.ToString();
         }
 
@@ -78,15 +80,15 @@ namespace COM3D2.i18nEx.Core.Util
             if (string.IsNullOrEmpty(txt))
                 return txt;
             var stringBuilder = new StringBuilder(txt.Length);
-            for (int i = 0; i < txt.Length;)
+            for (var i = 0; i < txt.Length;)
             {
-                int num = txt.IndexOf('\\', i);
+                var num = txt.IndexOf('\\', i);
                 if (num < 0 || num == txt.Length - 1)
                     num = txt.Length;
                 stringBuilder.Append(txt, i, num - i);
                 if (num >= txt.Length)
                     break;
-                char c = txt[num + 1];
+                var c = txt[num + 1];
                 switch (c)
                 {
                     case '0':

@@ -15,6 +15,10 @@ namespace COM3D2.i18nEx.Core
 
         private static readonly List<IReloadable> reloadableWrappers = new List<IReloadable>();
 
+        public static readonly GeneralConfig General = new GeneralConfig();
+        public static readonly ScriptTranslationsConfig ScriptTranslations = new ScriptTranslationsConfig();
+        public static readonly TextureReplacementConfig TextureReplacement = new TextureReplacementConfig();
+
         public static void Reload()
         {
             configFile.Merge(IniFile.FromFile(Paths.TranslationsRoot));
@@ -32,10 +36,6 @@ namespace COM3D2.i18nEx.Core
 
             return res;
         }
-
-        public static readonly GeneralConfig General = new GeneralConfig();
-        public static readonly ScriptTranslationsConfig ScriptTranslations = new ScriptTranslationsConfig();
-        public static readonly TextureReplacementConfig TextureReplacement = new TextureReplacementConfig();
 
         internal class GeneralConfig
         {
@@ -65,17 +65,17 @@ namespace COM3D2.i18nEx.Core
 
         internal class ScriptTranslationsConfig
         {
-            public ConfigWrapper<int> MaxTranslationFilesCached = Wrap(
-                "ScriptTranslations",
-                "CacheSize",
-                "Specifies how many text translation files should be kept in memory at once\nHaving bigger cache can improve performance at the cost of memory usage",
-                1);
-
             public ConfigWrapper<bool> DumpScriptTranslations = Wrap(
                 "ScriptTranslations",
                 "DumpUntranslatedLines",
                 "If enabled, dumps untranslated script lines (along with built-in translations, if present).",
                 false);
+
+            public ConfigWrapper<int> MaxTranslationFilesCached = Wrap(
+                "ScriptTranslations",
+                "CacheSize",
+                "Specifies how many text translation files should be kept in memory at once\nHaving bigger cache can improve performance at the cost of memory usage",
+                1);
 
             public ConfigWrapper<KeyCommand> ReloadTranslationsKey = Wrap(
                 "ScriptTranslations",
@@ -88,17 +88,17 @@ namespace COM3D2.i18nEx.Core
 
         internal class TextureReplacementConfig
         {
-            public ConfigWrapper<int> MaxTexturesCached = Wrap(
-                "TextureReplacement",
-                "CacheSize",
-                "Specifies how many texture replacements should be kept in memory at once\nHaving bigger cache can improve performance at the cost of memory usage",
-                10);
-
             public ConfigWrapper<bool> DumpTextures = Wrap(
                 "TextureReplacement",
                 "DumpOriginalTextures",
                 "If enabled, dumps textures that have no replacements.",
                 false);
+
+            public ConfigWrapper<int> MaxTexturesCached = Wrap(
+                "TextureReplacement",
+                "CacheSize",
+                "Specifies how many texture replacements should be kept in memory at once\nHaving bigger cache can improve performance at the cost of memory usage",
+                10);
 
             public ConfigWrapper<bool> SkipDumpingCMTextures = Wrap(
                 "TextureReplacement",

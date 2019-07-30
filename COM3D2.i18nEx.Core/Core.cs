@@ -73,12 +73,8 @@ namespace COM3D2.i18nEx.Core
                     mgr.ReloadActiveTranslations();
 
             if (Input.GetKey(KeyCode.Keypad0))
-            {
                 foreach (var languageSource in LocalizationManager.Sources)
-                {
                     Logger.LogInfo($"Got source {languageSource}");
-                }
-            }
         }
     }
 }

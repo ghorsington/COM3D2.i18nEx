@@ -9,6 +9,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
     {
         private readonly GameObject go = new GameObject();
 
+
         public override void LoadLanguage(string langName)
         {
             DontDestroyOnLoad(go);
@@ -24,6 +25,13 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                 return;
             }
 
+            LoadTranslations(langName);
+        }
+
+        private void LoadTranslations(string lang)
+        {
+            var tlPath = Path.Combine(Paths.TranslationsRoot, lang);
+            var textTlPath = Path.Combine(tlPath, "UI");
             var source = go.GetComponent<LanguageSource>() ?? go.AddComponent<LanguageSource>();
             source.name = "i18nEx";
             source.ClearAllData();
@@ -42,11 +50,15 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
             Core.Logger.LogInfo(
                 $"Loaded the following languages: {string.Join(",", source.mLanguages.Select(d => d.Name).ToArray())}");
-            LocalizationManager.Sources.Add(source);
+
+            if(!LocalizationManager.Sources.Contains(source))
+                LocalizationManager.Sources.Add(source);
         }
 
         public override void ReloadActiveTranslations()
         {
+            Core.Logger.LogInfo("Reloading current I2 translations");
+            LoadTranslations(Configuration.General.ActiveLanguage.Value);
         }
     }
 }

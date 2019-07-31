@@ -23,22 +23,6 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
         public byte[] Data { get; set; }
 
-        public Texture2D Replacement
-        {
-            get
-            {
-                if (replacement)
-                    return replacement;
-                if (Data == null)
-                    return null;
-
-                var tt = new Texture2D(1, 1, TextureFormat.ARGB32, false) {name = $"i18n_{Name}"};
-                tt.LoadImage(Data);
-                replacement = tt;
-                return replacement;
-            }
-        }
-
         public void Load()
         {
             replacement = null;
@@ -105,11 +89,6 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
         public byte[] GetReplacementTextureBytes(string texName, string tag = null)
         {
             return GetReplacement(texName, tag)?.Data;
-        }
-
-        public Texture2D GetReplacementTexture(string texName, string tag = null)
-        {
-            return GetReplacement(texName, tag)?.Replacement;
         }
 
         public void DumpTexture(string texName, Texture tex)

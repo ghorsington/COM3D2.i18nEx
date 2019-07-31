@@ -55,6 +55,12 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                 LocalizationManager.Sources.Add(source);
         }
 
+        void Update()
+        {
+            if(Configuration.I2Translation.ReloadTranslationsKey.Value.IsPressed)
+                ReloadActiveTranslations();
+        }
+
         public override void ReloadActiveTranslations()
         {
             Core.Logger.LogInfo("Reloading current I2 translations");

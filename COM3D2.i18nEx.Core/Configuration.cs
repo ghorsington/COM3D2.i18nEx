@@ -18,6 +18,7 @@ namespace COM3D2.i18nEx.Core
         public static readonly GeneralConfig General = new GeneralConfig();
         public static readonly ScriptTranslationsConfig ScriptTranslations = new ScriptTranslationsConfig();
         public static readonly TextureReplacementConfig TextureReplacement = new TextureReplacementConfig();
+        public static readonly I2TranslationConfig I2Translation = new I2TranslationConfig();
 
         public static void Reload()
         {
@@ -105,6 +106,25 @@ namespace COM3D2.i18nEx.Core
                 "SkipDumpingCMTextures",
                 "If `DumpOriginalTextures` is enabled, setting this to `True` will disable dumping game's own .tex files\nUse this if you don't want to dump all in-game textures.",
                 false);
+
+            public ConfigWrapper<KeyCommand> ReloadTranslationsKey = Wrap(
+                "TextureReplacement",
+                "ReloadTranslationsKey",
+                "The key (or key combination) to reload currently cached textures.",
+                new KeyCommand(KeyCode.LeftAlt, KeyCode.Keypad2),
+                KeyCommand.KeyCommandToString,
+                KeyCommand.KeyCommandFromString);
+        }
+
+        internal class I2TranslationConfig
+        {
+            public ConfigWrapper<KeyCommand> ReloadTranslationsKey = Wrap(
+                "I2Translation",
+                "ReloadTranslationsKey",
+                "The key (or key combination) to reload currently cached translations.",
+                new KeyCommand(KeyCode.LeftAlt, KeyCode.Keypad3),
+                KeyCommand.KeyCommandToString,
+                KeyCommand.KeyCommandFromString);
         }
     }
 }

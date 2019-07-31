@@ -80,10 +80,19 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             }
         }
 
+        void Update()
+        {
+            if(Configuration.TextureReplacement.ReloadTranslationsKey.Value.IsPressed)
+                ReloadActiveTranslations();
+        }
+
         public override void ReloadActiveTranslations()
         {
             foreach (var textureReplacement in texReplacementCache)
+            {
+                Debug.Log($"Reloading texture {textureReplacement.Name}.png");
                 textureReplacement.Load();
+            }
         }
 
         public byte[] GetReplacementTextureBytes(string texName, string tag = null)

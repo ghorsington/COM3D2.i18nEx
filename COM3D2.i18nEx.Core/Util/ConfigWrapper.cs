@@ -39,8 +39,8 @@ namespace COM3D2.i18nEx.Core.Util
             if (toStringConvert == null && !cvt.CanConvertTo(typeof(string)))
                 throw new ArgumentException("Default TypeConverter can't convert to String");
 
-            this.toStringConvert = toStringConvert ?? v => cvt.ConvertToInvariantString(v);
-            this.fromStringConvert = fromStringConvert ?? v => (T) cvt.ConvertFromInvariantString(v);
+            this.toStringConvert = toStringConvert ?? (v => cvt.ConvertToInvariantString(v));
+            this.fromStringConvert = fromStringConvert ?? (v => (T) cvt.ConvertFromInvariantString(v));
 
             if (iniKey.Value == null)
             {

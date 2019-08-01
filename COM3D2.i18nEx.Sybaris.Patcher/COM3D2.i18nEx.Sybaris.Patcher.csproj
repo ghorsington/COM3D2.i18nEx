@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{818B9F24-8EBF-444B-A7DE-E7786E34698B}</ProjectGuid>
+    <ProjectGuid>{A0006E74-8979-4F00-B2C3-EBFEE4EB0280}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>COM3D2.i18nEx.BepInEx</RootNamespace>
-    <AssemblyName>COM3D2.i18nEx.BepInEx</AssemblyName>
+    <RootNamespace>COM3D2.i18nEx.Sybaris.Patcher</RootNamespace>
+    <AssemblyName>COM3D2.i18nEx.Sybaris.Patcher</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\bin\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -31,26 +31,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BepInEx">
-      <HintPath>..\lib\BepInEx.dll</HintPath>
+    <Reference Include="Mono.Cecil">
+      <HintPath>..\lib\Mono.Cecil.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Core" />
-    <Reference Include="UnityEngine">
-      <HintPath>..\lib\UnityEngine.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="InternationalizationBepInEx.cs" />
+    <Compile Include="InternationalizationExPatcher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\COM3D2.i18nEx.Core\COM3D2.i18nEx.Core.csproj">
-      <Project>{1009e384-facf-468a-8c86-e955c3f8e61c}</Project>
-      <Name>COM3D2.i18nEx.Core</Name>
-      <Private>False</Private>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

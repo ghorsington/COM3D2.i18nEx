@@ -5,7 +5,7 @@ This plug-in allows use of COM3D2's localization features in order to translate 
 Currently, this plug-in allows you to translate the following game elements:
 
 * Compatible UI (as long as it's marked as localizable by the game)
-* Textures (by allowing to replace textures the same way as [YetAnotherTranslator]() does)
+* Textures (by allowing to replace textures the same way as [YetAnotherTranslator](https://github.com/denikson/CM3D2.YATranslator) does)
 * Story scripts, yotogi subtitles and other [compatible items](#translation-details).
 
 This plug-in allows lightweight and simple way to use official English translations in the Japanese game 
@@ -31,7 +31,7 @@ You will need these:
 > [XUnity.AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator/) as it shouldn't cause any
 > translation mixups compared to `CM3D2.AutoTranslator.Plugin.dll`.
 
-Download the latest version from the [releases](). Pick either the `_Sybaris.zip` or `_BepInEx.zip` depending on which loader you have.
+Download the latest version from the [releases](https://github.com/denikson/COM3D2.i18nEx/releases). Pick either the `_Sybaris.zip` or `_BepInEx.zip` depending on which loader you have.
 If you have both, I suggest using BepInEx version.
 
 After downloading, extract the **contents** downloaded archive into your game's directory (and not a folder inside the game's directory!).  
@@ -62,7 +62,7 @@ Inside the created folder, create the following subfolders:
 It is possible to extract the current text translations that are available in the game.  
 For that, you will need Sybaris or the [COM3D2.BepInEx.AIO](https://github.com/NeighTools/COM3D2.BepInEx.AIO).
 
-Download `EngExtract.dll` from [releases]() and place it into `Sybaris\UnityInjector` folder.  
+Download `EngExtract.dll` from [releases](https://github.com/denikson/COM3D2.i18nEx/releases) and place it into `Sybaris\UnityInjector` folder.  
 Open the game and **wait for it to load**.
 
 **Make sure you have the game's command line open so you can see the progress**. 

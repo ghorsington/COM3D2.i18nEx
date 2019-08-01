@@ -40,6 +40,9 @@ namespace COM3D2.i18nEx.Core.Hooks
             if (newTex == null)
                 return true;
 
+            if (Configuration.TextureReplacement.VerboseLogging.Value)
+                Core.Logger.LogInfo($"Replacing {f_strFileName}");
+
             __result = new TextureResource(1, 1, TextureFormat.ARGB32, __result.uvRects, newTex);
 
             return false;
@@ -89,7 +92,8 @@ namespace COM3D2.i18nEx.Core.Hooks
                 return;
             }
 
-            Core.Logger.LogInfo($"[{__instance.GetType().Name}] {tex.name}");
+            if (Configuration.TextureReplacement.VerboseLogging.Value)
+                Core.Logger.LogInfo($"Replacing {tex?.name}");
 
             if (tex is Texture2D tex2d)
             {
@@ -124,6 +128,9 @@ namespace COM3D2.i18nEx.Core.Hooks
                 return;
             }
 
+            if (Configuration.TextureReplacement.VerboseLogging.Value)
+                Core.Logger.LogInfo($"Replacing {tex?.name}");
+
             if (tex is Texture2D tex2d)
             {
                 tex2d.LoadImage(EmptyBytes);
@@ -155,6 +162,9 @@ namespace COM3D2.i18nEx.Core.Hooks
                     Core.TextureReplace.DumpTexture(value.texture.name, value.texture);
                 return;
             }
+
+            if (Configuration.TextureReplacement.VerboseLogging.Value)
+                Core.Logger.LogInfo($"Replacing {value?.texture?.name}");
 
             value.texture.LoadImage(EmptyBytes);
             value.texture.LoadImage(newData);

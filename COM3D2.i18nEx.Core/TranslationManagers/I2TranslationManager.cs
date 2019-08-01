@@ -42,7 +42,10 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                 foreach (var file in Directory.GetFiles(fullDir, "*.csv", SearchOption.AllDirectories))
                 {
                     var categoryName = Path.GetFullPath(file).Substring(fullDir.Length + 1).Replace(".csv", "");
-                    Core.Logger.LogInfo($"Loading category {categoryName}");
+
+                    if(Configuration.I2Translation.VerboseLogging.Value)
+                        Core.Logger.LogInfo($"Loading category {categoryName}");
+
                     source.Import_CSV(categoryName.Replace("\\", "/"), File.ReadAllText(file),
                         eSpreadsheetUpdateMode.Merge);
                 }

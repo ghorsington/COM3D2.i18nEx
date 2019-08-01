@@ -15,7 +15,7 @@ namespace COM3D2.i18nEx.Sybaris.Managed
         public static void Start()
         {
             AppDomain.CurrentDomain.AssemblyResolve += ResolveHarmony;
-            go = new GameObject();
+            go = new GameObject("i18nExManager");
             Object.DontDestroyOnLoad(go);
             var core = go.AddComponent<Core.Core>();
             core.Initialize(new UnityLogger(), Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName));

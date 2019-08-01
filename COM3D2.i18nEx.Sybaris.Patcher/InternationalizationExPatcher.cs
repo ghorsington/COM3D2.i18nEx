@@ -47,10 +47,12 @@ namespace COM3D2.i18nEx.Sybaris.Patcher
 
                 var cil = cctor.Body.GetILProcessor();
                 cil.Emit(OpCodes.Ret);
+
+                application.Methods.Add(cctor);
             }
 
             var il = cctor.Body.GetILProcessor();
-            var ins = il.Body.Instructions.First();
+            var ins = il.Body.Instructions.Last();
                 
             il.InsertBefore(ins, il.Create(OpCodes.Call, md.ImportReference(hookMethod)));
         }

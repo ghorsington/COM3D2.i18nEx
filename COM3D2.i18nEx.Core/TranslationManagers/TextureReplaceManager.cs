@@ -114,7 +114,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             if (!Directory.Exists(dumpPath))
                 Directory.CreateDirectory(dumpPath);
 
-            Core.Logger.LogInfo($"Dumping {texName}.png");
+            Core.Logger.LogInfo($"[DUMP] {texName}.png");
             var p = Path.Combine(dumpPath, $"{texName}.png");
             File.WriteAllBytes(p, Utility.TexToPng(tex2d));
             dumpedItems.Add(texName);

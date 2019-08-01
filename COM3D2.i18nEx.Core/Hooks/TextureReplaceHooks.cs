@@ -29,6 +29,9 @@ namespace COM3D2.i18nEx.Core.Hooks
         {
             var fileName = Path.GetFileNameWithoutExtension(f_strFileName);
 
+            if(Configuration.TextureReplacement.VerboseLogging.Value)
+                Core.Logger.LogInfo($"[COM3D2_TEX] {f_strFileName}");
+
             if (string.IsNullOrEmpty(fileName))
                 return true;
 
@@ -70,6 +73,9 @@ namespace COM3D2.i18nEx.Core.Hooks
                     break;
             }
 
+            if (Configuration.TextureReplacement.VerboseLogging.Value)
+                Core.Logger.LogInfo($"[{__instance.GetType().Name}] {tex?.name}");
+
             if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("i18n_") ||
                 tex.name == FONT_TEX_NAME)
                 return;
@@ -93,19 +99,8 @@ namespace COM3D2.i18nEx.Core.Hooks
             }
             else
             {
-                Core.Logger.LogWarning($"Texture {tex.name} is of type {tex.GetType().FullName} and not tex2d!");
+                Core.Logger.LogError($"Texture {tex.name} is of type {tex.GetType().FullName} and not tex2d!");
             }
-
-            //__result = newTex;
-            //switch (__instance)
-            //{
-            //    case UI2DSprite sprite:
-            //        sprite.sprite2D = Sprite.Create(newTex, sprite.sprite2D.rect, sprite.sprite2D.pivot);
-            //        break;
-            //    default:
-            //        __instance.material.mainTexture = newTex;
-            //        break;
-            //}
         }
 
         [HarmonyPatch(typeof(UITexture), nameof(UITexture.mainTexture), MethodType.Getter)]
@@ -113,6 +108,9 @@ namespace COM3D2.i18nEx.Core.Hooks
         private static void GetMainTexturePostTex(UITexture __instance, ref Texture __result, ref Texture ___mTexture)
         {
             var tex = ___mTexture ?? __instance.material?.mainTexture;
+
+            if (Configuration.TextureReplacement.VerboseLogging.Value)
+                Core.Logger.LogInfo($"[{__instance.GetType().Name}] {tex?.name}");
 
             if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("i18n_"))
                 return;
@@ -126,8 +124,6 @@ namespace COM3D2.i18nEx.Core.Hooks
                 return;
             }
 
-            //___mTexture = __result = newTex;
-
             if (tex is Texture2D tex2d)
             {
                 tex2d.LoadImage(EmptyBytes);
@@ -136,7 +132,7 @@ namespace COM3D2.i18nEx.Core.Hooks
             }
             else
             {
-                Core.Logger.LogWarning($"Texture {tex.name} is of type {tex.GetType().FullName} and not tex2d!");
+                Core.Logger.LogError($"Texture {tex.name} is of type {tex.GetType().FullName} and not tex2d!");
             }
         }
 
@@ -144,6 +140,9 @@ namespace COM3D2.i18nEx.Core.Hooks
         [HarmonyPrefix]
         private static void SetSprite(ref Sprite value)
         {
+            if (Configuration.TextureReplacement.VerboseLogging.Value)
+                Core.Logger.LogInfo($"[UnityEngine.UI.Image] {value?.texture?.name}");
+
             if (value == null || value.texture == null || string.IsNullOrEmpty(value.texture.name) ||
                 value.texture.name.StartsWith("i18n_"))
                 return;
@@ -157,13 +156,9 @@ namespace COM3D2.i18nEx.Core.Hooks
                 return;
             }
 
-            Core.Logger.LogInfo($"[Image] {value.texture.name}");
-
             value.texture.LoadImage(EmptyBytes);
             value.texture.LoadImage(newData);
             value.texture.name = $"i18n_{value.texture.name}";
-
-            //value = Sprite.Create(newTex, value.rect, value.pivot);
         }
 
         [HarmonyPatch(typeof(MaskableGraphic), "OnEnable")]

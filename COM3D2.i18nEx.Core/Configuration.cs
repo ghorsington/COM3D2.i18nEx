@@ -72,6 +72,12 @@ namespace COM3D2.i18nEx.Core
                 "If enabled, dumps untranslated script lines (along with built-in translations, if present).",
                 false);
 
+            public ConfigWrapper<bool> VerboseLogging = Wrap(
+                "ScriptTranslations",
+                "VerboseLogging",
+                "If enabled, logs precise translation info\nUseful if you're writing new translations.",
+                false);
+
             public ConfigWrapper<int> MaxTranslationFilesCached = Wrap(
                 "ScriptTranslations",
                 "CacheSize",
@@ -114,6 +120,12 @@ namespace COM3D2.i18nEx.Core
                 new KeyCommand(KeyCode.LeftAlt, KeyCode.Keypad2),
                 KeyCommand.KeyCommandToString,
                 KeyCommand.KeyCommandFromString);
+
+            public ConfigWrapper<bool> VerboseLogging = Wrap(
+                "TextureReplacement",
+                "VerboseLogging",
+                "If enabled, logs precise texture replacement info\nUseful if you're writing new translations.",
+                false);
         }
 
         internal class I2TranslationConfig

@@ -88,12 +88,16 @@ namespace COM3D2.i18nEx.Core.Hooks
 
         private static void ProcessTranslation(string fileName, ref KeyValuePair<string, string> translationPair)
         {
+            if (Configuration.ScriptTranslations.VerboseLogging.Value)
+                Core.Logger.LogInfo($"[Script] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Key}\"");
+
             if (string.IsNullOrEmpty(translationPair.Key))
                 return;
 
             if (fileName == null)
             {
-                Core.Logger.LogWarning("Found script with no name! Skipping...");
+                if (Configuration.ScriptTranslations.VerboseLogging.Value)
+                    Core.Logger.LogWarning("Found script with no name! Skipping...");
                 return;
             }
 
@@ -104,7 +108,7 @@ namespace COM3D2.i18nEx.Core.Hooks
                 translationPair = new KeyValuePair<string, string>(translationPair.Key, res);
             else if (Configuration.ScriptTranslations.DumpScriptTranslations.Value)
                 if (Core.ScriptTranslate.WriteTranslation(fileName, translationPair.Key, translationPair.Value))
-                    Core.Logger.LogInfo($"[{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
+                    Core.Logger.LogInfo($"[DUMP] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
         }
     }
 }

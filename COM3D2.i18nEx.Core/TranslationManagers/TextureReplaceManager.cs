@@ -133,6 +133,8 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
             foreach (var lookupName in lookupNames)
             {
+                if(Configuration.TextureReplacement.VerboseLogging.Value)
+                    Core.Logger.LogInfo($"Trying with name {lookupName}.png");
                 if (!textureReplacements.ContainsKey(lookupName))
                     continue;
                 return LoadReplacement(lookupName);

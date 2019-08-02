@@ -84,6 +84,12 @@ namespace COM3D2.i18nEx.Core
                 "Specifies how many text translation files should be kept in memory at once\nHaving bigger cache can improve performance at the cost of memory usage",
                 1);
 
+            public ConfigWrapper<bool> PutJPTextIntoENG = Wrap(
+                "ScriptTranslations",
+                "InsertJapaneseTextIntoEnglishText",
+                "If enabled, all untranslated Japanese text will be put into the target language textbox\nUseful if you don't want to have \"English and Japanese\" set as display language.",
+                false);
+
             public ConfigWrapper<KeyCommand> ReloadTranslationsKey = Wrap(
                 "ScriptTranslations",
                 "ReloadTranslationsKey",

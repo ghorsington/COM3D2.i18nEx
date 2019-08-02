@@ -107,7 +107,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
             if (tlNode.Value.Translations.TryGetValue(text, out var tlText))
                 return tlText;
-            return null;
+            return Configuration.ScriptTranslations.PutJPTextIntoENG.Value ? text : null;
         }
 
         public bool WriteTranslation(string fileName, string original, string translated)

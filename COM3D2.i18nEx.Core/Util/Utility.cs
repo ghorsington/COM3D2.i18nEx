@@ -29,17 +29,24 @@ namespace COM3D2.i18nEx.Core.Util
 
         public static byte[] TexToPng(Texture2D tex)
         {
+            if (tex.format == TextureFormat.DXT1 || tex.format == TextureFormat.DXT5)
+                return DuplicateTextureToPng(tex);
             try
             {
                 return tex.EncodeToPNG();
             }
             catch (Exception)
             {
-                var dup = Duplicate(tex);
-                var res = dup.EncodeToPNG();
-                Object.Destroy(dup);
-                return res;
+                return DuplicateTextureToPng(tex);
             }
+        }
+
+        private static byte[] DuplicateTextureToPng(Texture2D tex)
+        {
+            var dup = Duplicate(tex);
+            var res = dup.EncodeToPNG();
+            Object.Destroy(dup);
+            return res;
         }
 
         private static Texture2D Duplicate(Texture texture)
@@ -52,7 +59,7 @@ namespace COM3D2.i18nEx.Core.Util
             Graphics.Blit(texture, render);
             var previous = RenderTexture.active;
             RenderTexture.active = render;
-            var result = new Texture2D(texture.width, texture.height);
+            var result = new Texture2D(texture.width, texture.height, TextureFormat.ARGB32, false);
             result.ReadPixels(new Rect(0, 0, render.width, render.height), 0, 0);
             result.Apply();
             RenderTexture.active = previous;

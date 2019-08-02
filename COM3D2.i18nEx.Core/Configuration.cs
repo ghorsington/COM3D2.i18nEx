@@ -111,7 +111,7 @@ namespace COM3D2.i18nEx.Core
                 "TextureReplacement",
                 "SkipDumpingCMTextures",
                 "If `DumpOriginalTextures` is enabled, setting this to `True` will disable dumping game's own .tex files\nUse this if you don't want to dump all in-game textures.",
-                false);
+                true);
 
             public ConfigWrapper<KeyCommand> ReloadTranslationsKey = Wrap(
                 "TextureReplacement",

@@ -43,7 +43,7 @@ namespace COM3D2.i18nEx.Core.Hooks
             if (Configuration.TextureReplacement.VerboseLogging.Value)
                 Core.Logger.LogInfo($"Replacing {f_strFileName}");
 
-            __result = new TextureResource(1, 1, TextureFormat.ARGB32, __result.uvRects, newTex);
+            __result = new TextureResource(1, 1, TextureFormat.ARGB32, __result?.uvRects, newTex);
 
             return false;
         }

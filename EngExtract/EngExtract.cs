@@ -18,6 +18,7 @@ namespace EngExtract
         public const string TL_DIR = "COM3D2_Localisation";
 
         private static readonly Regex textPattern = new Regex("text=\"(?<text>.*)\"");
+        private static readonly Regex namePattern = new Regex("name=\"(?<name>.*)\"");
 
         private int translatedLines;
 
@@ -101,6 +102,13 @@ namespace EngExtract
 
                 if (trimmedLine.StartsWith("@talk", StringComparison.InvariantCultureIgnoreCase))
                 {
+                    var match = namePattern.Match(trimmedLine);
+                    if (match.Success)
+                    {
+                        var m = match.Groups["name"];
+                        var parts = SplitTranslation(m.Value);
+                        lineList.Add($"{parts.Key}\t{parts.Value}");
+                    }
                     captureTalk = true;
                 }
                 else if (captureTalk)

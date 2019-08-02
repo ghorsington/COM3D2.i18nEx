@@ -6,7 +6,7 @@ Currently, this plug-in allows you to translate the following game elements:
 
 * Compatible UI (as long as it's marked as localizable by the game)
 * Textures (by allowing to replace textures the same way as [YetAnotherTranslator](https://github.com/denikson/CM3D2.YATranslator) does)
-* Story scripts, yotogi subtitles and other [compatible items](#translation-details).
+* Story scripts, yotogi subtitles and other [compatible items]([#translation-details](https://github.com/denikson/COM3D2.i18nEx/wiki/How-to-translate)).
 
 This plug-in allows lightweight and simple way to use official English translations in the Japanese game 
 **and** manually fixing translations in the English game. 
@@ -84,93 +84,6 @@ Launch the game; if you have done everything correctly, you will now have i18nEx
 > 
 > If you want to translate other Japanese elements, it's encouraged to install [XUnity.AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator/).
 
-## Translation details
+## More info
 
-**NOTE**: These details are meant for translators and other developers. You don't have to read these if you just want to use the translations.
-
-i18nEx works by hooking in-game methods for parsing VN scripts and loading textures in order to provide translations. In addition, this plugin 
-utilizes the game's own I2LocalizationManager to load UI translations. 
-As a major benefit, loading and using translations is fast an efficient. However, this also means that this plug-in won't translate UIs and texts 
-that the game itself doesn't mark as translatable. Because of that, you might still need to use much heavier tools like YATranslator and XUnity.AutoTranslator to achieve full game translation.
-
-Multi-language translations are currently supported only in a very basic manner: you add a new language by creating a new folder in `i18nEx` 
-using the name of the target language. Then, to enable said language, you edit the `i18nEx\configuration.ini` and set `ActiveLanguage` to the name of the folder that you want to load.
-
-This plugin categorizes translation resources in thee ways: a resource can be a *script translation*, a *UI translation* or a *texture replacement*.
-
-### Script translations
-
-Script translations go into `i18nEx\<Language>\Script`. Script translations are applied to all in-game scripts where there might be text -- that is, all in-game events, yotogi subtitles and other management scenes.
-
-All translations **must** be categorized by the name of the script that has the translatable items.  
-For instance, if you want to translate text in `a1_job_0001.ks`, you must put these translations in `a1_job_0001.txt`.  
-You can use tools like Sybaris ARC Editor to open game's script ARCs and look up the names of the scripts.  
-
-The translations inside each text file are of the form `<ORIGINAL><TAB><TRANSLATED>`. Notice that original and translated lines 
-are separated by a **tabulator**, not space. 
-In some cases you might need to use escape sequences (`\n\t\r` etc.) to mark special characters (new line, tabulator, etc.).
-
-The translation lines must be specified the way they are written in the original scripts, but with `"<E>"` replaced with a tabulator. 
-
-Any lines that start with character `;` are ignored.
-
-#### Getting raw strings
-You can set `VerboseLogging` to `True` under `[ScriptTranslations]` section, which will cause i18nEx automatically 
-log the names of the scripts and translation lines in the console.
-
-Additionally, you can enable live dumping with `DumpUntranslatedLines` config option to automatically write untranslated lines into correct files.  
-
-Finally, you can use [the translation dumper plugin](#extracting-english-translations) to dump all translated and untranslated lines.
-
-
-### UI translations
-
-UI translations are handled by I2LocalizationManager. With them you can translate some UI elements, like yotogi skills, yotogi commands and 
-subtitles for songs. 
-
-In `UI` folders, each **translation unit** must be put into a separate subfolder. For instance, for translating yotogi commands,
-you need to create a subfolder `YotogiCommands`. The names of the translation units do not matter.
-
-Inside each translation unit, all translations are separated into categories and terms. Every category is it's own `.csv` file and all terms 
-inside the category are defined in the `.csv` file on each row.  
-The game looks up each term using path-like notation, for example `Config/VR/VR空間優先`. This notation is translated as follows:
-
-* The "deepest" part of the term (i.e. the most right item separated by `/`s) is **inside a `.csv` file**
-* The `.csv` file is named after the second deepest part.
-* All other parts of the terms are subfolders.
-
-For example the term `Config/VR/VR空間優先` can be found in `i18nEx\<Language>\UI\<unit_name>\Config\VR.csv`.  
-As another example, the term `YotogiSkillName/MP全身洗い` is in `i18nEx\<Language>\UI\<unit_name>\YotogiSkillName.csv`.
-
-### Layout of the .csv files
-
-Each `.csv` file must have the following header:
-
-```csv
-Key,Type,Desc,Japanese,English
-```
-
-All consecutive rows must have the same columns. The columns have the following meanings:
-
-* `Key` -- the key of the term. For instance, in term `Config/VR/VR空間優先`, the key is `VR空間優先`.
-* `Type` -- type of the key. In most cases you want this to be `Text`.
-* `Desc` -- description of the key. Not shown anywhere in the game.
-* `Japanese` -- the text to show when `Japanese` is set as display language
-* `English` -- the text to show when **your custom language is selected**.
-
-Unfortunately there is no easy way to obtain all the terms directly from the game. As of right now, 
-the best way is to [extract the translations from the English game](#extracting-english-translations).
-
-### Texture replacements
-
-Texture replacements function the same way they function in YATranslator.  
-With this you can replace an in-game texture with your own.
-
-Unlike in YAT, **all** texture translations go to `Textures` folder -- even the asset textures. 
-**All textures must be .PNG files.**
-
-Just like YAT, i18nEx supports naming each texture either by its name in Unity game or by a special hash code that is unique for each in-game scene.  
-To find out the names i18nEx uses for each texture, you can enable `VerboseLogging` under `[TextureReplacement]` section.
-
-Finally, i18nEx support dumping textures from memory. For that, enable `DumpOriginalTextures` under `[TextureReplacement]` section. 
-The dumped textures will be saved in `i18nEx\<Language>\Textures\Dumped`, so that they will be automatically loaded the next time you run the game.
+For information on how to translate the game, visit the [wiki](https://github.com/denikson/COM3D2.i18nEx/wiki/How-to-translate).

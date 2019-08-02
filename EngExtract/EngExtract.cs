@@ -102,14 +102,17 @@ namespace EngExtract
 
                 if (trimmedLine.StartsWith("@talk", StringComparison.InvariantCultureIgnoreCase))
                 {
+                    captureTalk = true;
                     var match = namePattern.Match(trimmedLine);
                     if (match.Success)
                     {
                         var m = match.Groups["name"];
                         var parts = SplitTranslation(m.Value);
+                        if (parts.Key.StartsWith("[HF", StringComparison.InvariantCulture) ||
+                            parts.Key.StartsWith("[SF", StringComparison.InvariantCulture))
+                            continue;
                         lineList.Add($"{parts.Key}\t{parts.Value}");
                     }
-                    captureTalk = true;
                 }
                 else if (captureTalk)
                 {

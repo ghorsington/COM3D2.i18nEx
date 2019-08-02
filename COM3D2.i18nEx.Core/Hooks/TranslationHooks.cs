@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using BepInEx.Harmony;
+using COM3D2.i18nEx.Core.Util;
 using HarmonyLib;
 using I2.Loc;
 using UnityEngine;
@@ -51,10 +52,6 @@ namespace COM3D2.i18nEx.Core.Hooks
                 else
                     yield return ins;
         }
-
-        delegate string GetTranslationDelegate(string Term, bool FixForRTL = true, int maxLineLengthForRTL = 0,
-            bool ignoreRTLnumbers = true, bool applyParameters = false, GameObject localParametersRoot = null,
-            string overrideLanguage = null);
 
         [HarmonyPatch(typeof(LocalizationManager), nameof(LocalizationManager.GetTranslation))]
         [HarmonyPostfix]

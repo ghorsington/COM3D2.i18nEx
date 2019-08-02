@@ -158,6 +158,7 @@ namespace EngExtract
             DumpScripts();
             Debug.Log($"Dumped {translatedLines} lines");
             Debug.Log($"Done! Dumped translations are located in {TL_DIR}. You can now close the game!");
+            Debug.Log("IMPORTANT: Delete this plugin (EngExtract.dll) if you want to play the game normally!");
         }
     }
 }

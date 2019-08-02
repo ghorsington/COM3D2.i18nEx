@@ -22,7 +22,7 @@ namespace COM3D2.i18nEx.Core
 
         public static void Reload()
         {
-            configFile.Merge(IniFile.FromFile(Paths.TranslationsRoot));
+            configFile.Merge(IniFile.FromFile(Paths.ConfigurationFilePath));
             foreach (var reloadableWrapper in reloadableWrappers)
                 reloadableWrapper.Reload();
         }

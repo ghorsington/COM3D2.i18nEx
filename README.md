@@ -65,13 +65,15 @@ For that, you will need Sybaris or the [COM3D2.BepInEx.AIO](https://github.com/N
 Download `EngExtract.dll` from [releases](https://github.com/denikson/COM3D2.i18nEx/releases) and place it into `Sybaris\UnityInjector` folder.  
 Open the game and **wait for it to load**.
 
-**Make sure you have the game's command line open so you can see the progress**. 
+**If you have i18nEx installed in the game, disable the plug-in!**
+**Make sure you have the game's command line open so you can see the progress.** 
 
 When you're in the main menu, **press <kbd>D</kbd>** and observe the dumping progress.  
 It might take a while for it to dump everything (up to 5 minutes), just wait until it reports that everything is dumped.
 
 When it's done, close the game. You should now see folder named `COM3D2_Localisation` appearing in your game's directory.  
 Inside it, you will find `Script` and `UI` folders that contain all localizations that you might want.
+**Remove `EngExtract.dll` plug-in when you're done extracting all the text!**
 
 Take those folders and move them into `i18nEx\English` folder.
 

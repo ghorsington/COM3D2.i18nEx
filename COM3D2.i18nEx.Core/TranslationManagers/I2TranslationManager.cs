@@ -54,8 +54,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             Core.Logger.LogInfo(
                 $"Loaded the following languages: {string.Join(",", source.mLanguages.Select(d => d.Name).ToArray())}");
 
-            if(!LocalizationManager.Sources.Contains(source))
-                LocalizationManager.Sources.Add(source);
+            LocalizationManager.LocalizeAll(true);
         }
 
         void Update()

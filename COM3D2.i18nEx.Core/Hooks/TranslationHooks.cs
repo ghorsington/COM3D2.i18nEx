@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using BepInEx.Harmony;
-using COM3D2.i18nEx.Core.Util;
 using HarmonyLib;
 using I2.Loc;
 using UnityEngine;
@@ -57,12 +55,11 @@ namespace COM3D2.i18nEx.Core.Hooks
         [HarmonyPostfix]
         private static void OnGetTranslation(ref string __result, string Term, bool FixForRTL, int maxLineLengthForRTL, bool ignoreRTLnumbers, bool applyParameters, GameObject localParametersRoot, string overrideLanguage)
         {
-            if (overrideLanguage != "Japanese" && (string.IsNullOrEmpty(__result) || Term.Contains(__result)))
+            if (overrideLanguage != "Japanese" && (string.IsNullOrEmpty(__result) || (__result.IndexOf('/') >= 0 && Term.Contains(__result))))
                 __result = LocalizationManager.GetTranslation(Term, FixForRTL, maxLineLengthForRTL, ignoreRTLnumbers, applyParameters,
                     localParametersRoot, "Japanese");
-            else if(Configuration.I2Translation.VerboseLogging.Value)
+            else if (Configuration.I2Translation.VerboseLogging.Value)
                 Core.Logger.LogInfo($"[I2Loc] Translating term \"{Term}\" => \"{__result}\"");
-
         }
     }
 }

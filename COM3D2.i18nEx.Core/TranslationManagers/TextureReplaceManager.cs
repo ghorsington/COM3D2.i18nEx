@@ -86,6 +86,11 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                 ReloadActiveTranslations();
         }
 
+        public bool ReplacementExists(string texName)
+        {
+            return textureReplacements.ContainsKey(texName);
+        }
+
         public override void ReloadActiveTranslations()
         {
             foreach (var textureReplacement in texReplacementCache)

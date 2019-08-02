@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using BepInEx.Harmony;
 using HarmonyLib;
 using UnityEngine;
@@ -20,6 +21,19 @@ namespace COM3D2.i18nEx.Core.Hooks
 
             instance = HarmonyWrapper.PatchAll(typeof(TextureReplaceHooks), "horse.coder.i18nex.hooks.textures");
             initialized = true;
+        }
+
+
+        [HarmonyPatch(typeof(FileSystemArchive), nameof(FileSystemArchive.IsExistentFile))]
+        [HarmonyPatch(typeof(FileSystemWindows), nameof(FileSystemWindows.IsExistentFile))]
+        [HarmonyPostfix]
+        private static void IsExistentFileCheck(ref bool __result, string file_name)
+        {
+            if (!Path.GetExtension(file_name).Equals(".tex", StringComparison.InvariantCultureIgnoreCase))
+                return;
+
+            if (!string.IsNullOrEmpty(file_name) && Core.TextureReplace.ReplacementExists(Path.GetFileNameWithoutExtension(file_name)))
+                __result = true;
         }
 
         [HarmonyPatch(typeof(ImportCM), nameof(ImportCM.LoadTexture))]

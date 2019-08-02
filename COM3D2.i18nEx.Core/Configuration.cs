@@ -141,7 +141,7 @@ namespace COM3D2.i18nEx.Core
             public ConfigWrapper<bool> VerboseLogging = Wrap(
                 "TextureReplacement",
                 "VerboseLogging",
-                "If enabled, logs precise I2Loc loading info\nUseful if you're debugging.",
+                "If enabled, logs precise I2Loc loading and translation info\nUseful if you're debugging.",
                 false);
         }
     }

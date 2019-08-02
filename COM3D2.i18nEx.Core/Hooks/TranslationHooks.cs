@@ -63,6 +63,9 @@ namespace COM3D2.i18nEx.Core.Hooks
             if (overrideLanguage != "Japanese" && (string.IsNullOrEmpty(__result) || Term.Contains(__result)))
                 __result = LocalizationManager.GetTranslation(Term, FixForRTL, maxLineLengthForRTL, ignoreRTLnumbers, applyParameters,
                     localParametersRoot, "Japanese");
+            else if(Configuration.I2Translation.VerboseLogging.Value)
+                Core.Logger.LogInfo($"[I2Loc] Translating term \"{Term}\" => \"{__result}\"");
+
         }
     }
 }

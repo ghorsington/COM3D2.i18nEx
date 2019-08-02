@@ -11,7 +11,7 @@ namespace COM3D2.i18nEx.Sybaris.Patcher
     public static class InternationalizationExPatcher
     {
         private const string MANAGED_ASSEMBLY = "COM3D2.i18nEx.Sybaris.Managed";
-        public static readonly string[] TargetAssemblyNames = {"UnityEngine.dll"};
+        public static readonly string[] TargetAssemblyNames = {"Assembly-CSharp.dll"};
 
 
         public static void Patch(AssemblyDefinition ad)
@@ -33,26 +33,10 @@ namespace COM3D2.i18nEx.Sybaris.Patcher
             var hookMethod = hookType.Methods.FirstOrDefault(m => m.Name == "Start");
 
             var md = ad.MainModule;
-            var application = md.GetType("UnityEngine.Application");
-            var cctor = application.Methods.FirstOrDefault(m => m.Name == ".cctor");
-
-            if (cctor == null)
-            {
-                cctor = new MethodDefinition(".cctor", MethodAttributes.Static
-                                                       | MethodAttributes.Private
-                                                       | MethodAttributes.HideBySig
-                                                       | MethodAttributes.SpecialName
-                                                       | MethodAttributes.RTSpecialName,
-                    md.ImportReference(typeof(void)));
-
-                var cil = cctor.Body.GetILProcessor();
-                cil.Emit(OpCodes.Ret);
-
-                application.Methods.Add(cctor);
-            }
-
-            var il = cctor.Body.GetILProcessor();
-            var ins = il.Body.Instructions.Last();
+            var gameUty = md.GetType("GameMain");
+            var init = gameUty.Methods.FirstOrDefault(m => m.Name == "OnInitialize");
+            var il = init.Body.GetILProcessor();
+            var ins = il.Body.Instructions.First();
                 
             il.InsertBefore(ins, il.Create(OpCodes.Call, md.ImportReference(hookMethod)));
         }

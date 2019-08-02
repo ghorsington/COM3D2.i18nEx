@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using BepInEx.Harmony;
 using HarmonyLib;
+using I2.Loc;
+using UnityEngine;
 
 namespace COM3D2.i18nEx.Core.Hooks
 {
@@ -47,6 +50,19 @@ namespace COM3D2.i18nEx.Core.Hooks
                     yield return new CodeInstruction(OpCodes.Ldc_I4_1);
                 else
                     yield return ins;
+        }
+
+        delegate string GetTranslationDelegate(string Term, bool FixForRTL = true, int maxLineLengthForRTL = 0,
+            bool ignoreRTLnumbers = true, bool applyParameters = false, GameObject localParametersRoot = null,
+            string overrideLanguage = null);
+
+        [HarmonyPatch(typeof(LocalizationManager), nameof(LocalizationManager.GetTranslation))]
+        [HarmonyPostfix]
+        private static void OnGetTranslation(ref string __result, string Term, bool FixForRTL, int maxLineLengthForRTL, bool ignoreRTLnumbers, bool applyParameters, GameObject localParametersRoot, string overrideLanguage)
+        {
+            if (overrideLanguage != "Japanese" && (string.IsNullOrEmpty(__result) || Term.Contains(__result)))
+                __result = LocalizationManager.GetTranslation(Term, FixForRTL, maxLineLengthForRTL, ignoreRTLnumbers, applyParameters,
+                    localParametersRoot, "Japanese");
         }
     }
 }

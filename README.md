@@ -41,8 +41,11 @@ Open and `i18nEx\configuration.ini` to view all available options. Edit them if 
 
 Finally, start the game. If everything went correctly, you should see `i18nEx` messages in the console.
 
-**NOTE:** If you're running the JP version of the game (or ENG version with DLC from JP version), open the game's settings 
-and set `Display language` to `English and Japanese`. Otherwise you might get blank textboxes in some places.
+**NOTE:** If you're running the JP version of the game (or ENG version with DLC from JP version), some events might not have English translations. As a result,
+in some places the game's text box will simply be empty. To fix this do **either one** of the following:
+
+* Go to game settings and set `Display language` to `English and Japanese`
+* Open `i18nEx\configuration.ini`, find and set `InsertJapaneseTextIntoEnglishText` to `True`. In the game, set `Display language` to `English`.
 
 ## Installing translations
 

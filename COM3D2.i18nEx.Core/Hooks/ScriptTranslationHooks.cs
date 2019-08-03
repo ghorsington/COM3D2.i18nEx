@@ -68,7 +68,7 @@ namespace COM3D2.i18nEx.Core.Hooks
         {
             var translationParts = text.SplitTranslation();
 
-            ProcessTranslation(fileName, ref translationParts, !stop);
+            ProcessTranslation(fileName, ref translationParts);
 
             if (!string.IsNullOrEmpty(translationParts.Value))
             {
@@ -80,16 +80,25 @@ namespace COM3D2.i18nEx.Core.Hooks
             {
                 var t = text.Replace("……", "…");
                 if (t != text && TranslateLine(fileName, ref t, true))
+                {
                     text = t;
+                    return true;
+                }
+
+                if (Configuration.ScriptTranslations.PutJPTextIntoENG.Value)
+                {
+                    text = $"{translationParts.Key}<E>{translationParts.Key}";
+                    return true;
+                }
             }
 
             return false;
         }
 
-        private static void ProcessTranslation(string fileName, ref KeyValuePair<string, string> translationPair, bool forceRealResult = false)
+        private static void ProcessTranslation(string fileName, ref KeyValuePair<string, string> translationPair)
         {
             if (Configuration.ScriptTranslations.VerboseLogging.Value)
-                Core.Logger.LogInfo($"[Script] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Key}\"");
+                Core.Logger.LogInfo($"[Script] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
 
             if (string.IsNullOrEmpty(translationPair.Key))
                 return;
@@ -104,8 +113,8 @@ namespace COM3D2.i18nEx.Core.Hooks
             fileName = Path.GetFileNameWithoutExtension(fileName);
             var res = Core.ScriptTranslate.GetTranslation(fileName, translationPair.Key);
 
-            if (!forceRealResult && string.IsNullOrEmpty(res) && string.IsNullOrEmpty(translationPair.Value) && Configuration.ScriptTranslations.PutJPTextIntoENG.Value)
-                res = translationPair.Key;
+            //if (string.IsNullOrEmpty(res) && string.IsNullOrEmpty(translationPair.Value) && Configuration.ScriptTranslations.PutJPTextIntoENG.Value)
+            //    res = translationPair.Key;
 
             if (!string.IsNullOrEmpty(res))
                 translationPair = new KeyValuePair<string, string>(translationPair.Key, res);

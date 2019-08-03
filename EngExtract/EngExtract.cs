@@ -74,7 +74,9 @@ namespace EngExtract
             if ((pos = txt.IndexOf("<E>", StringComparison.InvariantCultureIgnoreCase)) > 0)
             {
                 translatedLines++;
-                return new KeyValuePair<string, string>(txt.Substring(0, pos), txt.Substring(pos + 3));
+                var orig = txt.Substring(0, pos);
+                var tl = txt.Substring(pos + 3).Replace("…", "...");
+                return new KeyValuePair<string, string>(orig, tl);
             }
 
             return new KeyValuePair<string, string>(txt, string.Empty);

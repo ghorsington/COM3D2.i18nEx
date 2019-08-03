@@ -68,7 +68,7 @@ namespace COM3D2.i18nEx.Core.Hooks
         {
             var translationParts = text.SplitTranslation();
 
-            ProcessTranslation(fileName, ref translationParts);
+            ProcessTranslation(fileName, ref translationParts, !stop);
 
             if (!string.IsNullOrEmpty(translationParts.Value))
             {
@@ -86,7 +86,7 @@ namespace COM3D2.i18nEx.Core.Hooks
             return false;
         }
 
-        private static void ProcessTranslation(string fileName, ref KeyValuePair<string, string> translationPair)
+        private static void ProcessTranslation(string fileName, ref KeyValuePair<string, string> translationPair, bool forceRealResult = false)
         {
             if (Configuration.ScriptTranslations.VerboseLogging.Value)
                 Core.Logger.LogInfo($"[Script] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Key}\"");
@@ -104,7 +104,7 @@ namespace COM3D2.i18nEx.Core.Hooks
             fileName = Path.GetFileNameWithoutExtension(fileName);
             var res = Core.ScriptTranslate.GetTranslation(fileName, translationPair.Key);
 
-            if (string.IsNullOrEmpty(res) && string.IsNullOrEmpty(translationPair.Value) && Configuration.ScriptTranslations.PutJPTextIntoENG.Value)
+            if (!forceRealResult && string.IsNullOrEmpty(res) && string.IsNullOrEmpty(translationPair.Value) && Configuration.ScriptTranslations.PutJPTextIntoENG.Value)
                 res = translationPair.Key;
 
             if (!string.IsNullOrEmpty(res))

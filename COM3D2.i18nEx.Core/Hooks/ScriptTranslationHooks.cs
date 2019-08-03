@@ -104,6 +104,9 @@ namespace COM3D2.i18nEx.Core.Hooks
             fileName = Path.GetFileNameWithoutExtension(fileName);
             var res = Core.ScriptTranslate.GetTranslation(fileName, translationPair.Key);
 
+            if (res == null && Configuration.ScriptTranslations.PutJPTextIntoENG.Value)
+                res = translationPair.Key;
+
             if (!string.IsNullOrEmpty(res))
                 translationPair = new KeyValuePair<string, string>(translationPair.Key, res);
             else if (Configuration.ScriptTranslations.DumpScriptTranslations.Value)

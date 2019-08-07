@@ -60,7 +60,11 @@ Inside the created folder, create the following subfolders:
 * `UI` -- you can place translations for UI texts here. More info in [translation details](#translation-details).
 * `Textures` -- you can place textures here as .PNG files. More info in [translation details](#translation-details).
 
-## Extracting English translations
+## Extracting translations
+
+**IMPORTANT:** If you want to extract English translations, you must do this process on the English COM3D2.  
+If you do this in the Japanese game, you will only get untranslated story which you will need to translate manually 
+(if you're a translator, this is probably what you want).  
 
 It is possible to extract the current text translations that are available in the game.  
 For that, you will need Sybaris or the [COM3D2.BepInEx.AIO](https://github.com/NeighTools/COM3D2.BepInEx.AIO).

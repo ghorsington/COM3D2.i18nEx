@@ -29,7 +29,7 @@ namespace COM3D2.i18nEx.Core.Hooks
         [HarmonyPostfix]
         private static void IsExistentFileCheck(ref bool __result, string file_name)
         {
-            if (!Path.GetExtension(file_name).Equals(".tex", StringComparison.InvariantCultureIgnoreCase))
+            if (file_name == null || (!Path.GetExtension(file_name)?.Equals(".tex", StringComparison.InvariantCultureIgnoreCase) ?? true))
                 return;
 
             if (!string.IsNullOrEmpty(file_name) && Core.TextureReplace.ReplacementExists(Path.GetFileNameWithoutExtension(file_name)))

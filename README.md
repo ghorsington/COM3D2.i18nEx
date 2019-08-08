@@ -78,7 +78,7 @@ Inside the created folder, create the following subfolders:
 * `UI` -- you can place translations for UI texts here. More info in [translation details](https://github.com/denikson/COM3D2.i18nEx/wiki/How-to-translate).
 * `Textures` -- you can place textures here as .PNG files. More info in [translation details](https://github.com/denikson/COM3D2.i18nEx/wiki/How-to-translate).
 
-## Extracting translations from the English gsme
+## Extracting translations from the English game
 
 **IMPORTANT:** If you want to extract English translations, you must do this process on the English COM3D2.  
 If you do this in the Japanese game, you will only get untranslated story which you will need to translate manually 

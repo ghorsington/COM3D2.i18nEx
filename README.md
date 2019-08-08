@@ -48,8 +48,8 @@ You will need these:
 
 As of version 1.2.0.0, i18nEx allows you to selectively use Japanese text in places where the English translation is missing. 
 
-1. Go to game settings and set `Display language` to `English and Japanese`
-2. Open `i18nEx\configuration.ini`, find and set `InsertJapaneseTextIntoEnglishText` to `True`. In the game, set `Display language` to `English`.
+1. Open `i18nEx\configuration.ini`, find and set `InsertJapaneseTextIntoEnglishText` to `True`.
+2.  In the game, set `Display language` to `English`.
 
 ## Installing translations
 

@@ -48,7 +48,7 @@ You will need these:
 
 As of version 1.2.0.0, i18nEx allows you to selectively use Japanese text in places where the English translation is missing. 
 
-1. Open `i18nEx\configuration.ini`, find and set `InsertJapaneseTextIntoEnglishText` to `True`.
+1. Open `i18nEx\configuration.ini`, find and set `RerouteTranslationsTo` to `RouteToEnglish`.
 2.  In the game, set `Display language` to `English`.
 
 ## Installing translations
@@ -62,7 +62,7 @@ As of version 1.2.0.0, i18nEx allows you to selectively use Japanese text in pla
     * `Script`
     * `Textures`
     * `UI`
-3. Open `i18nEx/configuration.ini` in notepad. Set `Language` option to the name of the folder you created in `i18nEx` folder. 
+3. Open `i18nEx/configuration.ini` in Notepad (or other text editor of your choice). Set `Language` option to the name of the folder you created in `i18nEx` folder. 
 4. Save the configuration file and run the game. The plugin will now use your translations. 
 
 #### If you are editing or creating translations 
@@ -110,6 +110,10 @@ It might take a while for it to dump everything (up to 5 minutes), just wait unt
 > so that you will be able to get Japanese text in places where there are no translations.  
 > 
 > If you want to translate other Japanese elements, it's encouraged to install [XUnity.AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator/).
+
+## Configuration
+
+The configuration file is located in `i18nEx/configuration.ini`. Each configuration option is documented inside the configuration file directly.
 
 ## More info
 

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using BepInEx.Harmony;
+using COM3D2.i18nEx.Core.TranslationManagers;
 using COM3D2.i18nEx.Core.Util;
 using HarmonyLib;
 
@@ -73,6 +74,8 @@ namespace COM3D2.i18nEx.Core.Hooks
             if (!string.IsNullOrEmpty(translationParts.Value))
             {
                 text = $"{translationParts.Key}<E>{translationParts.Value}";
+                if (Configuration.ScriptTranslations.RerouteTranslationsTo.Value == TranslationsReroute.RouteToJapanese)
+                    text = $"{translationParts.Value}<E>{translationParts.Value}";
                 return true;
             }
 
@@ -85,7 +88,7 @@ namespace COM3D2.i18nEx.Core.Hooks
                     return true;
                 }
 
-                if (Configuration.ScriptTranslations.PutJPTextIntoENG.Value)
+                if (Configuration.ScriptTranslations.RerouteTranslationsTo.Value == TranslationsReroute.RouteToEnglish)
                 {
                     text = $"{translationParts.Key}<E>{translationParts.Key}";
                     return true;
@@ -113,14 +116,12 @@ namespace COM3D2.i18nEx.Core.Hooks
             fileName = Path.GetFileNameWithoutExtension(fileName);
             var res = Core.ScriptTranslate.GetTranslation(fileName, translationPair.Key);
 
-            //if (string.IsNullOrEmpty(res) && string.IsNullOrEmpty(translationPair.Value) && Configuration.ScriptTranslations.PutJPTextIntoENG.Value)
-            //    res = translationPair.Key;
-
             if (!string.IsNullOrEmpty(res))
                 translationPair = new KeyValuePair<string, string>(translationPair.Key, res);
             else if (Configuration.ScriptTranslations.DumpScriptTranslations.Value)
                 if (Core.ScriptTranslate.WriteTranslation(fileName, translationPair.Key, translationPair.Value))
-                    Core.Logger.LogInfo($"[DUMP] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
+                    Core.Logger.LogInfo(
+                        $"[DUMP] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
         }
     }
 }

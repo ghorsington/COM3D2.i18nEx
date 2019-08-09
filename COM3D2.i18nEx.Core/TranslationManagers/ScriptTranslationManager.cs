@@ -5,6 +5,13 @@ using COM3D2.i18nEx.Core.Util;
 
 namespace COM3D2.i18nEx.Core.TranslationManagers
 {
+    internal enum TranslationsReroute
+    {
+        None,
+        RouteToEnglish,
+        RouteToJapanese
+    }
+
     internal class ScriptTranslationFile
     {
         public ScriptTranslationFile(string fileName, string path)

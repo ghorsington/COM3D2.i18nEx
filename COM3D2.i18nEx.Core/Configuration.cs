@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using COM3D2.i18nEx.Core.TranslationManagers;
 using COM3D2.i18nEx.Core.Util;
 using ExIni;
 using UnityEngine;
@@ -19,6 +20,20 @@ namespace COM3D2.i18nEx.Core
         public static readonly ScriptTranslationsConfig ScriptTranslations = new ScriptTranslationsConfig();
         public static readonly TextureReplacementConfig TextureReplacement = new TextureReplacementConfig();
         public static readonly I2TranslationConfig I2Translation = new I2TranslationConfig();
+
+        static Configuration()
+        {
+            var scriptSection = configFile["ScriptTranslations"];
+            if (scriptSection.HasKey("InsertJapaneseTextIntoEnglishText"))
+            {
+                var key = scriptSection["InsertJapaneseTextIntoEnglishText"];
+                if (bool.TryParse(key.Value, out var val))
+                    ScriptTranslations.RerouteTranslationsTo.Value =
+                        val ? TranslationsReroute.RouteToEnglish : TranslationsReroute.None;
+                scriptSection.DeleteKey("InsertJapaneseTextIntoEnglishText");
+                configFile.Save(Paths.ConfigurationFilePath);
+            }
+        }
 
         public static void Reload()
         {
@@ -84,12 +99,6 @@ namespace COM3D2.i18nEx.Core
                 "Specifies how many text translation files should be kept in memory at once\nHaving bigger cache can improve performance at the cost of memory usage",
                 1);
 
-            public ConfigWrapper<bool> PutJPTextIntoENG = Wrap(
-                "ScriptTranslations",
-                "InsertJapaneseTextIntoEnglishText",
-                "If enabled, all untranslated Japanese text will be put into the target language textbox\nUseful if you don't want to have \"English and Japanese\" set as display language.",
-                false);
-
             public ConfigWrapper<KeyCommand> ReloadTranslationsKey = Wrap(
                 "ScriptTranslations",
                 "ReloadTranslationsKey",
@@ -97,6 +106,14 @@ namespace COM3D2.i18nEx.Core
                 new KeyCommand(KeyCode.LeftAlt, KeyCode.Keypad1),
                 KeyCommand.KeyCommandToString,
                 KeyCommand.KeyCommandFromString);
+
+            public ConfigWrapper<TranslationsReroute> RerouteTranslationsTo = Wrap(
+                "ScriptTranslations",
+                "RerouteTranslationsTo",
+                "Allows you to route both English and Japanese translations into a single textbox instead of viewing both\nSupports the following values:\nNone -- Disabled. English text is written into English textbox; Japanese into Japanese\nRouteToEnglish -- Puts Japanese text into English textbox if there is no translation text available\nRouteToJapanese -- Puts translations into Japanese textbox if there is a translation available",
+                TranslationsReroute.None,
+                EnumConverter<TranslationsReroute>.EnumToString,
+                EnumConverter<TranslationsReroute>.EnumFromString);
         }
 
         internal class TextureReplacementConfig

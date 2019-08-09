@@ -1,5 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using COM3D2.i18nEx.Core.Util;
 using I2.Loc;
 using UnityEngine;
 
@@ -35,19 +38,22 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             var source = go.GetComponent<LanguageSource>() ?? go.AddComponent<LanguageSource>();
             source.name = "i18nEx";
             source.ClearAllData();
-            foreach (var directory in Directory.GetDirectories(textTlPath))
+            foreach (var directory in Directory.GetDirectories(textTlPath).OrderByDescending(s => s, StringComparer.InvariantCultureIgnoreCase))
             {
                 var fullDir = Path.GetFullPath(directory);
 
+                if (Configuration.I2Translation.VerboseLogging.Value)
+                    Core.Logger.LogInfo($"Loading unit {fullDir}");
+
                 foreach (var file in Directory.GetFiles(fullDir, "*.csv", SearchOption.AllDirectories))
                 {
-                    var categoryName = Path.GetFullPath(file).Substring(fullDir.Length + 1).Replace(".csv", "");
+
+                    var categoryName = Path.GetFullPath(file).Substring(fullDir.Length + 1).Replace(".csv", "").Replace("\\", "/");
 
                     if(Configuration.I2Translation.VerboseLogging.Value)
                         Core.Logger.LogInfo($"Loading category {categoryName}");
 
-                    source.Import_CSV(categoryName.Replace("\\", "/"), File.ReadAllText(file),
-                        eSpreadsheetUpdateMode.Merge);
+                    source.Import_CSV(categoryName, File.ReadAllText(file), eSpreadsheetUpdateMode.Merge);
                 }
             }
 

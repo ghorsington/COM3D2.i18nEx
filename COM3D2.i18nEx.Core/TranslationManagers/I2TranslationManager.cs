@@ -53,7 +53,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                     if(Configuration.I2Translation.VerboseLogging.Value)
                         Core.Logger.LogInfo($"Loading category {categoryName}");
 
-                    source.Import_CSV(categoryName, File.ReadAllText(file), eSpreadsheetUpdateMode.Merge);
+                    source.Import_CSV(categoryName, File.ReadAllText(file).ToLF(), eSpreadsheetUpdateMode.Merge);
                 }
             }
 

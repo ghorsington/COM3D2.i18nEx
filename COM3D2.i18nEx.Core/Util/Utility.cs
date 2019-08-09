@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -7,6 +8,17 @@ namespace COM3D2.i18nEx.Core.Util
 {
     public static class Utility
     {
+        public static string ToLF(this string val)
+        {
+            var sb = new StringBuilder(val.Length);
+
+            foreach (var c in val)
+                if (c != '\r')
+                    sb.Append(c);
+
+            return sb.ToString();
+        }
+
         public static string CombinePaths(string part1, string part2)
         {
             return Path.Combine(part1, part2);

@@ -46,13 +46,15 @@ namespace COM3D2.i18nEx.Core.Hooks
             if (string.IsNullOrEmpty(fileName))
                 return true;
 
+            var skipLogging = true;
             if (Configuration.TextureReplacement.VerboseLogging.Value && previousTexName != f_strFileName)
             {
                 Core.Logger.LogInfo($"[COM3D2_TEX] {f_strFileName}");
                 previousTexName = f_strFileName;
+                skipLogging = false;
             }
 
-            var newTex = Core.TextureReplace.GetReplacementTextureBytes(fileName, "tex");
+            var newTex = Core.TextureReplace.GetReplacementTextureBytes(fileName, "tex", skipLogging);
 
             if (newTex == null)
                 return true;
@@ -97,13 +99,15 @@ namespace COM3D2.i18nEx.Core.Hooks
                 tex.name == FONT_TEX_NAME)
                 return;
 
+            var skipLogging = true;
             if (Configuration.TextureReplacement.VerboseLogging.Value && previousTexName != tex?.name)
             {
                 Core.Logger.LogInfo($"[{__instance.GetType().Name}] {tex?.name}");
                 previousTexName = tex?.name;
+                skipLogging = false;
             }
 
-            var newData = Core.TextureReplace.GetReplacementTextureBytes(tex.name, __instance.GetType().Name);
+            var newData = Core.TextureReplace.GetReplacementTextureBytes(tex.name, __instance.GetType().Name, skipLogging);
 
             if (newData == null)
             {
@@ -136,13 +140,15 @@ namespace COM3D2.i18nEx.Core.Hooks
             if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("i18n_"))
                 return;
 
+            var skipLogging = true;
             if (Configuration.TextureReplacement.VerboseLogging.Value && previousTexName != tex?.name)
             {
                 Core.Logger.LogInfo($"[{__instance.GetType().Name}] {tex?.name}");
                 previousTexName = tex?.name;
+                skipLogging = false;
             }
 
-            var newData = Core.TextureReplace.GetReplacementTextureBytes(tex.name, "UITexture");
+            var newData = Core.TextureReplace.GetReplacementTextureBytes(tex.name, "UITexture", skipLogging);
 
             if (newData == null)
             {
@@ -174,13 +180,15 @@ namespace COM3D2.i18nEx.Core.Hooks
                 value.texture.name.StartsWith("i18n_"))
                 return;
 
+            var skipLogging = true;
             if (Configuration.TextureReplacement.VerboseLogging.Value && previousTexName != value?.texture?.name)
             {
                 Core.Logger.LogInfo($"[UnityEngine.UI.Image] {value?.texture?.name}");
                 previousTexName = value?.texture?.name;
+                skipLogging = false;
             }
 
-            var newData = Core.TextureReplace.GetReplacementTextureBytes(value.texture.name, "Image");
+            var newData = Core.TextureReplace.GetReplacementTextureBytes(value.texture.name, "Image", skipLogging);
 
             if (newData == null)
             {

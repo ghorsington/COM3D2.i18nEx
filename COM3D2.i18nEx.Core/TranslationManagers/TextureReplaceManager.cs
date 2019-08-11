@@ -32,6 +32,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
     internal class TextureReplaceManager : TranslationManagerBase
     {
+        private readonly HashSet<string> missingTextures = new HashSet<string>();
         private readonly HashSet<string> dumpedItems = new HashSet<string>();
         private readonly LinkedList<TextureReplacement> texReplacementCache = new LinkedList<TextureReplacement>();
 
@@ -55,6 +56,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                 return;
             }
 
+            missingTextures.Clear();
             textureReplacements.Clear();
             texReplacementLookup.Clear();
             texReplacementCache.Clear();
@@ -100,9 +102,9 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             }
         }
 
-        public byte[] GetReplacementTextureBytes(string texName, string tag = null)
+        public byte[] GetReplacementTextureBytes(string texName, string tag = null, bool skipLogging = false)
         {
-            return GetReplacement(texName, tag)?.Data;
+            return GetReplacement(texName, tag, skipLogging)?.Data;
         }
 
         public void DumpTexture(string texName, Texture tex)
@@ -125,7 +127,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             dumpedItems.Add(texName);
         }
 
-        private TextureReplacement GetReplacement(string texName, string tag = null)
+        private TextureReplacement GetReplacement(string texName, string tag = null, bool skipLogging = false)
         {
             var hash = $"{texName}:{tag}".KnuthHash().ToString("X16");
             string[] lookupNames =
@@ -138,7 +140,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
             foreach (var lookupName in lookupNames)
             {
-                if(Configuration.TextureReplacement.VerboseLogging.Value)
+                if(Configuration.TextureReplacement.VerboseLogging.Value && !skipLogging)
                     Core.Logger.LogInfo($"Trying with name {lookupName}.png");
                 if (!textureReplacements.ContainsKey(lookupName))
                     continue;

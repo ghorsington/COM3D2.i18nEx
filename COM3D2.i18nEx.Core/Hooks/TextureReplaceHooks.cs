@@ -13,6 +13,7 @@ namespace COM3D2.i18nEx.Core.Hooks
         private static bool initialized;
         private static Harmony instance;
         private static readonly byte[] EmptyBytes = new byte[0];
+        private static string previousTexName = null;
 
         public static void Initialize()
         {
@@ -42,12 +43,14 @@ namespace COM3D2.i18nEx.Core.Hooks
             string f_strFileName, bool usePoolBuffer)
         {
             var fileName = Path.GetFileNameWithoutExtension(f_strFileName);
-
-            if(Configuration.TextureReplacement.VerboseLogging.Value)
-                Core.Logger.LogInfo($"[COM3D2_TEX] {f_strFileName}");
-
             if (string.IsNullOrEmpty(fileName))
                 return true;
+
+            if (Configuration.TextureReplacement.VerboseLogging.Value && previousTexName != f_strFileName)
+            {
+                Core.Logger.LogInfo($"[COM3D2_TEX] {f_strFileName}");
+                previousTexName = f_strFileName;
+            }
 
             var newTex = Core.TextureReplace.GetReplacementTextureBytes(fileName, "tex");
 
@@ -90,12 +93,15 @@ namespace COM3D2.i18nEx.Core.Hooks
                     break;
             }
 
-            if (Configuration.TextureReplacement.VerboseLogging.Value)
-                Core.Logger.LogInfo($"[{__instance.GetType().Name}] {tex?.name}");
-
             if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("i18n_") ||
                 tex.name == FONT_TEX_NAME)
                 return;
+
+            if (Configuration.TextureReplacement.VerboseLogging.Value && previousTexName != tex?.name)
+            {
+                Core.Logger.LogInfo($"[{__instance.GetType().Name}] {tex?.name}");
+                previousTexName = tex?.name;
+            }
 
             var newData = Core.TextureReplace.GetReplacementTextureBytes(tex.name, __instance.GetType().Name);
 
@@ -127,11 +133,14 @@ namespace COM3D2.i18nEx.Core.Hooks
         {
             var tex = ___mTexture ?? __instance.material?.mainTexture;
 
-            if (Configuration.TextureReplacement.VerboseLogging.Value)
-                Core.Logger.LogInfo($"[{__instance.GetType().Name}] {tex?.name}");
-
             if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("i18n_"))
                 return;
+
+            if (Configuration.TextureReplacement.VerboseLogging.Value && previousTexName != tex?.name)
+            {
+                Core.Logger.LogInfo($"[{__instance.GetType().Name}] {tex?.name}");
+                previousTexName = tex?.name;
+            }
 
             var newData = Core.TextureReplace.GetReplacementTextureBytes(tex.name, "UITexture");
 
@@ -161,12 +170,15 @@ namespace COM3D2.i18nEx.Core.Hooks
         [HarmonyPrefix]
         private static void SetSprite(ref Sprite value)
         {
-            if (Configuration.TextureReplacement.VerboseLogging.Value)
-                Core.Logger.LogInfo($"[UnityEngine.UI.Image] {value?.texture?.name}");
-
             if (value == null || value.texture == null || string.IsNullOrEmpty(value.texture.name) ||
                 value.texture.name.StartsWith("i18n_"))
                 return;
+
+            if (Configuration.TextureReplacement.VerboseLogging.Value && previousTexName != value?.texture?.name)
+            {
+                Core.Logger.LogInfo($"[UnityEngine.UI.Image] {value?.texture?.name}");
+                previousTexName = value?.texture?.name;
+            }
 
             var newData = Core.TextureReplace.GetReplacementTextureBytes(value.texture.name, "Image");
 

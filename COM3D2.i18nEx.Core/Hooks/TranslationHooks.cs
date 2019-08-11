@@ -20,6 +20,7 @@ namespace COM3D2.i18nEx.Core.Hooks
 
             ScriptTranslationHooks.Initialize();
             TextureReplaceHooks.Initialize();
+            UIFixes.Initialize();
 
             instance = HarmonyWrapper.PatchAll(typeof(TranslationHooks), "horse.coder.i18nex.hooks.base");
 

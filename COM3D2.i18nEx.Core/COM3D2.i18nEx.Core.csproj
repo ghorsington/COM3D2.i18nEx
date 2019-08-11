@@ -66,6 +66,7 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="Hooks\ScriptTranslationHooks.cs" />
     <Compile Include="Hooks\TextureReplaceHooks.cs" />
+    <Compile Include="Hooks\UIFixes.cs" />
     <Compile Include="Paths.cs" />
     <Compile Include="TranslationManagers\I2TranslationManager.cs" />
     <Compile Include="TranslationManagers\TextureReplaceManager.cs" />

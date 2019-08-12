@@ -102,7 +102,7 @@ namespace COM3D2.i18nEx.Core
             public ConfigWrapper<KeyCommand> ReloadTranslationsKey = Wrap(
                 "ScriptTranslations",
                 "ReloadTranslationsKey",
-                "The key (or key combination) to reload currently loaded or cached translations.",
+                "The key (or key combination) to reload all translations.",
                 new KeyCommand(KeyCode.LeftAlt, KeyCode.Keypad1),
                 KeyCommand.KeyCommandToString,
                 KeyCommand.KeyCommandFromString);
@@ -139,7 +139,7 @@ namespace COM3D2.i18nEx.Core
             public ConfigWrapper<KeyCommand> ReloadTranslationsKey = Wrap(
                 "TextureReplacement",
                 "ReloadTranslationsKey",
-                "The key (or key combination) to reload currently cached textures.",
+                "The key (or key combination) to reload all translations.",
                 new KeyCommand(KeyCode.LeftAlt, KeyCode.Keypad2),
                 KeyCommand.KeyCommandToString,
                 KeyCommand.KeyCommandFromString);
@@ -156,7 +156,7 @@ namespace COM3D2.i18nEx.Core
             public ConfigWrapper<KeyCommand> ReloadTranslationsKey = Wrap(
                 "I2Translation",
                 "ReloadTranslationsKey",
-                "The key (or key combination) to reload currently cached translations.",
+                "The key (or key combination) to reload all translations.",
                 new KeyCommand(KeyCode.LeftAlt, KeyCode.Keypad3),
                 KeyCommand.KeyCommandToString,
                 KeyCommand.KeyCommandFromString);

@@ -146,11 +146,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
         public override void ReloadActiveTranslations()
         {
-            foreach (var scriptTranslationFile in TranslationFileCache)
-            {
-                Core.Logger.LogInfo($"Reloading translations for {scriptTranslationFile.FileName}.ks");
-                scriptTranslationFile.LoadTranslations();
-            }
+            LoadLanguage(Configuration.General.ActiveLanguage.Value);
         }
 
         private LinkedListNode<ScriptTranslationFile> LoadFile(string fileName)

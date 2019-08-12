@@ -95,11 +95,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
         public override void ReloadActiveTranslations()
         {
-            foreach (var textureReplacement in texReplacementCache)
-            {
-                Debug.Log($"Reloading texture {textureReplacement.Name}.png");
-                textureReplacement.Load();
-            }
+            LoadLanguage(Configuration.General.ActiveLanguage.Value);
         }
 
         public byte[] GetReplacementTextureBytes(string texName, string tag = null, bool skipLogging = false)

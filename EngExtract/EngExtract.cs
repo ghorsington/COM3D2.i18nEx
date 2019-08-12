@@ -21,6 +21,7 @@ namespace EngExtract
         private static readonly Regex namePattern = new Regex("name=\"(?<name>.*)\"");
 
         private int translatedLines;
+        private static Encoding UTF8 = new UTF8Encoding(false);
 
         private static void DumpI2Translations(LanguageSource src)
         {
@@ -28,12 +29,12 @@ namespace EngExtract
             var sourcePath = Path.Combine(i2Path, src.name);
             if (!Directory.Exists(sourcePath))
                 Directory.CreateDirectory(sourcePath);
-            var categories = src.GetCategories();
+            var categories = src.GetCategories(true);
             foreach (var category in categories)
             {
                 var path = Path.Combine(sourcePath, $"{category}.csv");
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
-                File.WriteAllText(path, src.Export_CSV(category));
+                File.WriteAllText(path, src.Export_CSV(category), UTF8);
             }
         }
 
@@ -145,7 +146,7 @@ namespace EngExtract
             }
 
             if (lineList.Count != 0)
-                File.WriteAllLines(Path.Combine(dir, $"{name}.txt"), lineList.ToArray());
+                File.WriteAllLines(Path.Combine(dir, $"{name}.txt"), lineList.ToArray(), UTF8);
         }
 
         private void DumpScripts()

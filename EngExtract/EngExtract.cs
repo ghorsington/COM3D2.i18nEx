@@ -21,7 +21,7 @@ namespace EngExtract
         private static readonly Regex namePattern = new Regex("name=\"(?<name>.*)\"");
 
         private int translatedLines;
-        private static Encoding UTF8 = new UTF8Encoding(false);
+        private static Encoding UTF8 = new UTF8Encoding(true);
 
         private static void DumpI2Translations(LanguageSource src)
         {

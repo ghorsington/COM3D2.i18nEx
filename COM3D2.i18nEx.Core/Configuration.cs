@@ -166,6 +166,12 @@ namespace COM3D2.i18nEx.Core
                 "VerboseLogging",
                 "If enabled, logs precise I2Loc loading and translation info\nUseful if you're debugging.",
                 false);
+
+            public ConfigWrapper<string> CustomUIFont = Wrap(
+                "I2Translation",
+                "CustomUIFont",
+                "If specified, replaces the UI font with this one.\nIMPORTANT: The font **must** be installed on your machine and it **must** be a TrueType font.",
+                "");
         }
     }
 }

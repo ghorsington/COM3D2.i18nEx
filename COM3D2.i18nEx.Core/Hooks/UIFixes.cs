@@ -15,6 +15,7 @@ namespace COM3D2.i18nEx.Core.Hooks
     {
         private static Harmony instance;
         private static bool initialized = false;
+        private static Dictionary<string, Font> customFonts = new Dictionary<string, Font>();
 
         public static void Initialize()
         {
@@ -24,6 +25,23 @@ namespace COM3D2.i18nEx.Core.Hooks
             instance = HarmonyWrapper.PatchAll(typeof(UIFixes), "horse.coder.i18nex.ui_fixes");
 
             initialized = true;
+        }
+
+        [HarmonyPatch(typeof(UILabel), "ProcessAndRequest")]
+        [HarmonyPrefix]
+        public static void ChangeFont(UILabel __instance)
+        {
+            if (__instance.trueTypeFont == null)
+                return;
+
+            var customFont = Configuration.I2Translation.CustomUIFont.Value.Trim();
+            if (string.IsNullOrEmpty(customFont) || __instance.trueTypeFont.name == customFont)
+                return;
+
+            var fontId = $"{customFont}#{__instance.trueTypeFont.fontSize}";
+            if (!customFonts.TryGetValue(fontId, out var font))
+                font = customFonts[fontId] = Font.CreateDynamicFontFromOSFont(customFont, __instance.trueTypeFont.fontSize);
+            __instance.trueTypeFont = font;
         }
 
         [HarmonyPatch(typeof(SceneNetorareCheck), "Start")]

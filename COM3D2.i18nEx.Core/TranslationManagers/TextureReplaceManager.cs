@@ -86,6 +86,9 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
         {
             if(Configuration.TextureReplacement.ReloadTranslationsKey.Value.IsPressed)
                 ReloadActiveTranslations();
+
+            if (Configuration.I2Translation.PrintFontNamesKey.Value.IsPressed)
+                Core.Logger.LogInfo($"Supported fonts:\n{string.Join("\n", Font.GetOSInstalledFontNames())}");
         }
 
         public bool ReplacementExists(string texName)

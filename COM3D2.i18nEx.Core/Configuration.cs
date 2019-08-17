@@ -172,6 +172,14 @@ namespace COM3D2.i18nEx.Core
                 "CustomUIFont",
                 "If specified, replaces the UI font with this one.\nIMPORTANT: The font **must** be installed on your machine and it **must** be a TrueType font.",
                 "");
+
+            public ConfigWrapper<KeyCommand> PrintFontNamesKey = Wrap(
+                "I2Translation",
+                "PrintFontNamesKey",
+                "The key (or key combination) do display all supported UI fonts in the console.",
+                new KeyCommand(KeyCode.LeftAlt, KeyCode.F11),
+                KeyCommand.KeyCommandToString,
+                KeyCommand.KeyCommandFromString);
         }
     }
 }

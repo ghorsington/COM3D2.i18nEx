@@ -8,6 +8,7 @@ using BepInEx.Harmony;
 using HarmonyLib;
 using I2.Loc;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace COM3D2.i18nEx.Core.Hooks
 {
@@ -27,21 +28,33 @@ namespace COM3D2.i18nEx.Core.Hooks
             initialized = true;
         }
 
+        [HarmonyPatch(typeof(Text), "OnEnable")]
+        [HarmonyPrefix]
+        public static void ChangeUEUIFont(Text __instance)
+        {
+            __instance.font = SwapFont(__instance.font);
+        }
+
         [HarmonyPatch(typeof(UILabel), "ProcessAndRequest")]
         [HarmonyPrefix]
         public static void ChangeFont(UILabel __instance)
         {
-            if (__instance.trueTypeFont == null)
-                return;
+            __instance.trueTypeFont = SwapFont(__instance.trueTypeFont);
+        }
+
+        private static Font SwapFont(Font originalFont)
+        {
+            if (originalFont == null)
+                return null;
 
             var customFont = Configuration.I2Translation.CustomUIFont.Value.Trim();
-            if (string.IsNullOrEmpty(customFont) || __instance.trueTypeFont.name == customFont)
-                return;
+            if (string.IsNullOrEmpty(customFont) || originalFont.name == customFont)
+                return originalFont;
 
-            var fontId = $"{customFont}#{__instance.trueTypeFont.fontSize}";
+            var fontId = $"{customFont}#{originalFont.fontSize}";
             if (!customFonts.TryGetValue(fontId, out var font))
-                font = customFonts[fontId] = Font.CreateDynamicFontFromOSFont(customFont, __instance.trueTypeFont.fontSize);
-            __instance.trueTypeFont = font;
+                font = customFonts[fontId] = Font.CreateDynamicFontFromOSFont(customFont, originalFont.fontSize);
+            return font ?? originalFont;
         }
 
         [HarmonyPatch(typeof(SceneNetorareCheck), "Start")]

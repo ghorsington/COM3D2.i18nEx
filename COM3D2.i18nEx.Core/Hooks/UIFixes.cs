@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text;
 using BepInEx.Harmony;
 using HarmonyLib;
 using I2.Loc;
@@ -15,8 +12,8 @@ namespace COM3D2.i18nEx.Core.Hooks
     internal static class UIFixes
     {
         private static Harmony instance;
-        private static bool initialized = false;
-        private static Dictionary<string, Font> customFonts = new Dictionary<string, Font>();
+        private static bool initialized;
+        private static readonly Dictionary<string, Font> customFonts = new Dictionary<string, Font>();
 
         public static void Initialize()
         {
@@ -49,7 +46,7 @@ namespace COM3D2.i18nEx.Core.Hooks
                 return;
 
             var term = $"General/{text.Replace(" ", "_")}";
-            if(Configuration.I2Translation.VerboseLogging.Value)
+            if (Configuration.I2Translation.VerboseLogging.Value)
                 Core.Logger.LogInfo($"Trying to localize with term {term}");
             loc = go.AddComponent<Localize>();
             loc.SetTerm(term);
@@ -106,31 +103,31 @@ namespace COM3D2.i18nEx.Core.Hooks
             Localize("Toggle_IsComPlayer");
         }
 
-        private delegate void TranslateInfo(ref string text);
-
         [HarmonyPatch(typeof(SystemShortcut), "OnClick_Info")]
         [HarmonyTranspiler]
         public static IEnumerable<CodeInstruction> LocalizeInfoText(IEnumerable<CodeInstruction> instructions)
         {
-            bool hasText = false;
+            var hasText = false;
             foreach (var codeInstruction in instructions)
             {
                 if (codeInstruction.opcode == OpCodes.Callvirt && codeInstruction.operand is MethodInfo minfo &&
                     minfo.Name == "get_SysDlg")
+                {
                     hasText = true;
+                }
                 else if (hasText)
                 {
                     hasText = false;
-                    int index = -1;
+                    var index = -1;
                     if (OpCodes.Ldloc_0.Value <= codeInstruction.opcode.Value &&
                         codeInstruction.opcode.Value <= OpCodes.Ldloc_3.Value)
                         index = codeInstruction.opcode.Value - OpCodes.Ldloc_0.Value;
                     else if (codeInstruction.opcode == OpCodes.Ldloc_S || codeInstruction.opcode == OpCodes.Ldloc)
-                        index = (int)codeInstruction.operand;
+                        index = (int) codeInstruction.operand;
 
                     if (index < 0)
                     {
-                        Core.Logger.LogError($"Failed to patch info text localization! Please report this!");
+                        Core.Logger.LogError("Failed to patch info text localization! Please report this!");
                         yield return codeInstruction;
                         continue;
                     }
@@ -139,20 +136,22 @@ namespace COM3D2.i18nEx.Core.Hooks
                     yield return new CodeInstruction(OpCodes.Ldloca, index);
                     yield return HarmonyWrapper.EmitDelegate<TranslateInfo>((ref string text) =>
                     {
-                        if (LocalizationManager.TryGetTranslation("System/GameInfo_Description", out string tl))
+                        if (LocalizationManager.TryGetTranslation("System/GameInfo_Description", out var tl))
                             text = string.Format(tl, Product.gameTitle, GameUty.GetBuildVersionText(),
-                                                 GameUty.GetGameVersionText(), GameUty.GetLegacyGameVersionText());
+                                GameUty.GetGameVersionText(), GameUty.GetLegacyGameVersionText());
                     });
                     yield return new CodeInstruction(OpCodes.Call,
-                                                     AccessTools.PropertyGetter(
-                                                         typeof(GameMain), nameof(GameMain.Instance)));
+                        AccessTools.PropertyGetter(
+                            typeof(GameMain), nameof(GameMain.Instance)));
                     yield return new CodeInstruction(OpCodes.Callvirt,
-                                                     AccessTools.PropertyGetter(
-                                                         typeof(GameMain), nameof(GameMain.SysDlg)));
+                        AccessTools.PropertyGetter(
+                            typeof(GameMain), nameof(GameMain.SysDlg)));
                 }
 
                 yield return codeInstruction;
             }
         }
+
+        private delegate void TranslateInfo(ref string text);
     }
 }

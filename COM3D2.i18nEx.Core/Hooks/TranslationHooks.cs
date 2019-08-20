@@ -62,5 +62,9 @@ namespace COM3D2.i18nEx.Core.Hooks
             else if (Configuration.I2Translation.VerboseLogging.Value)
                 Core.Logger.LogInfo($"[I2Loc] Translating term \"{Term}\" => \"{__result}\"");
         }
+
+        [HarmonyPatch(typeof(ConfigMgr), nameof(ConfigMgr.Update))]
+        [HarmonyPrefix]
+        private static bool OnConfigMgrUpdate() { return false; }
     }
 }

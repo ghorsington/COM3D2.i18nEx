@@ -8,6 +8,7 @@ using BepInEx.Harmony;
 using HarmonyLib;
 using I2.Loc;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace COM3D2.i18nEx.Core.Hooks
 {
@@ -27,21 +28,60 @@ namespace COM3D2.i18nEx.Core.Hooks
             initialized = true;
         }
 
+        [HarmonyPatch(typeof(Text), "text", MethodType.Setter)]
+        [HarmonyPrefix]
+        public static void OnSetText(Text __instance, string value)
+        {
+            SetLoc(__instance.gameObject, value);
+        }
+
+        [HarmonyPatch(typeof(UILabel), "ProcessAndRequest")]
+        [HarmonyPrefix]
+        public static void OnProcessRequest(UILabel __instance)
+        {
+            SetLoc(__instance.gameObject, __instance.text);
+        }
+
+        private static void SetLoc(GameObject go, string text)
+        {
+            var loc = go.GetComponent<Localize>();
+            if (loc != null || string.IsNullOrEmpty(text))
+                return;
+
+            var term = $"General/{text.Replace(" ", "_")}";
+            if(Configuration.I2Translation.VerboseLogging.Value)
+                Core.Logger.LogInfo($"Trying to localize with term {term}");
+            loc = go.AddComponent<Localize>();
+            loc.SetTerm(term);
+        }
+
+        [HarmonyPatch(typeof(Text), "OnEnable")]
+        [HarmonyPrefix]
+        public static void ChangeUEUIFont(Text __instance)
+        {
+            __instance.font = SwapFont(__instance.font);
+        }
+
         [HarmonyPatch(typeof(UILabel), "ProcessAndRequest")]
         [HarmonyPrefix]
         public static void ChangeFont(UILabel __instance)
         {
-            if (__instance.trueTypeFont == null)
-                return;
+            __instance.trueTypeFont = SwapFont(__instance.trueTypeFont);
+        }
+
+        private static Font SwapFont(Font originalFont)
+        {
+            if (originalFont == null)
+                return null;
 
             var customFont = Configuration.I2Translation.CustomUIFont.Value.Trim();
-            if (string.IsNullOrEmpty(customFont) || __instance.trueTypeFont.name == customFont)
-                return;
+            if (string.IsNullOrEmpty(customFont) || originalFont.name == customFont)
+                return originalFont;
 
-            var fontId = $"{customFont}#{__instance.trueTypeFont.fontSize}";
+            var fontId = $"{customFont}#{originalFont.fontSize}";
             if (!customFonts.TryGetValue(fontId, out var font))
-                font = customFonts[fontId] = Font.CreateDynamicFontFromOSFont(customFont, __instance.trueTypeFont.fontSize);
-            __instance.trueTypeFont = font;
+                font = customFonts[fontId] = Font.CreateDynamicFontFromOSFont(customFont, originalFont.fontSize);
+            return font ?? originalFont;
         }
 
         [HarmonyPatch(typeof(SceneNetorareCheck), "Start")]
@@ -81,11 +121,7 @@ namespace COM3D2.i18nEx.Core.Hooks
                 else if (hasText)
                 {
                     hasText = false;
-                    Core.Logger.LogInfo(
-                        $"Got operand: {codeInstruction.opcode} with operand: {codeInstruction.operand}");
-
                     int index = -1;
-
                     if (OpCodes.Ldloc_0.Value <= codeInstruction.opcode.Value &&
                         codeInstruction.opcode.Value <= OpCodes.Ldloc_3.Value)
                         index = codeInstruction.opcode.Value - OpCodes.Ldloc_0.Value;

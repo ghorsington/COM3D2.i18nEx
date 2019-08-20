@@ -100,11 +100,12 @@ namespace COM3D2.i18nEx.Core.Hooks
 
         private static void ProcessTranslation(string fileName, ref KeyValuePair<string, string> translationPair)
         {
-            if (Configuration.ScriptTranslations.VerboseLogging.Value)
-                Core.Logger.LogInfo($"[Script] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
-
             if (string.IsNullOrEmpty(translationPair.Key))
+            {
+                if (Configuration.ScriptTranslations.VerboseLogging.Value)
+                    Core.Logger.LogInfo($"[Script] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
                 return;
+            }
 
             if (fileName == null)
             {
@@ -117,7 +118,11 @@ namespace COM3D2.i18nEx.Core.Hooks
             var res = Core.ScriptTranslate.GetTranslation(fileName, translationPair.Key);
 
             if (!string.IsNullOrEmpty(res))
+            {
                 translationPair = new KeyValuePair<string, string>(translationPair.Key, res);
+                if (Configuration.ScriptTranslations.VerboseLogging.Value)
+                    Core.Logger.LogInfo($"[Script] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
+            }
             else if (Configuration.ScriptTranslations.DumpScriptTranslations.Value)
                 if (Core.ScriptTranslate.WriteTranslation(fileName, translationPair.Key, translationPair.Value))
                     Core.Logger.LogInfo(

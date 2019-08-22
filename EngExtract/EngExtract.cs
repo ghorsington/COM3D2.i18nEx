@@ -76,7 +76,7 @@ namespace EngExtract
             {
                 translatedLines++;
                 var orig = txt.Substring(0, pos);
-                var tl = txt.Substring(pos + 3).Replace("…", "...");
+                var tl = txt.Substring(pos + 3).Replace("…", "...").Trim();
                 return new KeyValuePair<string, string>(orig, tl);
             }
 

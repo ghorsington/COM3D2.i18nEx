@@ -119,7 +119,7 @@ namespace EngExtract
                 }
                 else if (captureTalk)
                 {
-                    if (trimmedLine.StartsWith("@hitret", StringComparison.InvariantCultureIgnoreCase))
+                    if (trimmedLine.StartsWith("@", StringComparison.InvariantCultureIgnoreCase))
                     {
                         captureTalk = false;
                         var parts = SplitTranslation(sb.ToString());

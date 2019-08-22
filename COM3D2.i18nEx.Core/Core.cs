@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Security.Cryptography;
 using COM3D2.i18nEx.Core.Hooks;
 using COM3D2.i18nEx.Core.TranslationManagers;
 using COM3D2.i18nEx.Core.Util;

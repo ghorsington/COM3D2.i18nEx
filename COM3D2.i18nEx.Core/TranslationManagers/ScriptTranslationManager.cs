@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using System.Windows.Forms;
 using COM3D2.i18nEx.Core.Util;
+using UnityEngine;
 
 namespace COM3D2.i18nEx.Core.TranslationManagers
 {
@@ -60,6 +64,8 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
         private static readonly Dictionary<string, LinkedListNode<ScriptTranslationFile>> TranslationFileLookup =
             new Dictionary<string, LinkedListNode<ScriptTranslationFile>>();
 
+        private StringBuilder clipboardBuffer = new StringBuilder();
+
         private void Update()
         {
             if (Configuration.ScriptTranslations.ReloadTranslationsKey.Value.IsPressed)
@@ -103,18 +109,44 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
         public string GetTranslation(string fileName, string text)
         {
             if (!TranslationFiles.ContainsKey(fileName))
-                return null;
+                return NoTranslation(text);
             if (!TranslationFileLookup.TryGetValue(fileName, out var tlNode))
             {
                 tlNode = LoadFile(fileName);
 
                 if (tlNode == null)
-                    return null;
+                    return NoTranslation(text);
             }
 
             if (tlNode.Value.Translations.TryGetValue(text, out var tlText))
                 return tlText;
+            return NoTranslation(text);
+        }
+
+        private string NoTranslation(string inputText)
+        {
+            if (Configuration.ScriptTranslations.SendScriptToClipboard.Value)
+                clipboardBuffer.AppendLine(inputText);
             return null;
+        }
+
+        private void Awake()
+        {
+            StartCoroutine(SendToClipboardRoutine());
+        }
+
+        private IEnumerator SendToClipboardRoutine()
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds((float) Configuration.ScriptTranslations.ClipboardCaptureTime.Value);
+
+                if (clipboardBuffer.Length > 0)
+                {
+                    Clipboard.SetText(clipboardBuffer.ToString());
+                    clipboardBuffer.Length = 0;
+                }
+            }
         }
 
         public bool WriteTranslation(string fileName, string original, string translated)

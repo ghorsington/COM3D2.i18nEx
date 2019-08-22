@@ -81,16 +81,16 @@ namespace COM3D2.i18nEx.Core
 
         internal class ScriptTranslationsConfig
         {
+            public ConfigWrapper<double> ClipboardCaptureTime = Wrap(
+                "ScriptTranslations",
+                "SendToClipboard",
+                "If `SendScriptToClipboard` is enabled, specifies the time to wait before sending all input to clipboard.",
+                0.25);
+
             public ConfigWrapper<bool> DumpScriptTranslations = Wrap(
                 "ScriptTranslations",
                 "DumpUntranslatedLines",
                 "If enabled, dumps untranslated script lines (along with built-in translations, if present).",
-                false);
-
-            public ConfigWrapper<bool> VerboseLogging = Wrap(
-                "ScriptTranslations",
-                "VerboseLogging",
-                "If enabled, logs precise translation info\nUseful if you're writing new translations.",
                 false);
 
             public ConfigWrapper<int> MaxTranslationFilesCached = Wrap(
@@ -114,6 +114,18 @@ namespace COM3D2.i18nEx.Core
                 TranslationsReroute.None,
                 EnumConverter<TranslationsReroute>.EnumToString,
                 EnumConverter<TranslationsReroute>.EnumFromString);
+
+            public ConfigWrapper<bool> SendScriptToClipboard = Wrap(
+                "ScriptTranslations",
+                "SendToClipboard",
+                "If enabled, sends untranslated story text to clipboard.",
+                false);
+
+            public ConfigWrapper<bool> VerboseLogging = Wrap(
+                "ScriptTranslations",
+                "VerboseLogging",
+                "If enabled, logs precise translation info\nUseful if you're writing new translations.",
+                false);
         }
 
         internal class TextureReplacementConfig
@@ -130,12 +142,6 @@ namespace COM3D2.i18nEx.Core
                 "Specifies how many texture replacements should be kept in memory at once\nHaving bigger cache can improve performance at the cost of memory usage",
                 10);
 
-            public ConfigWrapper<bool> SkipDumpingCMTextures = Wrap(
-                "TextureReplacement",
-                "SkipDumpingCMTextures",
-                "If `DumpOriginalTextures` is enabled, setting this to `True` will disable dumping game's own .tex files\nUse this if you don't want to dump all in-game textures.",
-                true);
-
             public ConfigWrapper<KeyCommand> ReloadTranslationsKey = Wrap(
                 "TextureReplacement",
                 "ReloadTranslationsKey",
@@ -143,6 +149,12 @@ namespace COM3D2.i18nEx.Core
                 new KeyCommand(KeyCode.LeftAlt, KeyCode.Keypad2),
                 KeyCommand.KeyCommandToString,
                 KeyCommand.KeyCommandFromString);
+
+            public ConfigWrapper<bool> SkipDumpingCMTextures = Wrap(
+                "TextureReplacement",
+                "SkipDumpingCMTextures",
+                "If `DumpOriginalTextures` is enabled, setting this to `True` will disable dumping game's own .tex files\nUse this if you don't want to dump all in-game textures.",
+                true);
 
             public ConfigWrapper<bool> VerboseLogging = Wrap(
                 "TextureReplacement",
@@ -153,20 +165,6 @@ namespace COM3D2.i18nEx.Core
 
         internal class I2TranslationConfig
         {
-            public ConfigWrapper<KeyCommand> ReloadTranslationsKey = Wrap(
-                "I2Translation",
-                "ReloadTranslationsKey",
-                "The key (or key combination) to reload all translations.",
-                new KeyCommand(KeyCode.LeftAlt, KeyCode.Keypad3),
-                KeyCommand.KeyCommandToString,
-                KeyCommand.KeyCommandFromString);
-
-            public ConfigWrapper<bool> VerboseLogging = Wrap(
-                "I2Translation",
-                "VerboseLogging",
-                "If enabled, logs precise I2Loc loading and translation info\nUseful if you're debugging.",
-                false);
-
             public ConfigWrapper<string> CustomUIFont = Wrap(
                 "I2Translation",
                 "CustomUIFont",
@@ -180,6 +178,20 @@ namespace COM3D2.i18nEx.Core
                 new KeyCommand(KeyCode.LeftAlt, KeyCode.F11),
                 KeyCommand.KeyCommandToString,
                 KeyCommand.KeyCommandFromString);
+
+            public ConfigWrapper<KeyCommand> ReloadTranslationsKey = Wrap(
+                "I2Translation",
+                "ReloadTranslationsKey",
+                "The key (or key combination) to reload all translations.",
+                new KeyCommand(KeyCode.LeftAlt, KeyCode.Keypad3),
+                KeyCommand.KeyCommandToString,
+                KeyCommand.KeyCommandFromString);
+
+            public ConfigWrapper<bool> VerboseLogging = Wrap(
+                "I2Translation",
+                "VerboseLogging",
+                "If enabled, logs precise I2Loc loading and translation info\nUseful if you're debugging.",
+                false);
         }
     }
 }

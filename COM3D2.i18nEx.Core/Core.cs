@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Security.Cryptography;
 using COM3D2.i18nEx.Core.Hooks;
 using COM3D2.i18nEx.Core.TranslationManagers;
 using COM3D2.i18nEx.Core.Util;
@@ -13,12 +14,22 @@ namespace COM3D2.i18nEx.Core
         internal static TextureReplaceManager TextureReplace;
         internal static I2TranslationManager I2Translation;
         private readonly List<TranslationManagerBase> managers = new List<TranslationManagerBase>();
+        private const int MIN_SUPPORTED_VERSION = 1320;
 
         internal static ILogger Logger { get; private set; }
         public bool Initialized { get; private set; }
 
+        private int GameVersion => (int) typeof(Misc).GetField(nameof(Misc.GAME_VERSION)).GetValue(null);
+
         public void Initialize(ILogger logger, string gameRoot)
         {
+            if (GameVersion < MIN_SUPPORTED_VERSION)
+            {
+                logger.LogWarning($"This version of i18nEx core supports only game versions {MIN_SUPPORTED_VERSION} or newer. Detected game version: {GameVersion}");
+                Destroy(this);
+                return;
+            }
+
             if (Initialized)
                 return;
 

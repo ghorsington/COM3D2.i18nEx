@@ -49,7 +49,14 @@ namespace COM3D2.i18nEx.Core.Util
             else
             {
                 prevValueRaw = iniKey.RawValue;
-                prevValue = this.fromStringConvert(iniKey.Value);
+                try
+                {
+                    prevValue = this.fromStringConvert(iniKey.Value);
+                }
+                catch (Exception)
+                {
+                    Value = defaultValue;
+                }
             }
         }
 

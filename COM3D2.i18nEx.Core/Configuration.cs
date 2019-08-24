@@ -83,7 +83,7 @@ namespace COM3D2.i18nEx.Core
         {
             public ConfigWrapper<double> ClipboardCaptureTime = Wrap(
                 "ScriptTranslations",
-                "SendToClipboard",
+                "ClipboardCaptureTime",
                 "If `SendScriptToClipboard` is enabled, specifies the time to wait before sending all input to clipboard.",
                 0.25);
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -38,6 +39,92 @@ namespace EngExtract
             }
         }
 
+        class DumpOptions
+        {
+            public bool dumpScripts = true;
+            public bool dumpUITranslations = true;
+            public bool dumpItemNames = false;
+            public bool dumpVIPEvents = false;
+            public bool dumpYotogis = false;
+            public bool dumpPersonalies = false;
+            public bool dumpEvents = false;
+            public bool skipTranslatedItems = false;
+            public DumpOptions() { }
+            public DumpOptions(DumpOptions other)
+            {
+                dumpScripts = other.dumpScripts;
+                dumpUITranslations = other.dumpUITranslations;
+                dumpItemNames = other.dumpItemNames;
+                dumpVIPEvents = other.dumpVIPEvents;
+                dumpYotogis = other.dumpYotogis;
+                dumpPersonalies = other.dumpPersonalies;
+                dumpEvents = other.dumpEvents;
+                skipTranslatedItems = other.skipTranslatedItems;
+            }
+        }
+
+        private DumpOptions options = new DumpOptions();
+        private bool displayGui = false;
+        const int WIDTH = 200;
+        const int HEIGHT = 300;
+        const int MARGIN_X = 5;
+        const int MARGIN_TOP = 20;
+        const int MARGIN_BOTTOM = 5;
+        bool dumping = false;
+        private void OnGUI()
+        {
+            if (!displayGui)
+                return;
+
+            void Toggle(string text, ref bool toggle)
+            {
+                toggle = GUILayout.Toggle(toggle, text);
+            }
+
+            void Window(int id)
+            {
+                GUILayout.BeginArea(new Rect(MARGIN_X, MARGIN_TOP, WIDTH - MARGIN_X * 2, HEIGHT - MARGIN_TOP - MARGIN_BOTTOM));
+                {
+                    GUILayout.BeginVertical();
+                    {
+                        GUILayout.Label("Base dumps");
+                        Toggle("Story scripts", ref options.dumpScripts);
+                        Toggle("UI translations", ref options.dumpUITranslations);
+
+                        GUILayout.Label("Advanced dumps");
+                        Toggle(".menu item names", ref options.dumpItemNames);
+                        Toggle("VIP event names", ref options.dumpVIPEvents);
+                        Toggle("Yotogi skills", ref options.dumpYotogis);
+                        Toggle("Personality names", ref options.dumpPersonalies);
+                        Toggle("Event names", ref options.dumpEvents);
+
+                        GUILayout.Label("Other");
+                        Toggle("Skip translated items", ref options.skipTranslatedItems);
+
+                        GUI.enabled = !dumping;
+                        if (GUILayout.Button("Dump!"))
+                        {
+                            dumping = true;
+                            StartCoroutine(DumpGame());
+                        }
+                        GUI.enabled = true;
+                    }
+                    GUILayout.EndVertical();
+                }
+                GUILayout.EndArea();
+            }
+
+            GUI.Window(6969, new Rect(Screen.width - WIDTH, (Screen.height - HEIGHT) / 2f, WIDTH, HEIGHT), Window, "EngExtract");
+        }
+
+        private IEnumerator DumpGame()
+        {
+            var opts = new DumpOptions(options);
+            yield return null;
+            Dump(opts);
+            dumping = false;
+        }
+
         private void Awake()
         {
             DontDestroyOnLoad(this);
@@ -46,7 +133,7 @@ namespace EngExtract
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.D))
-                Dump();
+                displayGui = !displayGui;
         }
 
         private void DumpUI()
@@ -165,12 +252,18 @@ namespace EngExtract
                 }
         }
 
-        private void Dump()
+        private void Dump(DumpOptions opts)
         {
             Debug.Log("Dumping game localisation files! Please be patient!");
-            DumpUI();
-            DumpScripts();
-            Debug.Log($"Dumped {translatedLines} lines");
+
+            if (opts.dumpUITranslations)
+                DumpUI();
+            if(opts.dumpScripts)
+                DumpScripts();
+
+
+            if(opts.dumpScripts)
+                Debug.Log($"Dumped {translatedLines} lines");
             Debug.Log($"Done! Dumped translations are located in {TL_DIR}. You can now close the game!");
             Debug.Log("IMPORTANT: Delete this plugin (EngExtract.dll) if you want to play the game normally!");
         }

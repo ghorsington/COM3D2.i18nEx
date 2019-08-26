@@ -17,73 +17,48 @@ namespace EngExtract
     public class EngExtract : PluginBase
     {
         public const string TL_DIR = "COM3D2_Localisation";
+        private const int WIDTH = 200;
+        private const int HEIGHT = 300;
+        private const int MARGIN_X = 5;
+        private const int MARGIN_TOP = 20;
+        private const int MARGIN_BOTTOM = 5;
 
         private static readonly Regex textPattern = new Regex("text=\"(?<text>.*)\"");
         private static readonly Regex namePattern = new Regex("name=\"(?<name>.*)\"");
+        private static readonly Encoding UTF8 = new UTF8Encoding(true);
+        private bool displayGui;
+        private bool dumping;
+
+        private readonly DumpOptions options = new DumpOptions();
 
         private int translatedLines;
-        private static Encoding UTF8 = new UTF8Encoding(true);
 
         private static void DumpI2Translations(LanguageSource src)
         {
-            var i2Path = Path.Combine(TL_DIR, "UI");
-            var sourcePath = Path.Combine(i2Path, src.name);
+            string i2Path = Path.Combine(TL_DIR, "UI");
+            string sourcePath = Path.Combine(i2Path, src.name);
             if (!Directory.Exists(sourcePath))
                 Directory.CreateDirectory(sourcePath);
             var categories = src.GetCategories(true);
-            foreach (var category in categories)
+            foreach (string category in categories)
             {
-                var path = Path.Combine(sourcePath, $"{category}.csv");
+                string path = Path.Combine(sourcePath, $"{category}.csv");
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
                 File.WriteAllText(path, src.Export_CSV(category), UTF8);
             }
         }
 
-        class DumpOptions
-        {
-            public bool dumpScripts = true;
-            public bool dumpUITranslations = true;
-            public bool dumpItemNames = false;
-            public bool dumpVIPEvents = false;
-            public bool dumpYotogis = false;
-            public bool dumpPersonalies = false;
-            public bool dumpEvents = false;
-            public bool skipTranslatedItems = false;
-            public DumpOptions() { }
-            public DumpOptions(DumpOptions other)
-            {
-                dumpScripts = other.dumpScripts;
-                dumpUITranslations = other.dumpUITranslations;
-                dumpItemNames = other.dumpItemNames;
-                dumpVIPEvents = other.dumpVIPEvents;
-                dumpYotogis = other.dumpYotogis;
-                dumpPersonalies = other.dumpPersonalies;
-                dumpEvents = other.dumpEvents;
-                skipTranslatedItems = other.skipTranslatedItems;
-            }
-        }
-
-        private DumpOptions options = new DumpOptions();
-        private bool displayGui = false;
-        const int WIDTH = 200;
-        const int HEIGHT = 300;
-        const int MARGIN_X = 5;
-        const int MARGIN_TOP = 20;
-        const int MARGIN_BOTTOM = 5;
-        bool dumping = false;
         private void OnGUI()
         {
             if (!displayGui)
                 return;
 
-            void Toggle(string text, ref bool toggle)
-            {
-                toggle = GUILayout.Toggle(toggle, text);
-            }
+            void Toggle(string text, ref bool toggle) { toggle = GUILayout.Toggle(toggle, text); }
 
             void Window(int id)
             {
-                GUILayout.BeginArea(new Rect(MARGIN_X, MARGIN_TOP, WIDTH - MARGIN_X * 2, HEIGHT - MARGIN_TOP - MARGIN_BOTTOM));
+                GUILayout.BeginArea(new Rect(MARGIN_X, MARGIN_TOP, WIDTH - MARGIN_X * 2,
+                                             HEIGHT - MARGIN_TOP - MARGIN_BOTTOM));
                 {
                     GUILayout.BeginVertical();
                     {
@@ -107,6 +82,7 @@ namespace EngExtract
                             dumping = true;
                             StartCoroutine(DumpGame());
                         }
+
                         GUI.enabled = true;
                     }
                     GUILayout.EndVertical();
@@ -114,7 +90,8 @@ namespace EngExtract
                 GUILayout.EndArea();
             }
 
-            GUI.Window(6969, new Rect(Screen.width - WIDTH, (Screen.height - HEIGHT) / 2f, WIDTH, HEIGHT), Window, "EngExtract");
+            GUI.Window(6969, new Rect(Screen.width - WIDTH, (Screen.height - HEIGHT) / 2f, WIDTH, HEIGHT), Window,
+                       "EngExtract");
         }
 
         private IEnumerator DumpGame()
@@ -125,10 +102,7 @@ namespace EngExtract
             dumping = false;
         }
 
-        private void Awake()
-        {
-            DontDestroyOnLoad(this);
-        }
+        private void Awake() { DontDestroyOnLoad(this); }
 
         private void Update()
         {
@@ -142,7 +116,7 @@ namespace EngExtract
 
             var langs = LocalizationManager.GetAllLanguages();
             Debug.Log($"Currently {langs.Count} languages are known");
-            foreach (var language in langs)
+            foreach (string language in langs)
                 Debug.Log($"{language}");
 
             Debug.Log($"Currently selected language is {LocalizationManager.CurrentLanguage}");
@@ -162,8 +136,8 @@ namespace EngExtract
             if ((pos = txt.IndexOf("<E>", StringComparison.InvariantCultureIgnoreCase)) > 0)
             {
                 translatedLines++;
-                var orig = txt.Substring(0, pos);
-                var tl = txt.Substring(pos + 3).Replace("…", "...").Trim();
+                string orig = txt.Substring(0, pos);
+                string tl = txt.Substring(pos + 3).Replace("…", "...").Trim();
                 return new KeyValuePair<string, string>(orig, tl);
             }
 
@@ -172,9 +146,9 @@ namespace EngExtract
 
         private void ExtractTranslations(string fileName, string script)
         {
-            var tlDir = Path.Combine(TL_DIR, "Script");
-            var dir = Path.Combine(tlDir, Path.GetDirectoryName(fileName));
-            var name = Path.GetFileNameWithoutExtension(fileName);
+            string tlDir = Path.Combine(TL_DIR, "Script");
+            string dir = Path.Combine(tlDir, Path.GetDirectoryName(fileName));
+            string name = Path.GetFileNameWithoutExtension(fileName);
 
             Directory.CreateDirectory(dir);
 
@@ -184,9 +158,9 @@ namespace EngExtract
             var sb = new StringBuilder();
             var captureTalk = false;
 
-            foreach (var line in lines)
+            foreach (string line in lines)
             {
-                var trimmedLine = line.Trim();
+                string trimmedLine = line.Trim();
                 if (trimmedLine.Length == 0)
                     continue;
 
@@ -243,10 +217,10 @@ namespace EngExtract
             var scripts = GameUty.FileSystem.GetFileListAtExtension(".ks");
             Debug.Log($"Found {scripts.Length} scripts!");
 
-            foreach (var scriptFile in scripts)
+            foreach (string scriptFile in scripts)
                 using (var f = GameUty.FileOpen(scriptFile))
                 {
-                    var script = ShiftJisUtil.ToString(f.ReadAll());
+                    string script = ShiftJisUtil.ToString(f.ReadAll());
                     Debug.Log(scriptFile);
                     ExtractTranslations(scriptFile, script);
                 }
@@ -258,14 +232,39 @@ namespace EngExtract
 
             if (opts.dumpUITranslations)
                 DumpUI();
-            if(opts.dumpScripts)
+            if (opts.dumpScripts)
                 DumpScripts();
 
 
-            if(opts.dumpScripts)
+            if (opts.dumpScripts)
                 Debug.Log($"Dumped {translatedLines} lines");
             Debug.Log($"Done! Dumped translations are located in {TL_DIR}. You can now close the game!");
             Debug.Log("IMPORTANT: Delete this plugin (EngExtract.dll) if you want to play the game normally!");
+        }
+
+        private class DumpOptions
+        {
+            public bool dumpEvents;
+            public bool dumpItemNames;
+            public bool dumpPersonalies;
+            public bool dumpScripts = true;
+            public bool dumpUITranslations = true;
+            public bool dumpVIPEvents;
+            public bool dumpYotogis;
+            public bool skipTranslatedItems;
+            public DumpOptions() { }
+
+            public DumpOptions(DumpOptions other)
+            {
+                dumpScripts = other.dumpScripts;
+                dumpUITranslations = other.dumpUITranslations;
+                dumpItemNames = other.dumpItemNames;
+                dumpVIPEvents = other.dumpVIPEvents;
+                dumpYotogis = other.dumpYotogis;
+                dumpPersonalies = other.dumpPersonalies;
+                dumpEvents = other.dumpEvents;
+                skipTranslatedItems = other.skipTranslatedItems;
+            }
         }
     }
 }
@@ -274,16 +273,21 @@ namespace EngExtract
 internal static class ShiftJisUtil
 {
     [DllImport("kernel32.dll")]
-    private static extern int MultiByteToWideChar(uint CodePage, uint dwFlags, [In] [MarshalAs(UnmanagedType.LPArray)]
-        byte[] lpMultiByteStr, int cbMultiByte, [Out] [MarshalAs(UnmanagedType.LPArray)]
-        byte[] lpWideCharStr, int cchWideChar);
+    private static extern int MultiByteToWideChar(uint CodePage,
+                                                  uint dwFlags,
+                                                  [In] [MarshalAs(UnmanagedType.LPArray)] byte[] lpMultiByteStr,
+                                                  int cbMultiByte,
+                                                  [Out] [MarshalAs(UnmanagedType.LPArray)] byte[] lpWideCharStr,
+                                                  int cchWideChar);
 
     public static string ToString(byte[] data)
     {
         // Can't get it to work with StringBuilder. Oh well, going the long route then...
-        var needed = MultiByteToWideChar(932, 0, data, data.Length, null, 0);
+        int needed = MultiByteToWideChar(932, 0, data, data.Length, null,
+                                         0);
         var c = new byte[needed * 2];
-        var sent = MultiByteToWideChar(932, 0, data, data.Length, c, needed * 2);
+        int sent = MultiByteToWideChar(932, 0, data, data.Length, c,
+                                       needed * 2);
         return Encoding.Unicode.GetString(c);
     }
 }

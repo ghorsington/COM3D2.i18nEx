@@ -26,10 +26,10 @@ namespace EngExtract
         private static readonly Regex textPattern = new Regex("text=\"(?<text>.*)\"");
         private static readonly Regex namePattern = new Regex("name=\"(?<name>.*)\"");
         private static readonly Encoding UTF8 = new UTF8Encoding(true);
-        private bool displayGui;
-        private bool dumping;
 
         private readonly DumpOptions options = new DumpOptions();
+        private bool displayGui;
+        private bool dumping;
 
         private int translatedLines;
 
@@ -226,15 +226,111 @@ namespace EngExtract
                 }
         }
 
+        private void DumpScenarioEvents(DumpOptions opts)
+        {
+            string i2Path = Path.Combine(TL_DIR, "UI");
+            string unitPath = Path.Combine(i2Path, "zzz_scenario_events");
+            Directory.CreateDirectory(unitPath);
+
+            Debug.Log("Getting scenario event data");
+
+            var encoding = new UTF8Encoding(true);
+            using (var sw = new StreamWriter(Path.Combine(unitPath, "SceneScenarioSelect.csv"), false, encoding))
+                using (var f = GameUty.FileOpen("select_scenario_data.nei"))
+                    using (var scenarioNei = new CsvParser())
+                    {
+                        sw.WriteLine("Key,Type,Desc,Japanese,English");
+
+                        scenarioNei.Open(f);
+
+                        for (var i = 1; i < scenarioNei.max_cell_y; i++)
+                        {
+                            if (!scenarioNei.IsCellToExistData(0, i))
+                                continue;
+
+                            int id = scenarioNei.GetCellAsInteger(0, i);
+                            string name = scenarioNei.GetCellAsString(1, i);
+                            string description = scenarioNei.GetCellAsString(2, i);
+
+                            if (opts.skipTranslatedItems &&
+                                LocalizationManager.TryGetTranslation($"SceneScenarioSelect/{id}/タイトル", out _))
+                                continue;
+
+                            string csvName = EscapeCSVItem(name);
+                            string csvDescription = EscapeCSVItem(description);
+                            sw.WriteLine($"{id}/タイトル,Text,,{csvName},{csvName}");
+                            sw.WriteLine($"{id}/内容,Text,,{csvDescription},{csvDescription}");
+                        }
+                    }
+        }
+
+        private void DumpItemNames(DumpOptions opts)
+        {
+            string i2Path = Path.Combine(TL_DIR, "UI");
+            string unitPath = Path.Combine(i2Path, "zzz_item_names");
+            Directory.CreateDirectory(unitPath);
+
+            var encoding = new UTF8Encoding(true);
+            Debug.Log("Getting all .menu files (this might take a moment)...");
+            var menus = GameUty.FileSystem.GetFileListAtExtension(".menu");
+
+            Debug.Log($"Found {menus.Length} menus!");
+
+            var swDict = new Dictionary<string, StreamWriter>();
+
+            foreach (string menu in menus)
+                using (var f = GameUty.FileOpen(menu))
+                    using (var br = new BinaryReader(new MemoryStream(f.ReadAll())))
+                    {
+                        Debug.Log(menu);
+
+                        br.ReadString();
+                        br.ReadInt32();
+                        br.ReadString();
+                        string filename = Path.GetFileNameWithoutExtension(menu);
+                        string name = br.ReadString();
+                        string category = br.ReadString().ToLowerInvariant();
+                        string info = br.ReadString();
+
+                        if (!swDict.TryGetValue(category, out var sw))
+                        {
+                            swDict[category] = sw = new StreamWriter(Path.Combine(unitPath, $"{category}.csv"), false, encoding);
+                            sw.WriteLine("Key,Type,Desc,Japanese,English");
+                        }
+
+                        if (opts.skipTranslatedItems &&
+                            LocalizationManager.TryGetTranslation($"{category}/{filename}|name", out _))
+                            continue;
+                        sw.WriteLine($"{filename}|name,Text,,{EscapeCSVItem(name)},{EscapeCSVItem(name)}");
+                        sw.WriteLine($"{filename}|info,Text,,{EscapeCSVItem(info)},{EscapeCSVItem(info)}");
+                    }
+
+            foreach (var keyValuePair in swDict)
+                keyValuePair.Value.Dispose();
+        }
+
+        private string EscapeCSVItem(string str)
+        {
+            if (str.Contains("\n") || str.Contains("\""))
+                return $"\"{str.Replace("\"", "\"\"")}\"";
+            return str;
+        }
+
         private void Dump(DumpOptions opts)
         {
             Debug.Log("Dumping game localisation files! Please be patient!");
 
             if (opts.dumpUITranslations)
                 DumpUI();
+
             if (opts.dumpScripts)
                 DumpScripts();
 
+            if (opts.dumpItemNames)
+                DumpItemNames(opts);
+
+            if(opts.dumpEvents)
+                DumpScenarioEvents(opts);
 
             if (opts.dumpScripts)
                 Debug.Log($"Dumped {translatedLines} lines");

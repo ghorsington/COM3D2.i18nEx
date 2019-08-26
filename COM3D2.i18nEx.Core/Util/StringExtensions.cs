@@ -6,10 +6,20 @@ namespace COM3D2.i18nEx.Core.Util
 {
     internal static class StringExtensions
     {
+        public static string Splice(this string self, int start, int end)
+        {
+            if (start < 0)
+                start += self.Length;
+            if (end < 0)
+                end += self.Length;
+
+            return self.Substring(start, end - start + 1);
+        }
+
         public static ulong KnuthHash(this string read)
         {
             var hashedValue = 3074457345618258791ul;
-            foreach (var t in read)
+            foreach (char t in read)
             {
                 hashedValue += t;
                 hashedValue *= 3074457345618258799ul;
@@ -31,7 +41,7 @@ namespace COM3D2.i18nEx.Core.Util
             if (string.IsNullOrEmpty(txt))
                 return txt;
             var stringBuilder = new StringBuilder(txt.Length + 2);
-            foreach (var c in txt)
+            foreach (char c in txt)
                 switch (c)
                 {
                     case '\0':
@@ -82,13 +92,13 @@ namespace COM3D2.i18nEx.Core.Util
             var stringBuilder = new StringBuilder(txt.Length);
             for (var i = 0; i < txt.Length;)
             {
-                var num = txt.IndexOf('\\', i);
+                int num = txt.IndexOf('\\', i);
                 if (num < 0 || num == txt.Length - 1)
                     num = txt.Length;
                 stringBuilder.Append(txt, i, num - i);
                 if (num >= txt.Length)
                     break;
-                var c = txt[num + 1];
+                char c = txt[num + 1];
                 switch (c)
                 {
                     case '0':

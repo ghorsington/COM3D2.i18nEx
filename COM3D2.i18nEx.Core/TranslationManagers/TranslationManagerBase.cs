@@ -10,11 +10,9 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             OnAwake();
         }
 
-        protected virtual void OnAwake()
-        {
-        }
+        protected virtual void OnAwake() { }
 
-        public abstract void LoadLanguage(string langName);
+        public abstract void LoadLanguage();
 
         public abstract void ReloadActiveTranslations();
     }

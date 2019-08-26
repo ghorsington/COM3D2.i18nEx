@@ -13,7 +13,7 @@ namespace COM3D2.i18nEx.Core.Hooks
         private static bool initialized;
         private static Harmony instance;
         private static readonly byte[] EmptyBytes = new byte[0];
-        private static string previousTexName = null;
+        private static string previousTexName;
 
         public static void Initialize()
         {
@@ -30,19 +30,23 @@ namespace COM3D2.i18nEx.Core.Hooks
         [HarmonyPostfix]
         private static void IsExistentFileCheck(ref bool __result, string file_name)
         {
-            if (file_name == null || (!Path.GetExtension(file_name)?.Equals(".tex", StringComparison.InvariantCultureIgnoreCase) ?? true))
+            if (file_name == null ||
+                (!Path.GetExtension(file_name)?.Equals(".tex", StringComparison.InvariantCultureIgnoreCase) ?? true))
                 return;
 
-            if (!string.IsNullOrEmpty(file_name) && Core.TextureReplace.ReplacementExists(Path.GetFileNameWithoutExtension(file_name)))
+            if (!string.IsNullOrEmpty(file_name) &&
+                Core.TextureReplace.ReplacementExists(Path.GetFileNameWithoutExtension(file_name)))
                 __result = true;
         }
 
         [HarmonyPatch(typeof(ImportCM), nameof(ImportCM.LoadTexture))]
         [HarmonyPrefix]
-        private static bool LoadTexture(ref TextureResource __result, AFileSystemBase f_fileSystem,
-            string f_strFileName, bool usePoolBuffer)
+        private static bool LoadTexture(ref TextureResource __result,
+                                        AFileSystemBase f_fileSystem,
+                                        string f_strFileName,
+                                        bool usePoolBuffer)
         {
-            var fileName = Path.GetFileNameWithoutExtension(f_strFileName);
+            string fileName = Path.GetFileNameWithoutExtension(f_strFileName);
             if (string.IsNullOrEmpty(fileName))
                 return true;
 
@@ -69,11 +73,14 @@ namespace COM3D2.i18nEx.Core.Hooks
 
         [HarmonyPatch(typeof(ImportCM), nameof(ImportCM.LoadTexture))]
         [HarmonyPostfix]
-        private static void OnTexLoaded(ref TextureResource __result, AFileSystemBase f_fileSystem,
-            string f_strFileName, bool usePoolBuffer)
+        private static void OnTexLoaded(ref TextureResource __result,
+                                        AFileSystemBase f_fileSystem,
+                                        string f_strFileName,
+                                        bool usePoolBuffer)
         {
             if (!Configuration.TextureReplacement.DumpTextures.Value ||
-                Configuration.TextureReplacement.SkipDumpingCMTextures.Value) return;
+                Configuration.TextureReplacement.SkipDumpingCMTextures.Value)
+                return;
             var tex = __result.CreateTexture2D();
             Core.TextureReplace.DumpTexture(Path.GetFileNameWithoutExtension(f_strFileName), tex);
         }
@@ -107,7 +114,8 @@ namespace COM3D2.i18nEx.Core.Hooks
                 skipLogging = false;
             }
 
-            var newData = Core.TextureReplace.GetReplacementTextureBytes(tex.name, __instance.GetType().Name, skipLogging);
+            var newData =
+                Core.TextureReplace.GetReplacementTextureBytes(tex.name, __instance.GetType().Name, skipLogging);
 
             if (newData == null)
             {
@@ -126,9 +134,7 @@ namespace COM3D2.i18nEx.Core.Hooks
                 tex2d.name = $"i18n_{tex2d}";
             }
             else
-            {
                 Core.Logger.LogError($"Texture {tex.name} is of type {tex.GetType().FullName} and not tex2d!");
-            }
         }
 
         [HarmonyPatch(typeof(UITexture), nameof(UITexture.mainTexture), MethodType.Getter)]
@@ -167,9 +173,7 @@ namespace COM3D2.i18nEx.Core.Hooks
                 tex2d.name = $"i18n_{tex2d}";
             }
             else
-            {
                 Core.Logger.LogError($"Texture {tex.name} is of type {tex.GetType().FullName} and not tex2d!");
-            }
         }
 
         [HarmonyPatch(typeof(Image), nameof(Image.sprite), MethodType.Setter)]

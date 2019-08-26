@@ -9,7 +9,11 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 {
     internal class TextureReplacement
     {
-        private Texture2D replacement;
+        public string Name { get; }
+
+        public string FullPath { get; }
+
+        public byte[] Data { get; set; }
 
         public TextureReplacement(string name, string fullPath)
         {
@@ -17,23 +21,20 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             FullPath = fullPath;
         }
 
-        public string Name { get; }
-
-        public string FullPath { get; }
-
-        public byte[] Data { get; set; }
-
         public void Load()
         {
-            replacement = null;
-            Data = File.ReadAllBytes(FullPath);
+            using (var s = Core.TranslationLoader.OpenTextureTranslation(FullPath))
+            {
+                Data = new byte[s.Length];
+                s.Read(Data, 0, Data.Length);
+            }
         }
     }
 
     internal class TextureReplaceManager : TranslationManagerBase
     {
-        private readonly HashSet<string> missingTextures = new HashSet<string>();
         private readonly HashSet<string> dumpedItems = new HashSet<string>();
+        private readonly HashSet<string> missingTextures = new HashSet<string>();
         private readonly LinkedList<TextureReplacement> texReplacementCache = new LinkedList<TextureReplacement>();
 
         private readonly Dictionary<string, LinkedListNode<TextureReplacement>> texReplacementLookup =
@@ -43,33 +44,26 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
 
 
-        public override void LoadLanguage(string language)
+        public override void LoadLanguage()
         {
-            var tlPath = Path.Combine(Paths.TranslationsRoot, language);
-            var texPath = Path.Combine(tlPath, "Textures");
-            Core.Logger.LogInfo($"Loading texture replacements for language \"{language}\"");
-
-            if (!Directory.Exists(tlPath))
-            {
-                Core.Logger.LogWarning(
-                    $"No translation folder found for language {language}. Skipping loading texture translations...");
-                return;
-            }
+            Core.Logger.LogInfo("Loading texture replacements");
 
             missingTextures.Clear();
             textureReplacements.Clear();
             texReplacementLookup.Clear();
             texReplacementCache.Clear();
 
-            if (!Directory.Exists(texPath))
+            var files = Core.TranslationLoader.GetTextureTranslationFileNames();
+
+            if (files == null)
             {
-                Directory.CreateDirectory(texPath);
+                Core.Logger.LogInfo("No textures found! Skipping...");
                 return;
             }
 
-            foreach (var file in Directory.GetFiles(texPath, "*.png", SearchOption.AllDirectories))
+            foreach (string file in files)
             {
-                var name = Path.GetFileNameWithoutExtension(file);
+                string name = Path.GetFileNameWithoutExtension(file);
 
                 if (textureReplacements.ContainsKey(name))
                 {
@@ -82,24 +76,18 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             }
         }
 
-        void Update()
+        private void Update()
         {
-            if(Configuration.TextureReplacement.ReloadTranslationsKey.Value.IsPressed)
+            if (Configuration.TextureReplacement.ReloadTranslationsKey.Value.IsPressed)
                 ReloadActiveTranslations();
 
             if (Configuration.I2Translation.PrintFontNamesKey.Value.IsPressed)
                 Core.Logger.LogInfo($"Supported fonts:\n{string.Join("\n", Font.GetOSInstalledFontNames())}");
         }
 
-        public bool ReplacementExists(string texName)
-        {
-            return textureReplacements.ContainsKey(texName);
-        }
+        public bool ReplacementExists(string texName) { return textureReplacements.ContainsKey(texName); }
 
-        public override void ReloadActiveTranslations()
-        {
-            LoadLanguage(Configuration.General.ActiveLanguage.Value);
-        }
+        public override void ReloadActiveTranslations() { LoadLanguage(); }
 
         public byte[] GetReplacementTextureBytes(string texName, string tag = null, bool skipLogging = false)
         {
@@ -114,21 +102,21 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             if (!(tex is Texture2D tex2d))
                 return;
 
-            var dumpPath = Utility.CombinePaths(Paths.TranslationsRoot, Configuration.General.ActiveLanguage.Value,
-                "Textures", "Dumped");
+            string dumpPath = Utility.CombinePaths(Paths.TranslationsRoot, Configuration.General.ActiveLanguage.Value,
+                                                   "Textures", "Dumped");
 
             if (!Directory.Exists(dumpPath))
                 Directory.CreateDirectory(dumpPath);
 
             Core.Logger.LogInfo($"[DUMP] {texName}.png");
-            var p = Path.Combine(dumpPath, $"{texName}.png");
+            string p = Path.Combine(dumpPath, $"{texName}.png");
             File.WriteAllBytes(p, Utility.TexToPng(tex2d));
             dumpedItems.Add(texName);
         }
 
         private TextureReplacement GetReplacement(string texName, string tag = null, bool skipLogging = false)
         {
-            var hash = $"{texName}:{tag}".KnuthHash().ToString("X16");
+            string hash = $"{texName}:{tag}".KnuthHash().ToString("X16");
             string[] lookupNames =
             {
                 texName,
@@ -137,9 +125,9 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                 $"{hash}@{SceneManager.GetActiveScene().buildIndex}"
             };
 
-            foreach (var lookupName in lookupNames)
+            foreach (string lookupName in lookupNames)
             {
-                if(Configuration.TextureReplacement.VerboseLogging.Value && !skipLogging)
+                if (Configuration.TextureReplacement.VerboseLogging.Value && !skipLogging)
                     Core.Logger.LogInfo($"Trying with name {lookupName}.png");
                 if (!textureReplacements.ContainsKey(lookupName))
                     continue;

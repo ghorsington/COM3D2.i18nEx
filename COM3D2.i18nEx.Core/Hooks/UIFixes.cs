@@ -27,17 +27,11 @@ namespace COM3D2.i18nEx.Core.Hooks
 
         [HarmonyPatch(typeof(Text), "text", MethodType.Setter)]
         [HarmonyPrefix]
-        public static void OnSetText(Text __instance, string value)
-        {
-            SetLoc(__instance.gameObject, value);
-        }
+        public static void OnSetText(Text __instance, string value) { SetLoc(__instance.gameObject, value); }
 
         [HarmonyPatch(typeof(UILabel), "ProcessAndRequest")]
         [HarmonyPrefix]
-        public static void OnProcessRequest(UILabel __instance)
-        {
-            SetLoc(__instance.gameObject, __instance.text);
-        }
+        public static void OnProcessRequest(UILabel __instance) { SetLoc(__instance.gameObject, __instance.text); }
 
         private static void SetLoc(GameObject go, string text)
         {
@@ -45,7 +39,7 @@ namespace COM3D2.i18nEx.Core.Hooks
             if (loc != null || string.IsNullOrEmpty(text))
                 return;
 
-            var term = $"General/{text.Replace(" ", "_")}";
+            string term = $"General/{text.Replace(" ", "_")}";
             if (Configuration.I2Translation.VerboseLogging.Value)
                 Core.Logger.LogInfo($"Trying to localize with term {term}");
             loc = go.AddComponent<Localize>();
@@ -54,10 +48,7 @@ namespace COM3D2.i18nEx.Core.Hooks
 
         [HarmonyPatch(typeof(Text), "OnEnable")]
         [HarmonyPrefix]
-        public static void ChangeUEUIFont(Text __instance)
-        {
-            __instance.font = SwapFont(__instance.font);
-        }
+        public static void ChangeUEUIFont(Text __instance) { __instance.font = SwapFont(__instance.font); }
 
         [HarmonyPatch(typeof(UILabel), "ProcessAndRequest")]
         [HarmonyPrefix]
@@ -71,11 +62,11 @@ namespace COM3D2.i18nEx.Core.Hooks
             if (originalFont == null)
                 return null;
 
-            var customFont = Configuration.I2Translation.CustomUIFont.Value.Trim();
+            string customFont = Configuration.I2Translation.CustomUIFont.Value.Trim();
             if (string.IsNullOrEmpty(customFont) || originalFont.name == customFont)
                 return originalFont;
 
-            var fontId = $"{customFont}#{originalFont.fontSize}";
+            string fontId = $"{customFont}#{originalFont.fontSize}";
             if (!customFonts.TryGetValue(fontId, out var font))
                 font = customFonts[fontId] = Font.CreateDynamicFontFromOSFont(customFont, originalFont.fontSize);
             return font ?? originalFont;
@@ -112,18 +103,16 @@ namespace COM3D2.i18nEx.Core.Hooks
             {
                 if (codeInstruction.opcode == OpCodes.Callvirt && codeInstruction.operand is MethodInfo minfo &&
                     minfo.Name == "get_SysDlg")
-                {
                     hasText = true;
-                }
                 else if (hasText)
                 {
                     hasText = false;
-                    var index = -1;
+                    int index = -1;
                     if (OpCodes.Ldloc_0.Value <= codeInstruction.opcode.Value &&
                         codeInstruction.opcode.Value <= OpCodes.Ldloc_3.Value)
                         index = codeInstruction.opcode.Value - OpCodes.Ldloc_0.Value;
                     else if (codeInstruction.opcode == OpCodes.Ldloc_S || codeInstruction.opcode == OpCodes.Ldloc)
-                        index = (int) codeInstruction.operand;
+                        index = (int)codeInstruction.operand;
 
                     if (index < 0)
                     {
@@ -136,16 +125,16 @@ namespace COM3D2.i18nEx.Core.Hooks
                     yield return new CodeInstruction(OpCodes.Ldloca, index);
                     yield return HarmonyWrapper.EmitDelegate<TranslateInfo>((ref string text) =>
                     {
-                        if (LocalizationManager.TryGetTranslation("System/GameInfo_Description", out var tl))
+                        if (LocalizationManager.TryGetTranslation("System/GameInfo_Description", out string tl))
                             text = string.Format(tl, Product.gameTitle, GameUty.GetBuildVersionText(),
-                                GameUty.GetGameVersionText(), GameUty.GetLegacyGameVersionText());
+                                                 GameUty.GetGameVersionText(), GameUty.GetLegacyGameVersionText());
                     });
                     yield return new CodeInstruction(OpCodes.Call,
-                        AccessTools.PropertyGetter(
-                            typeof(GameMain), nameof(GameMain.Instance)));
+                                                     AccessTools.PropertyGetter(
+                                                         typeof(GameMain), nameof(GameMain.Instance)));
                     yield return new CodeInstruction(OpCodes.Callvirt,
-                        AccessTools.PropertyGetter(
-                            typeof(GameMain), nameof(GameMain.SysDlg)));
+                                                     AccessTools.PropertyGetter(
+                                                         typeof(GameMain), nameof(GameMain.SysDlg)));
                 }
 
                 yield return codeInstruction;

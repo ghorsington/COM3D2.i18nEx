@@ -19,7 +19,7 @@ namespace COM3D2.i18nEx.Core.Hooks
                 return;
 
             instance = HarmonyWrapper.PatchAll(typeof(ScriptTranslationHooks),
-                "horse.coder.com3d2.i18nex.hooks.scripts");
+                                               "horse.coder.com3d2.i18nex.hooks.scripts");
             initialized = true;
         }
 
@@ -40,10 +40,7 @@ namespace COM3D2.i18nEx.Core.Hooks
         [HarmonyPatch(typeof(ADVKagManager), nameof(ADVKagManager.TagChoicesSet))]
         [HarmonyPatch(typeof(ADVKagManager), nameof(ADVKagManager.TagTalk))]
         [HarmonyPostfix]
-        private static void ClearScriptName()
-        {
-            curScriptFileName = null;
-        }
+        private static void ClearScriptName() { curScriptFileName = null; }
 
         [HarmonyPatch(typeof(ScriptManager), nameof(ScriptManager.ReplaceCharaName), typeof(string))]
         [HarmonyPrefix]
@@ -81,7 +78,7 @@ namespace COM3D2.i18nEx.Core.Hooks
 
             if (!stop)
             {
-                var t = text.Replace("……", "…");
+                string t = text.Replace("……", "…");
                 if (t != text && TranslateLine(fileName, ref t, true))
                 {
                     text = t;
@@ -103,7 +100,8 @@ namespace COM3D2.i18nEx.Core.Hooks
             if (string.IsNullOrEmpty(translationPair.Key))
             {
                 if (Configuration.ScriptTranslations.VerboseLogging.Value)
-                    Core.Logger.LogInfo($"[Script] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
+                    Core.Logger.LogInfo(
+                        $"[Script] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
                 return;
             }
 
@@ -115,13 +113,14 @@ namespace COM3D2.i18nEx.Core.Hooks
             }
 
             fileName = Path.GetFileNameWithoutExtension(fileName);
-            var res = Core.ScriptTranslate.GetTranslation(fileName, translationPair.Key);
+            string res = Core.ScriptTranslate.GetTranslation(fileName, translationPair.Key);
 
             if (!string.IsNullOrEmpty(res))
             {
                 translationPair = new KeyValuePair<string, string>(translationPair.Key, res);
                 if (Configuration.ScriptTranslations.VerboseLogging.Value)
-                    Core.Logger.LogInfo($"[Script] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
+                    Core.Logger.LogInfo(
+                        $"[Script] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
             }
             else if (Configuration.ScriptTranslations.DumpScriptTranslations.Value)
                 if (Core.ScriptTranslate.WriteTranslation(fileName, translationPair.Key, translationPair.Value))

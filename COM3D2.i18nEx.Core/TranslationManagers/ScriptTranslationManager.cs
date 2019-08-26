@@ -9,43 +9,38 @@ using UnityEngine;
 
 namespace COM3D2.i18nEx.Core.TranslationManagers
 {
-    internal enum TranslationsReroute
-    {
-        None,
-        RouteToEnglish,
-        RouteToJapanese
-    }
+    internal enum TranslationsReroute { None, RouteToEnglish, RouteToJapanese }
 
     internal class ScriptTranslationFile
     {
-        public ScriptTranslationFile(string fileName, string path)
-        {
-            FileName = fileName;
-            FullPath = path;
-        }
-
         public string FileName { get; }
         public string FullPath { get; }
 
         public Dictionary<string, string> Translations { get; } =
             new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
 
+        public ScriptTranslationFile(string fileName, string path)
+        {
+            FileName = fileName;
+            FullPath = path;
+        }
+
         public void LoadTranslations()
         {
             Translations.Clear();
-            using (var sr = new StreamReader(FullPath))
+            using (var sr = new StreamReader(Core.TranslationLoader.OpenScriptTranslation(FullPath)))
             {
                 string line;
                 while ((line = sr.ReadLine()) != null)
                 {
-                    var trimmed = line.Trim();
+                    string trimmed = line.Trim();
                     if (trimmed.Length == 0 || trimmed.StartsWith(";"))
                         continue;
 
-                    var parts = line.Split(new[] {'\t'}, StringSplitOptions.RemoveEmptyEntries);
+                    var parts = line.Split(new[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
 
-                    var orig = parts[0].Unescape();
-                    var tl = parts.Length > 1 ? parts[1].Unescape() : null;
+                    string orig = parts[0].Unescape();
+                    string tl = parts.Length > 1 ? parts[1].Unescape() : null;
 
                     Translations[orig] = tl;
                 }
@@ -64,7 +59,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
         private static readonly Dictionary<string, LinkedListNode<ScriptTranslationFile>> TranslationFileLookup =
             new Dictionary<string, LinkedListNode<ScriptTranslationFile>>();
 
-        private StringBuilder clipboardBuffer = new StringBuilder();
+        private readonly StringBuilder clipboardBuffer = new StringBuilder();
 
         private void Update()
         {
@@ -72,29 +67,25 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                 ReloadActiveTranslations();
         }
 
-        public override void LoadLanguage(string language)
+        public override void LoadLanguage()
         {
-            Core.Logger.LogInfo($"Loading script translations for language \"{language}\"");
-
-            var tlPath = Path.Combine(Paths.TranslationsRoot, language);
-            var textTlPath = Path.Combine(tlPath, "Script");
-            if (!Directory.Exists(tlPath))
-            {
-                Core.Logger.LogWarning(
-                    $"No Scripts translation folder found for language {language}. Skipping loading script translations...");
-                return;
-            }
+            Core.Logger.LogInfo("Loading script translations");
 
             TranslationFiles.Clear();
             TranslationFileCache.Clear();
             TranslationFileLookup.Clear();
 
-            if (!Directory.Exists(textTlPath))
-                Directory.CreateDirectory(textTlPath);
+            var files = Core.TranslationLoader.GetScriptTranslationFileNames();
 
-            foreach (var file in Directory.GetFiles(textTlPath, "*.txt", SearchOption.AllDirectories))
+            if (files == null)
             {
-                var fileName = Path.GetFileNameWithoutExtension(file);
+                Core.Logger.LogInfo("No script translation found! Skipping...");
+                return;
+            }
+
+            foreach (string file in files)
+            {
+                string fileName = Path.GetFileNameWithoutExtension(file);
                 if (TranslationFiles.ContainsKey(fileName))
                 {
                     Core.Logger.LogWarning(
@@ -118,7 +109,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                     return NoTranslation(text);
             }
 
-            if (tlNode.Value.Translations.TryGetValue(text, out var tlText))
+            if (tlNode.Value.Translations.TryGetValue(text, out string tlText))
                 return tlText;
             return NoTranslation(text);
         }
@@ -130,16 +121,13 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             return null;
         }
 
-        private void Awake()
-        {
-            StartCoroutine(SendToClipboardRoutine());
-        }
+        private void Awake() { StartCoroutine(SendToClipboardRoutine()); }
 
         private IEnumerator SendToClipboardRoutine()
         {
             while (true)
             {
-                yield return new WaitForSeconds((float) Configuration.ScriptTranslations.ClipboardCaptureTime.Value);
+                yield return new WaitForSeconds((float)Configuration.ScriptTranslations.ClipboardCaptureTime.Value);
 
                 if (clipboardBuffer.Length > 0)
                 {
@@ -153,13 +141,13 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
         {
             if (!TranslationFiles.ContainsKey(fileName))
             {
-                var tlPath = Path.Combine(Paths.TranslationsRoot, Configuration.General.ActiveLanguage.Value);
-                var textTlPath = Path.Combine(tlPath, "Script");
+                string tlPath = Path.Combine(Paths.TranslationsRoot, Configuration.General.ActiveLanguage.Value);
+                string textTlPath = Path.Combine(tlPath, "Script");
 
                 if (!Directory.Exists(textTlPath))
                     Directory.CreateDirectory(textTlPath);
 
-                var scriptFilePath = Path.Combine(textTlPath, $"{fileName}.txt");
+                string scriptFilePath = Path.Combine(textTlPath, $"{fileName}.txt");
                 File.WriteAllText(scriptFilePath, $"{original.Escape()}\t{translated.Escape()}");
                 TranslationFiles.Add(fileName, scriptFilePath);
                 return true;
@@ -172,14 +160,11 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
             node.Value.Translations.Add(original, translated);
             File.AppendAllText(TranslationFiles[fileName],
-                $"{Environment.NewLine}{original.Escape()}\t{translated.Escape()}");
+                               $"{Environment.NewLine}{original.Escape()}\t{translated.Escape()}");
             return true;
         }
 
-        public override void ReloadActiveTranslations()
-        {
-            LoadLanguage(Configuration.General.ActiveLanguage.Value);
-        }
+        public override void ReloadActiveTranslations() { LoadLanguage(); }
 
         private LinkedListNode<ScriptTranslationFile> LoadFile(string fileName)
         {

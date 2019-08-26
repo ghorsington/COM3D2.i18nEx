@@ -1,7 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using COM3D2.i18nEx.Core.Hooks;
+using COM3D2.i18nEx.Core.Loaders;
 using COM3D2.i18nEx.Core.TranslationManagers;
 using COM3D2.i18nEx.Core.Util;
+using ExIni;
 using I2.Loc;
 using UnityEngine;
 
@@ -9,22 +15,26 @@ namespace COM3D2.i18nEx.Core
 {
     public class Core : MonoBehaviour
     {
+        private const int MIN_SUPPORTED_VERSION = 1320;
         internal static ScriptTranslationManager ScriptTranslate;
         internal static TextureReplaceManager TextureReplace;
         internal static I2TranslationManager I2Translation;
         private readonly List<TranslationManagerBase> managers = new List<TranslationManagerBase>();
-        private const int MIN_SUPPORTED_VERSION = 1320;
 
         internal static ILogger Logger { get; private set; }
+
         public bool Initialized { get; private set; }
 
-        private int GameVersion => (int) typeof(Misc).GetField(nameof(Misc.GAME_VERSION)).GetValue(null);
+        internal static ITranslationLoader TranslationLoader { get; private set; }
+
+        private int GameVersion => (int)typeof(Misc).GetField(nameof(Misc.GAME_VERSION)).GetValue(null);
 
         public void Initialize(ILogger logger, string gameRoot)
         {
             if (GameVersion < MIN_SUPPORTED_VERSION)
             {
-                logger.LogWarning($"This version of i18nEx core supports only game versions {MIN_SUPPORTED_VERSION} or newer. Detected game version: {GameVersion}");
+                logger.LogWarning(
+                    $"This version of i18nEx core supports only game versions {MIN_SUPPORTED_VERSION} or newer. Detected game version: {GameVersion}");
                 Destroy(this);
                 return;
             }
@@ -56,20 +66,86 @@ namespace COM3D2.i18nEx.Core
             TextureReplace = RegisterTranslationManager<TextureReplaceManager>();
             I2Translation = RegisterTranslationManager<I2TranslationManager>();
 
-            foreach (var mgr in managers)
-                mgr.LoadLanguage(Configuration.General.ActiveLanguage.Value);
-
-            Configuration.General.ActiveLanguage.ValueChanged += s =>
-            {
-                foreach (var mgr in managers)
-                    mgr.LoadLanguage(s);
-            };
+            LoadLanguage(Configuration.General.ActiveLanguage.Value);
+            Configuration.General.ActiveLanguage.ValueChanged += LoadLanguage;
         }
 
-        private void Awake()
+        private void LoadLanguage(string langName)
         {
-            DontDestroyOnLoad(this);
+            string tlLang = Path.Combine(Paths.TranslationsRoot, langName);
+
+            if (!Directory.Exists(tlLang))
+            {
+                Logger.LogWarning($"No translations for language \"{langName}\" was found!");
+                return;
+            }
+
+            TranslationLoader?.UnloadCurrentTranslation();
+
+            var iniFile = LoadLanguageConfig(tlLang);
+
+            TranslationLoader =
+                iniFile == null ? new BasicTranslationLoader() : GetLoader(iniFile["Info"]["Loader"].Value);
+
+            TranslationLoader.SelectLanguage(langName, tlLang, null);
+
+            foreach (var mgr in managers)
+                mgr.LoadLanguage();
         }
+
+        private ITranslationLoader GetLoader(string loaderName)
+        {
+            if (string.IsNullOrEmpty(loaderName))
+                return new BasicTranslationLoader();
+
+            string loadersPath = Path.Combine(Paths.TranslationsRoot, "loaders");
+            if (!Directory.Exists(loadersPath))
+                Directory.CreateDirectory(loadersPath);
+
+            loaderName = loaderName.Trim();
+
+            if (loaderName == "BasicLoader")
+                return new BasicTranslationLoader();
+
+            string loaderPath = Path.Combine(loadersPath, $"{loaderName}.dll");
+            if (!File.Exists(loaderPath))
+                return new BasicTranslationLoader();
+
+            try
+            {
+                var ass = Assembly.LoadFile(loaderPath);
+                var loader = ass.GetTypes().FirstOrDefault(t => t.GetInterface(nameof(ITranslationLoader)) != null);
+                if (loader != null)
+                    return Activator.CreateInstance(loader) as ITranslationLoader;
+
+                Logger.LogWarning(
+                    $"Loader \"{loaderName}.dll\" doesn't contain any translation loader implementations!");
+                return new BasicTranslationLoader();
+            }
+            catch (Exception e)
+            {
+                Logger.LogWarning($"Failed to load translation loader \"{loaderName}.dll\". Reason: {e.Message}");
+                return new BasicTranslationLoader();
+            }
+        }
+
+        private IniFile LoadLanguageConfig(string tlPath)
+        {
+            string iniFile = Path.Combine(tlPath, "config.ini");
+            if (!File.Exists(iniFile))
+                return null;
+            try
+            {
+                return IniFile.FromFile(iniFile);
+            }
+            catch (Exception e)
+            {
+                Logger.LogWarning($"Failed to read config.ini. Reason: {e.Message}");
+                return null;
+            }
+        }
+
+        private void Awake() { DontDestroyOnLoad(this); }
 
         private void Update()
         {

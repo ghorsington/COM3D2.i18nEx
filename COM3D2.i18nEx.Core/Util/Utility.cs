@@ -12,17 +12,14 @@ namespace COM3D2.i18nEx.Core.Util
         {
             var sb = new StringBuilder(val.Length);
 
-            foreach (var c in val)
+            foreach (char c in val)
                 if (c != '\r')
                     sb.Append(c);
 
             return sb.ToString();
         }
 
-        public static string CombinePaths(string part1, string part2)
-        {
-            return Path.Combine(part1, part2);
-        }
+        public static string CombinePaths(string part1, string part2) { return Path.Combine(part1, part2); }
 
         public static string CombinePaths(params string[] parts)
         {
@@ -31,7 +28,7 @@ namespace COM3D2.i18nEx.Core.Util
             if (parts.Length == 1)
                 return parts[0];
 
-            var result = parts[0];
+            string result = parts[0];
 
             for (var i = 1; i < parts.Length; i++)
                 result = Path.Combine(result, parts[i]);
@@ -63,11 +60,8 @@ namespace COM3D2.i18nEx.Core.Util
 
         private static Texture2D Duplicate(Texture texture)
         {
-            var render = RenderTexture.GetTemporary(texture.width,
-                texture.height,
-                0,
-                RenderTextureFormat.Default,
-                RenderTextureReadWrite.Linear);
+            var render = RenderTexture.GetTemporary(texture.width, texture.height, 0, RenderTextureFormat.Default,
+                                                    RenderTextureReadWrite.Linear);
             Graphics.Blit(texture, render);
             var previous = RenderTexture.active;
             RenderTexture.active = render;

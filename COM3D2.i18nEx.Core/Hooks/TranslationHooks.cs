@@ -29,17 +29,11 @@ namespace COM3D2.i18nEx.Core.Hooks
 
         [HarmonyPatch(typeof(Product), nameof(Product.supportMultiLanguage), MethodType.Getter)]
         [HarmonyPostfix]
-        private static void SupportMultiLanguage(ref bool __result)
-        {
-            __result = true;
-        }
+        private static void SupportMultiLanguage(ref bool __result) { __result = true; }
 
         [HarmonyPatch(typeof(Product), nameof(Product.isJapan), MethodType.Getter)]
         [HarmonyPostfix]
-        private static void IsJapan(ref bool __result)
-        {
-            __result = false;
-        }
+        private static void IsJapan(ref bool __result) { __result = false; }
 
         [HarmonyPatch(typeof(SceneNetorareCheck), "Start")]
         [HarmonyTranspiler]
@@ -54,11 +48,19 @@ namespace COM3D2.i18nEx.Core.Hooks
 
         [HarmonyPatch(typeof(LocalizationManager), nameof(LocalizationManager.GetTranslation))]
         [HarmonyPostfix]
-        private static void OnGetTranslation(ref string __result, string Term, bool FixForRTL, int maxLineLengthForRTL, bool ignoreRTLnumbers, bool applyParameters, GameObject localParametersRoot, string overrideLanguage)
+        private static void OnGetTranslation(ref string __result,
+                                             string Term,
+                                             bool FixForRTL,
+                                             int maxLineLengthForRTL,
+                                             bool ignoreRTLnumbers,
+                                             bool applyParameters,
+                                             GameObject localParametersRoot,
+                                             string overrideLanguage)
         {
-            if (overrideLanguage != "Japanese" && (string.IsNullOrEmpty(__result) || (__result.IndexOf('/') >= 0 && Term.Contains(__result))))
-                __result = LocalizationManager.GetTranslation(Term, FixForRTL, maxLineLengthForRTL, ignoreRTLnumbers, applyParameters,
-                    localParametersRoot, "Japanese");
+            if (overrideLanguage != "Japanese" &&
+                (string.IsNullOrEmpty(__result) || __result.IndexOf('/') >= 0 && Term.Contains(__result)))
+                __result = LocalizationManager.GetTranslation(Term, FixForRTL, maxLineLengthForRTL, ignoreRTLnumbers,
+                                                              applyParameters, localParametersRoot, "Japanese");
             else if (Configuration.I2Translation.VerboseLogging.Value)
                 Core.Logger.LogInfo($"[I2Loc] Translating term \"{Term}\" => \"{__result}\"");
         }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using COM3D2.i18nEx.Core.Util;
 using I2.Loc;
@@ -11,48 +10,47 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
     {
         private readonly GameObject go = new GameObject();
 
-
-        public override void LoadLanguage(string langName)
+        public override void LoadLanguage()
         {
             DontDestroyOnLoad(go);
 
-            Core.Logger.LogInfo($"Loading UI translations for language \"{langName}\"");
+            Core.Logger.LogInfo("Loading UI translations");
+            LoadTranslations();
+        }
 
-            var tlPath = Path.Combine(Paths.TranslationsRoot, langName);
-            var textTlPath = Path.Combine(tlPath, "UI");
-            if (!Directory.Exists(textTlPath))
+        private void LoadTranslations()
+        {
+            var files = Core.TranslationLoader.GetUITranslationFileNames();
+
+            if (files == null)
             {
-                Core.Logger.LogWarning(
-                    $"No UI translations folder found for language {langName}. Skipping loading script translations...");
+                Core.Logger.LogInfo("No UI translations found! Skipping...");
                 return;
             }
 
-            LoadTranslations(langName);
-        }
-
-        private void LoadTranslations(string lang)
-        {
-            var tlPath = Path.Combine(Paths.TranslationsRoot, lang);
-            var textTlPath = Path.Combine(tlPath, "UI");
             var source = go.GetComponent<LanguageSource>() ?? go.AddComponent<LanguageSource>();
             source.name = "i18nEx";
             source.ClearAllData();
-            foreach (var directory in Directory.GetDirectories(textTlPath).OrderByDescending(s => s, StringComparer.InvariantCultureIgnoreCase))
+
+            foreach (var kv in files)
             {
-                var fullDir = Path.GetFullPath(directory);
+                string unit = kv.Key;
+                var tlFiles = kv.Value;
 
                 if (Configuration.I2Translation.VerboseLogging.Value)
-                    Core.Logger.LogInfo($"Loading unit {fullDir}");
+                    Core.Logger.LogInfo($"Loading unit {unit}");
 
-                foreach (var file in Directory.GetFiles(fullDir, "*.csv", SearchOption.AllDirectories))
+                foreach (string tlFile in tlFiles)
                 {
+                    string categoryName = tlFile.Replace("\\", "/").Splice(0, -5);
 
-                    var categoryName = Path.GetFullPath(file).Substring(fullDir.Length + 1).Replace(".csv", "").Replace("\\", "/");
-
-                    if(Configuration.I2Translation.VerboseLogging.Value)
+                    if (Configuration.I2Translation.VerboseLogging.Value)
                         Core.Logger.LogInfo($"Loading category {categoryName}");
 
-                    source.Import_CSV(categoryName, File.ReadAllText(file).ToLF(), eSpreadsheetUpdateMode.Merge);
+                    string csvFile;
+                    using (var f = new StreamReader(Core.TranslationLoader.OpenUiTranslation($"{unit}/{tlFile}")))
+                        csvFile = f.ReadToEnd().ToLF();
+                    source.Import_CSV(categoryName, csvFile, eSpreadsheetUpdateMode.Merge);
                 }
             }
 
@@ -62,16 +60,16 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             LocalizationManager.LocalizeAll(true);
         }
 
-        void Update()
+        private void Update()
         {
-            if(Configuration.I2Translation.ReloadTranslationsKey.Value.IsPressed)
+            if (Configuration.I2Translation.ReloadTranslationsKey.Value.IsPressed)
                 ReloadActiveTranslations();
         }
 
         public override void ReloadActiveTranslations()
         {
             Core.Logger.LogInfo("Reloading current I2 translations");
-            LoadTranslations(Configuration.General.ActiveLanguage.Value);
+            LoadTranslations();
         }
     }
 }

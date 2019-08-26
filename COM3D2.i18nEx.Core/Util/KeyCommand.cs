@@ -11,8 +11,13 @@ namespace COM3D2.i18nEx.Core.Util
             kc => string.Join("+", kc.KeyCodes.Select(k => k.ToString()).ToArray());
 
         public static readonly Func<string, KeyCommand> KeyCommandFromString = s =>
-            new KeyCommand(s.Split(new[] {'+'}, StringSplitOptions.RemoveEmptyEntries)
-                .Select(k => (KeyCode) Enum.Parse(typeof(KeyCode), k, true)).ToArray());
+            new KeyCommand(s.Split(new[] { '+' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Select(k => (KeyCode)Enum.Parse(typeof(KeyCode), k, true)).ToArray());
+
+        private KeyCode[] KeyCodes { get; }
+        private bool[] KeyStates { get; }
+
+        public bool IsPressed => KeyStates.All(k => k);
 
         public KeyCommand(params KeyCode[] keyCodes)
         {
@@ -21,11 +26,6 @@ namespace COM3D2.i18nEx.Core.Util
 
             KeyCommandHandler.Register(this);
         }
-
-        private KeyCode[] KeyCodes { get; }
-        private bool[] KeyStates { get; }
-
-        public bool IsPressed => KeyStates.All(k => k);
 
         public void Dispose()
         {
@@ -42,30 +42,18 @@ namespace COM3D2.i18nEx.Core.Util
             }
         }
 
-        private void ReleaseUnmanagedResources()
-        {
-            KeyCommandHandler.Unregister(this);
-        }
+        private void ReleaseUnmanagedResources() { KeyCommandHandler.Unregister(this); }
 
-        ~KeyCommand()
-        {
-            ReleaseUnmanagedResources();
-        }
+        ~KeyCommand() { ReleaseUnmanagedResources(); }
     }
 
     internal static class KeyCommandHandler
     {
         public static List<KeyCommand> KeyCommands = new List<KeyCommand>();
 
-        public static void Register(KeyCommand command)
-        {
-            KeyCommands.Add(command);
-        }
+        public static void Register(KeyCommand command) { KeyCommands.Add(command); }
 
-        public static void Unregister(KeyCommand command)
-        {
-            KeyCommands.Remove(command);
-        }
+        public static void Unregister(KeyCommand command) { KeyCommands.Remove(command); }
 
         public static void UpdateState()
         {

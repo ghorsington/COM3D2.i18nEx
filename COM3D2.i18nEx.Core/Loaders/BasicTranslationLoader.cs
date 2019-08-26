@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using COM3D2.i18nEx.Core.Util;
 using ExIni;
 
 namespace COM3D2.i18nEx.Core.Loaders
@@ -52,10 +53,10 @@ namespace COM3D2.i18nEx.Core.Loaders
 
             foreach (string directory in Directory.GetDirectories(uiPath, "*", SearchOption.TopDirectoryOnly))
             {
-                string dirName = Path.GetDirectoryName(directory);
+                string dirName = directory.Splice(uiPath.Length, -1).Trim('\\', '/');
                 dict.Add(dirName,
-                         Directory.GetFiles(dirName, "*.csv", SearchOption.AllDirectories)
-                                  .Select(s => s.Substring(0, dirName.Length + 1)));
+                         Directory.GetFiles(directory, "*.csv", SearchOption.AllDirectories)
+                                  .Select(s => s.Splice(directory.Length + 1, -1)));
             }
 
             return dict;
@@ -65,6 +66,10 @@ namespace COM3D2.i18nEx.Core.Loaders
 
         public Stream OpenTextureTranslation(string path) { return !File.Exists(path) ? null : File.OpenRead(path); }
 
-        public Stream OpenUiTranslation(string path) { return !File.Exists(path) ? null : File.OpenRead(path); }
+        public Stream OpenUiTranslation(string path)
+        {
+            path = Utility.CombinePaths(langPath, "UI", path);
+            return !File.Exists(path) ? null : File.OpenRead(path);
+        }
     }
 }

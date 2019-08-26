@@ -48,7 +48,9 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                         Core.Logger.LogInfo($"Loading category {categoryName}");
 
                     string csvFile;
-                    using (var f = new StreamReader(Core.TranslationLoader.OpenUiTranslation($"{unit}/{tlFile}")))
+                    using (var f =
+                        new StreamReader(
+                            Core.TranslationLoader.OpenUiTranslation($"{unit}{Path.DirectorySeparatorChar}{tlFile}")))
                         csvFile = f.ReadToEnd().ToLF();
                     source.Import_CSV(categoryName, csvFile, eSpreadsheetUpdateMode.Merge);
                 }

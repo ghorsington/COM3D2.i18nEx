@@ -21,7 +21,7 @@ namespace COM3D2.i18nEx.Core
         internal static I2TranslationManager I2Translation;
         private readonly List<TranslationManagerBase> managers = new List<TranslationManagerBase>();
 
-        internal static ILogger Logger { get; private set; }
+        public static ILogger Logger { get; private set; }
 
         public bool Initialized { get; private set; }
 
@@ -87,7 +87,8 @@ namespace COM3D2.i18nEx.Core
             TranslationLoader =
                 iniFile == null ? new BasicTranslationLoader() : GetLoader(iniFile["Info"]["Loader"].Value);
 
-            TranslationLoader.SelectLanguage(langName, tlLang, null);
+            Core.Logger.LogInfo($"Selecting language for {TranslationLoader}");
+            TranslationLoader.SelectLanguage(langName, tlLang, iniFile);
 
             foreach (var mgr in managers)
                 mgr.LoadLanguage();
@@ -115,6 +116,9 @@ namespace COM3D2.i18nEx.Core
             {
                 var ass = Assembly.LoadFile(loaderPath);
                 var loader = ass.GetTypes().FirstOrDefault(t => t.GetInterface(nameof(ITranslationLoader)) != null);
+
+                Core.Logger.LogInfo($"Invoking loader {loader}");
+
                 if (loader != null)
                     return Activator.CreateInstance(loader) as ITranslationLoader;
 

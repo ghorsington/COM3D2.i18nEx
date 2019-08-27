@@ -309,9 +309,145 @@ namespace EngExtract
                 keyValuePair.Value.Dispose();
         }
 
+        private void DumpPersonalityNames(DumpOptions opts)
+        {
+            string i2Path = Path.Combine(TL_DIR, "UI");
+            string unitPath = Path.Combine(i2Path, "zzz_personalities");
+            Directory.CreateDirectory(unitPath);
+
+            Debug.Log("Getting personality names");
+
+            var encoding = new UTF8Encoding(true);
+            using (var sw = new StreamWriter(Path.Combine(unitPath, "MaidStatus.csv"), false, encoding))
+                using (var f = GameUty.FileOpen("maid_status_personal_list.nei"))
+                    using (var scenarioNei = new CsvParser())
+                    {
+                        sw.WriteLine("Key,Type,Desc,Japanese,English");
+
+                        scenarioNei.Open(f);
+
+                        for (var i = 1; i < scenarioNei.max_cell_y; i++)
+                        {
+                            if (!scenarioNei.IsCellToExistData(0, i))
+                                continue;
+
+                            string uniqueName = scenarioNei.GetCellAsString(1, i);
+                            string displayName = scenarioNei.GetCellAsString(2, i);
+
+                            if (opts.skipTranslatedItems &&
+                                LocalizationManager.TryGetTranslation($"MaidStatus/性格タイプ/{uniqueName}", out _))
+                                continue;
+
+                            string csvName = EscapeCSVItem(displayName);
+                            sw.WriteLine($"性格タイプ/{uniqueName},Text,,{csvName},{csvName}");
+                        }
+                    }
+        }
+
+        private void DumpYotogiData(DumpOptions opts)
+        {
+            string i2Path = Path.Combine(TL_DIR, "UI");
+            string unitPath = Path.Combine(i2Path, "zzz_yotogi");
+            Directory.CreateDirectory(unitPath);
+
+            Debug.Log("Getting yotogi skills and commands");
+
+            var encoding = new UTF8Encoding(true);
+            using (var sw = new StreamWriter(Path.Combine(unitPath, "YotogiSkillName.csv"), false, encoding))
+                using (var f = GameUty.FileOpen("yotogi_skill_list.nei"))
+                    using (var scenarioNei = new CsvParser())
+                    {
+                        sw.WriteLine("Key,Type,Desc,Japanese,English");
+                        scenarioNei.Open(f);
+
+                        for (var i = 1; i < scenarioNei.max_cell_y; i++)
+                        {
+                            if (!scenarioNei.IsCellToExistData(0, i))
+                                continue;
+
+                            string skillName = scenarioNei.GetCellAsString(4, i);
+
+                            if (opts.skipTranslatedItems &&
+                                LocalizationManager.TryGetTranslation($"YotogiSkillName/{skillName}", out _))
+                                continue;
+
+                            string csvName = EscapeCSVItem(skillName);
+                            sw.WriteLine($"{csvName},Text,,{csvName},{csvName}");
+                        }
+                    }
+
+            var commandNames = new HashSet<string>();
+            using (var sw = new StreamWriter(Path.Combine(unitPath, "YotogiSkillName.csv"), false, encoding))
+                using (var f = GameUty.FileOpen("yotogi_skill_command_data.nei"))
+                    using (var scenarioNei = new CsvParser())
+                    {
+                        sw.WriteLine("Key,Type,Desc,Japanese,English");
+                        scenarioNei.Open(f);
+
+                        for (var i = 0; i < scenarioNei.max_cell_y; i++)
+                        {
+                            if (!scenarioNei.IsCellToExistData(0, i))
+                            {
+                                i += 2;
+                                continue;
+                            }
+
+                            string commandName = scenarioNei.GetCellAsString(2, i);
+
+                            if (opts.skipTranslatedItems &&
+                                LocalizationManager.TryGetTranslation($"YotogiSkillCommand/{commandName}", out _))
+                                continue;
+
+                            if (commandNames.Contains(commandName))
+                                continue;
+
+                            commandNames.Add(commandName);
+
+                            string csvName = EscapeCSVItem(commandName);
+                            sw.WriteLine($"{csvName},Text,,{csvName},{csvName}");
+                        }
+                    }
+        }
+
+        private void DumpVIPEvents(DumpOptions opts)
+        {
+            string i2Path = Path.Combine(TL_DIR, "UI");
+            string unitPath = Path.Combine(i2Path, "zzz_vip_event");
+            Directory.CreateDirectory(unitPath);
+
+            Debug.Log("Getting VIP event names");
+
+            var encoding = new UTF8Encoding(true);
+            using (var sw = new StreamWriter(Path.Combine(unitPath, "SceneDaily.csv"), false, encoding))
+                using (var f = GameUty.FileOpen("schedule_work_night.nei"))
+                    using (var scenarioNei = new CsvParser())
+                    {
+                        sw.WriteLine("Key,Type,Desc,Japanese,English");
+                        scenarioNei.Open(f);
+
+                        for (var i = 1; i < scenarioNei.max_cell_y; i++)
+                        {
+                            if (!scenarioNei.IsCellToExistData(0, i))
+                                continue;
+
+                            string vipName = scenarioNei.GetCellAsString(1, i);
+                            string vipDescription = scenarioNei.GetCellAsString(7, i);
+
+                            if (opts.skipTranslatedItems &&
+                                LocalizationManager.TryGetTranslation($"SceneDaily/スケジュール/項目/{vipName}", out _))
+                                continue;
+
+                            string csvName = EscapeCSVItem(vipName);
+                            string csvDesc = EscapeCSVItem(vipDescription);
+                            sw.WriteLine($"スケジュール/項目/{vipName},Text,,{csvName},{csvName}");
+                            sw.WriteLine($"スケジュール/説明/{vipName},Text,,{csvDesc},{csvDesc}");
+                        }
+                    }
+        }
+
         private string EscapeCSVItem(string str)
         {
-            if (str.Contains("\n") || str.Contains("\""))
+            if (str.Contains("\n") || str.Contains("\"") || str.Contains(","))
                 return $"\"{str.Replace("\"", "\"\"")}\"";
             return str;
         }
@@ -331,6 +467,15 @@ namespace EngExtract
 
             if(opts.dumpEvents)
                 DumpScenarioEvents(opts);
+
+            if(opts.dumpPersonalies)
+                DumpPersonalityNames(opts);
+
+            if(opts.dumpYotogis)
+                DumpYotogiData(opts);
+
+            if(opts.dumpVIPEvents)
+                DumpVIPEvents(opts);
 
             if (opts.dumpScripts)
                 Debug.Log($"Dumped {translatedLines} lines");

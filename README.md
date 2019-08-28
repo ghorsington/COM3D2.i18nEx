@@ -84,7 +84,8 @@ Inside the created folder, create the following subfolders:
 If you do this in the Japanese game, you will only get untranslated story which you will need to translate manually 
 (if you're a translator, this is probably what you want).  
 
-1. Download and install **either** Sybaris **or** COM3D2.BepInEx.AIO as per requirements. 
+1. Download and install [COM3D2.BepInEx.AIO](https://github.com/NeighTools/COM3D2.BepInEx.AIO) as per requirements.
+    * You can use Sybaris and any of its AIOs as well. However in that case you need to **make sure i18nEx** is disabled. To do that, remove `COM3D2.i18nEx.Patcher.dll` and `COM3D2.i18nEx.Managed.dll` from `Sybaris` folder.
 
 2. Download `EngExtract.dll` from [releases](https://github.com/denikson/COM3D2.i18nEx/releases) and place it into `Sybaris\UnityInjector` folder.  
 

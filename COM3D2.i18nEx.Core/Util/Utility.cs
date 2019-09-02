@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -8,6 +9,11 @@ namespace COM3D2.i18nEx.Core.Util
 {
     public static class Utility
     {
+        public static bool IsNullOrWhiteSpace(this string str)
+        {
+            return str == null || str.All(char.IsWhiteSpace);
+        }
+
         public static string ToLF(this string val)
         {
             var sb = new StringBuilder(val.Length);

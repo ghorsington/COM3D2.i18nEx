@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Reflection.Emit;
 using BepInEx.Harmony;
+using COM3D2.i18nEx.Core.Util;
 using HarmonyLib;
 using I2.Loc;
 using UnityEngine;
@@ -58,7 +59,7 @@ namespace COM3D2.i18nEx.Core.Hooks
                                              string overrideLanguage)
         {
             if (overrideLanguage != "Japanese" &&
-                (string.IsNullOrEmpty(__result) || __result.IndexOf('/') >= 0 && Term.Contains(__result)))
+                (__result.IsNullOrWhiteSpace() || __result.IndexOf('/') >= 0 && Term.Contains(__result)))
                 __result = LocalizationManager.GetTranslation(Term, FixForRTL, maxLineLengthForRTL, ignoreRTLnumbers,
                                                               applyParameters, localParametersRoot, "Japanese");
             else if (Configuration.I2Translation.VerboseLogging.Value)

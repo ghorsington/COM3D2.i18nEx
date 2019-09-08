@@ -50,16 +50,18 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
     internal class ScriptTranslationManager : TranslationManagerBase
     {
-        private static readonly Dictionary<string, string> TranslationFiles =
-            new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly StringBuilder clipboardBuffer = new StringBuilder();
 
-        private static readonly LinkedList<ScriptTranslationFile> TranslationFileCache =
+        private readonly LinkedList<ScriptTranslationFile> translationFileCache =
             new LinkedList<ScriptTranslationFile>();
 
-        private static readonly Dictionary<string, LinkedListNode<ScriptTranslationFile>> TranslationFileLookup =
+        private readonly Dictionary<string, LinkedListNode<ScriptTranslationFile>> translationFileLookup =
             new Dictionary<string, LinkedListNode<ScriptTranslationFile>>();
 
-        private readonly StringBuilder clipboardBuffer = new StringBuilder();
+        private readonly Dictionary<string, string> translationFiles =
+            new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+
+        private ScriptTranslationFile namesFile;
 
         private void Update()
         {
@@ -71,9 +73,10 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
         {
             Core.Logger.LogInfo("Loading script translations");
 
-            TranslationFiles.Clear();
-            TranslationFileCache.Clear();
-            TranslationFileLookup.Clear();
+            namesFile = null;
+            translationFiles.Clear();
+            translationFileCache.Clear();
+            translationFileLookup.Clear();
 
             var files = Core.TranslationLoader.GetScriptTranslationFileNames();
 
@@ -86,22 +89,34 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             foreach (string file in files)
             {
                 string fileName = Path.GetFileNameWithoutExtension(file);
-                if (TranslationFiles.ContainsKey(fileName))
+                if (translationFiles.ContainsKey(fileName))
                 {
                     Core.Logger.LogWarning(
-                        $"Script translation file {fileName} is declared twice in different locations ({file} and {TranslationFiles[fileName]})");
+                        $"Script translation file {fileName} is declared twice in different locations ({file} and {translationFiles[fileName]})");
                     continue;
                 }
 
-                TranslationFiles[fileName] = file;
+                if (fileName == "__npc_names" && namesFile == null)
+                {
+                    namesFile = new ScriptTranslationFile(fileName, file);
+                    namesFile.LoadTranslations();
+                    Core.Logger.LogInfo("Loaded __npc_names! Got names:");
+                    foreach (var namesFileTranslation in namesFile.Translations)
+                        Core.Logger.LogInfo($"\"{namesFileTranslation.Key}\" => \"{namesFileTranslation.Value}\"");
+                    continue;
+                }
+
+                translationFiles[fileName] = file;
             }
         }
 
         public string GetTranslation(string fileName, string text)
         {
-            if (!TranslationFiles.ContainsKey(fileName))
+            if (namesFile != null && namesFile.Translations.TryGetValue(text, out string nameTl))
+                return nameTl;
+            if (fileName == null || !translationFiles.ContainsKey(fileName))
                 return NoTranslation(text);
-            if (!TranslationFileLookup.TryGetValue(fileName, out var tlNode))
+            if (!translationFileLookup.TryGetValue(fileName, out var tlNode))
             {
                 tlNode = LoadFile(fileName);
 
@@ -139,7 +154,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
         public bool WriteTranslation(string fileName, string original, string translated)
         {
-            if (!TranslationFiles.ContainsKey(fileName))
+            if (!translationFiles.ContainsKey(fileName))
             {
                 string tlPath = Path.Combine(Paths.TranslationsRoot, Configuration.General.ActiveLanguage.Value);
                 string textTlPath = Path.Combine(tlPath, "Script");
@@ -149,7 +164,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
                 string scriptFilePath = Path.Combine(textTlPath, $"{fileName}.txt");
                 File.WriteAllText(scriptFilePath, $"{original.Escape()}\t{translated.Escape()}");
-                TranslationFiles.Add(fileName, scriptFilePath);
+                translationFiles.Add(fileName, scriptFilePath);
                 return true;
             }
 
@@ -159,7 +174,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                 return false;
 
             node.Value.Translations.Add(original, translated);
-            File.AppendAllText(TranslationFiles[fileName],
+            File.AppendAllText(translationFiles[fileName],
                                $"{Environment.NewLine}{original.Escape()}\t{translated.Escape()}");
             return true;
         }
@@ -168,32 +183,32 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
         private LinkedListNode<ScriptTranslationFile> LoadFile(string fileName)
         {
-            if (TranslationFileLookup.TryGetValue(fileName, out var node))
+            if (translationFileLookup.TryGetValue(fileName, out var node))
             {
-                TranslationFileCache.Remove(node);
-                TranslationFileCache.AddFirst(node);
+                translationFileCache.Remove(node);
+                translationFileCache.AddFirst(node);
                 return node;
             }
 
-            if (TranslationFileCache.Count == Configuration.ScriptTranslations.MaxTranslationFilesCached.Value)
+            if (translationFileCache.Count == Configuration.ScriptTranslations.MaxTranslationFilesCached.Value)
             {
-                TranslationFileLookup.Remove(TranslationFileCache.Last.Value.FileName);
-                TranslationFileCache.RemoveLast();
+                translationFileLookup.Remove(translationFileCache.Last.Value.FileName);
+                translationFileCache.RemoveLast();
             }
 
             try
             {
-                var file = new ScriptTranslationFile(fileName, TranslationFiles[fileName]);
+                var file = new ScriptTranslationFile(fileName, translationFiles[fileName]);
                 file.LoadTranslations();
-                var result = TranslationFileCache.AddFirst(file);
-                TranslationFileLookup.Add(fileName, result);
+                var result = translationFileCache.AddFirst(file);
+                translationFileLookup.Add(fileName, result);
                 return result;
             }
             catch (Exception e)
             {
                 Core.Logger.LogError(
                     $"Failed to load translations for file {fileName} because: {e.Message}. Skipping file...");
-                TranslationFiles.Remove(fileName);
+                translationFiles.Remove(fileName);
                 return null;
             }
         }

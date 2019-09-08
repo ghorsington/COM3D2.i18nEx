@@ -52,6 +52,14 @@ namespace COM3D2.i18nEx.Core.Hooks
             TranslateLine(curScriptFileName, ref text);
         }
 
+        [HarmonyPatch(typeof(MessageClass), nameof(MessageClass.GetTranslationText))]
+        [HarmonyPostfix]
+        private static void OnGetTranslationText(ref KeyValuePair<string, string> __result)
+        {
+            if (!string.IsNullOrEmpty(__result.Key) && string.IsNullOrEmpty(__result.Value))
+                __result = new KeyValuePair<string, string>(__result.Key, Core.ScriptTranslate.GetTranslation(null, __result.Key));
+        }
+
         [HarmonyPatch(typeof(KagScript), "GetText")]
         [HarmonyPostfix]
         private static void KagScriptGetText(KagScript __instance, ref string __result)

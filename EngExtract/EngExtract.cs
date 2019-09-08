@@ -24,7 +24,7 @@ namespace EngExtract
         private const int MARGIN_BOTTOM = 5;
 
         private static readonly Regex textPattern = new Regex("text=\"(?<text>.*)\"");
-        private static readonly Regex namePattern = new Regex("name=\"(?<name>.*)\"");
+        private static readonly Regex namePattern = new Regex("name=(?<name>.*)");
         private static readonly Encoding UTF8 = new UTF8Encoding(true);
 
         private readonly DumpOptions options = new DumpOptions();
@@ -144,6 +144,7 @@ namespace EngExtract
             return new KeyValuePair<string, string>(txt, string.Empty);
         }
 
+        private static Dictionary<string, string> NpcNames = new Dictionary<string, string>();
         private void ExtractTranslations(string fileName, string script)
         {
             string tlDir = Path.Combine(TL_DIR, "Script");
@@ -171,11 +172,11 @@ namespace EngExtract
                     if (match.Success)
                     {
                         var m = match.Groups["name"];
-                        var parts = SplitTranslation(m.Value);
+                        var parts = SplitTranslation(m.Value.Trim('\"'));
                         if (parts.Key.StartsWith("[HF", StringComparison.InvariantCulture) ||
                             parts.Key.StartsWith("[SF", StringComparison.InvariantCulture))
                             continue;
-                        lineList.Add($"{parts.Key}\t{parts.Value}");
+                        NpcNames[parts.Key] = parts.Value;
                     }
                 }
                 else if (captureTalk)
@@ -224,6 +225,11 @@ namespace EngExtract
                     Debug.Log(scriptFile);
                     ExtractTranslations(scriptFile, script);
                 }
+
+            string tlDir = Path.Combine(TL_DIR, "Script");
+            string namesFile = Path.Combine(tlDir, "__npc_names.txt");
+            File.WriteAllLines(namesFile, NpcNames.Select(n => $"{n.Key}\t{n.Value}").ToArray(), UTF8);
+            NpcNames.Clear();
         }
 
         private void DumpScenarioEvents(DumpOptions opts)

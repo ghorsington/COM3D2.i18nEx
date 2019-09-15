@@ -23,6 +23,17 @@ namespace COM3D2.i18nEx.Core.Hooks
             initialized = true;
         }
 
+        [HarmonyPatch(typeof(BaseKagManager), nameof(BaseKagManager.TagPlayVoice))]
+        [HarmonyPrefix]
+        private static void OnPlayVoice(BaseKagManager __instance, KagTagSupport tag_data, object ___subtitle_data)
+        {
+            __instance.CheckAbsolutelyNecessaryTag(tag_data, "playvoice", "voice");
+
+            var voice = tag_data.GetTagProperty("voice").AsString();
+            var subData = Core.ScriptTranslate.GetSubtitle(__instance.kag.GetCurrentFileName(), voice);
+            subData?.SetSubtitleData(___subtitle_data);
+        }
+
         [HarmonyPatch(typeof(BaseKagManager), nameof(BaseKagManager.TagVRChoicesSet))]
         [HarmonyPatch(typeof(BaseKagManager), nameof(BaseKagManager.TagVRDialog))]
         [HarmonyPatch(typeof(ADVKagManager), nameof(ADVKagManager.TagChoicesRandomSet))]

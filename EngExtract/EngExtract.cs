@@ -144,6 +144,90 @@ namespace EngExtract
             return new KeyValuePair<string, string>(txt, string.Empty);
         }
 
+        private static Dictionary<string, string> ParseTag(string line)
+        {
+            var result = new Dictionary<string, string>();
+            var valueSb = new StringBuilder();
+            var keySb = new StringBuilder();
+            var captureValue = false;
+            var quoted = false;
+            var escapeNext = false;
+
+            foreach (var c in line)
+            {
+                if (captureValue)
+                {
+                    if (valueSb.Length == 0 && c == '"')
+                    {
+                        quoted = true;
+                        continue;
+                    }
+
+                    if (escapeNext)
+                    {
+                        escapeNext = false;
+                        valueSb.Append(c);
+                        continue;
+                    }
+
+                    if (c == '\\')
+                        escapeNext = true;
+
+                    if ((!quoted && char.IsWhiteSpace(c)) || (quoted && !escapeNext && c == '"'))
+                    {
+                        quoted = false;
+                        result[keySb.ToString()] = valueSb.ToString();
+                        keySb.Length = 0;
+                        valueSb.Length = 0;
+                        captureValue = false;
+                    }
+
+                    valueSb.Append(c);
+                }
+                else
+                {
+                    if (keySb.Length == 0 && char.IsWhiteSpace(c))
+                        continue;
+
+                    if (char.IsWhiteSpace(c) && keySb.Length != 0)
+                    {
+                        result[keySb.ToString()] = "true";
+                        keySb.Length = 0;
+                        continue;
+                    }
+
+                    if (c == '=')
+                    {
+                        captureValue = true;
+                        continue;
+                    }
+
+                    keySb.Append(c);
+                }
+            }
+
+            if (keySb.Length != 0)
+                result[keySb.ToString()] = valueSb.Length == 0 ? "true" : valueSb.ToString();
+
+            return result;
+        }
+
+        [Serializable]
+        internal class SubtitleData
+        {
+            public int addDisplayTime = 0;
+            public int displayTime = -1;
+            public bool isCasino = false;
+            public string original = string.Empty;
+            public string translation = string.Empty;
+            public string voice = string.Empty;
+        }
+
+        private static T GetOrDefault<T>(Dictionary<string, T> dic, string key, T def)
+        {
+            return dic.TryGetValue(key, out var val) ? val : def;
+        }
+
         private static Dictionary<string, string> NpcNames = new Dictionary<string, string>();
         private void ExtractTranslations(string fileName, string script)
         {
@@ -158,6 +242,8 @@ namespace EngExtract
 
             var sb = new StringBuilder();
             var captureTalk = false;
+            var captureSubtitlePlay = false;
+            SubtitleData subData = null;
 
             foreach (string line in lines)
             {
@@ -165,7 +251,34 @@ namespace EngExtract
                 if (trimmedLine.Length == 0)
                     continue;
 
-                if (trimmedLine.StartsWith("@talk", StringComparison.InvariantCultureIgnoreCase))
+                if (trimmedLine.StartsWith("@SubtitleDisplayForPlayVoice", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    captureSubtitlePlay = true;
+                    var sub = ParseTag(line.Substring("@SubtitleDisplayForPlayVoice".Length));
+                    var text = SplitTranslation(sub["text"]);
+                    subData = new SubtitleData
+                    {
+                        addDisplayTime = int.Parse(GetOrDefault(sub, "addtime", "0")),
+                        displayTime = int.Parse(GetOrDefault(sub, "wait", "-1")),
+                        original = text.Key,
+                        translation = text.Value,
+                        isCasino = sub.ContainsKey("mode_c")
+                    };
+                }
+                else if (trimmedLine.StartsWith("@PlayVoice", StringComparison.InvariantCultureIgnoreCase) && captureSubtitlePlay)
+                {
+                    captureSubtitlePlay = false;
+                    var data = ParseTag(line.Substring("@PlayVoice".Length));
+                    if (!data.TryGetValue("voice", out var voiceName))
+                    {
+                        subData = null;
+                        continue;
+                    }
+                    subData.voice = voiceName;
+                    lineList.Add($"@VoiceSubtitle{JsonUtility.ToJson(subData, false)}");
+                    subData = null;
+                }
+                else if (trimmedLine.StartsWith("@talk", StringComparison.InvariantCultureIgnoreCase))
                 {
                     captureTalk = true;
                     var match = namePattern.Match(trimmedLine);

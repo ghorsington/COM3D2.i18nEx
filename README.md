@@ -94,16 +94,18 @@ If you do this in the Japanese game, you will only get untranslated story which 
 **If you have i18nEx installed in the game, disable the plug-in!**
 **Make sure you have the game's command line open so you can see the progress.** 
 
-4. When you're in the main menu, **press <kbd>D</kbd>** and observe the extraction progress in the command line.  
-It might take a while for it to dump everything (up to 5 minutes), just wait until it reports that everything is dumped.
+4. When you're in the main menu, **press <kbd>D</kbd>** to open the dumping UI.
 
-5. When it's done, close the game. You should now see folder named `COM3D2_Localisation` appearing in your game's directory.  
+5. Press `Dump!` button. **You do not need to change any options unless you want to dump untranslated text too!**  
+After you press the dump button, observe the console output to see progress. It may take up to 5 minutes to dump everything.
 
-6. From `COM3D2_Localisation`, take `Script` and `UI` folders and copy them over into `i18nEx/English` of your Japanese game. 
+6. When it's done, close the game. You should now see folder named `COM3D2_Localisation` appearing in your game's directory.  
 
-7. **Remove `EngExtract.dll from your English game when you're done extracting all the text!**
+7. From `COM3D2_Localisation`, take `Script` and `UI` folders and copy them over into `i18nEx/English` of your Japanese game. 
 
-8. Launch the Japanese game; if you have done everything correctly, you will now have i18nEx load the English translations into the game!
+8. **Remove `EngExtract.dll from your English game when you're done extracting all the text!**
+
+9. Launch the Japanese game; if you have done everything correctly, you will now have i18nEx load the English translations into the game!
 
 > **NOTE:**
 > Not all content from JP game has been translated to English.  

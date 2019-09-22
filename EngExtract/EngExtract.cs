@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using I2.Loc;
@@ -27,22 +26,27 @@ namespace EngExtract
         private static readonly Regex namePattern = new Regex("name=(?<name>.*)");
         private static readonly Encoding UTF8 = new UTF8Encoding(true);
 
+        private static readonly Dictionary<string, string> NpcNames = new Dictionary<string, string>();
+
         private readonly DumpOptions options = new DumpOptions();
         private bool displayGui;
         private bool dumping;
+
+
+        private readonly HashSet<string> filesToSkip = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
 
         private int translatedLines;
 
         private static void DumpI2Translations(LanguageSource src)
         {
-            string i2Path = Path.Combine(TL_DIR, "UI");
-            string sourcePath = Path.Combine(i2Path, src.name);
+            var i2Path = Path.Combine(TL_DIR, "UI");
+            var sourcePath = Path.Combine(i2Path, src.name);
             if (!Directory.Exists(sourcePath))
                 Directory.CreateDirectory(sourcePath);
             var categories = src.GetCategories(true);
-            foreach (string category in categories)
+            foreach (var category in categories)
             {
-                string path = Path.Combine(sourcePath, $"{category}.csv");
+                var path = Path.Combine(sourcePath, $"{category}.csv");
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
                 File.WriteAllText(path, src.Export_CSV(category), UTF8);
             }
@@ -116,7 +120,7 @@ namespace EngExtract
 
             var langs = LocalizationManager.GetAllLanguages();
             Debug.Log($"Currently {langs.Count} languages are known");
-            foreach (string language in langs)
+            foreach (var language in langs)
                 Debug.Log($"{language}");
 
             Debug.Log($"Currently selected language is {LocalizationManager.CurrentLanguage}");
@@ -136,8 +140,8 @@ namespace EngExtract
             if ((pos = txt.IndexOf("<E>", StringComparison.InvariantCultureIgnoreCase)) > 0)
             {
                 translatedLines++;
-                string orig = txt.Substring(0, pos);
-                string tl = txt.Substring(pos + 3).Replace("…", "...").Trim();
+                var orig = txt.Substring(0, pos);
+                var tl = txt.Substring(pos + 3).Replace("…", "...").Trim();
                 return new KeyValuePair<string, string>(orig, tl);
             }
 
@@ -154,7 +158,6 @@ namespace EngExtract
             var escapeNext = false;
 
             foreach (var c in line)
-            {
                 if (captureValue)
                 {
                     if (valueSb.Length == 0 && c == '"')
@@ -173,7 +176,7 @@ namespace EngExtract
                     if (c == '\\')
                         escapeNext = true;
 
-                    if ((!quoted && char.IsWhiteSpace(c)) || (quoted && !escapeNext && c == '"'))
+                    if (!quoted && char.IsWhiteSpace(c) || quoted && !escapeNext && c == '"')
                     {
                         quoted = false;
                         result[keySb.ToString()] = valueSb.ToString();
@@ -204,7 +207,6 @@ namespace EngExtract
 
                     keySb.Append(c);
                 }
-            }
 
             if (keySb.Length != 0)
                 result[keySb.ToString()] = valueSb.Length == 0 ? "true" : valueSb.ToString();
@@ -212,28 +214,19 @@ namespace EngExtract
             return result;
         }
 
-        [Serializable]
-        internal class SubtitleData
-        {
-            public int addDisplayTime = 0;
-            public int displayTime = -1;
-            public bool isCasino = false;
-            public string original = string.Empty;
-            public string translation = string.Empty;
-            public string voice = string.Empty;
-        }
-
         private static T GetOrDefault<T>(Dictionary<string, T> dic, string key, T def)
         {
             return dic.TryGetValue(key, out var val) ? val : def;
         }
 
-        private static Dictionary<string, string> NpcNames = new Dictionary<string, string>();
         private void ExtractTranslations(string fileName, string script)
         {
-            string tlDir = Path.Combine(TL_DIR, "Script");
-            string dir = Path.Combine(tlDir, Path.GetDirectoryName(fileName));
-            string name = Path.GetFileNameWithoutExtension(fileName);
+            var tlDir = Path.Combine(TL_DIR, "Script");
+            var dir = Path.Combine(tlDir, Path.GetDirectoryName(fileName));
+            var name = Path.GetFileNameWithoutExtension(fileName);
+
+            if (filesToSkip.Contains(name))
+                return;
 
             Directory.CreateDirectory(dir);
 
@@ -245,16 +238,46 @@ namespace EngExtract
             var captureSubtitlePlay = false;
             SubtitleData subData = null;
 
-            foreach (string line in lines)
+            var captureSubtitlesList = new List<KeyValuePair<string, string>>();
+
+            foreach (var line in lines)
             {
-                string trimmedLine = line.Trim();
+                var trimmedLine = line.Trim();
                 if (trimmedLine.Length == 0)
                     continue;
 
-                if (trimmedLine.StartsWith("@SubtitleDisplayForPlayVoice", StringComparison.InvariantCultureIgnoreCase))
+                if (trimmedLine.StartsWith("@LoadSubtitleFile", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    var sub = ParseTag(trimmedLine.Substring("@LoadSubtitleFile".Length));
+                    var subFileName = sub["file"];
+
+                    filesToSkip.Add(subFileName);
+
+                    using (var f = GameUty.FileOpen($"{subFileName}.ks"))
+                    {
+                        var parseTalk = false;
+                        var subSb = new StringBuilder();
+                        foreach (var subLine in NUty.SjisToUnicode(f.ReadAll()).Split('\n').Select(s => s.Trim())
+                                                    .Where(s => s.Length != 0))
+                            if (subLine.StartsWith("@talk", StringComparison.InvariantCultureIgnoreCase))
+                                parseTalk = true;
+                            else if (subLine.StartsWith("@hitret", StringComparison.InvariantCultureIgnoreCase) &&
+                                     parseTalk)
+                            {
+                                parseTalk = false;
+                                var parts = SplitTranslation(subSb.ToString());
+                                captureSubtitlesList.Add(parts);
+                                subSb.Length = 0;
+                            }
+                            else
+                                subSb.Append(subLine);
+                    }
+                }
+                else if (trimmedLine.StartsWith("@SubtitleDisplayForPlayVoice",
+                                                StringComparison.InvariantCultureIgnoreCase))
                 {
                     captureSubtitlePlay = true;
-                    var sub = ParseTag(line.Substring("@SubtitleDisplayForPlayVoice".Length));
+                    var sub = ParseTag(trimmedLine.Substring("@SubtitleDisplayForPlayVoice".Length));
                     var text = SplitTranslation(sub["text"]);
                     subData = new SubtitleData
                     {
@@ -265,18 +288,47 @@ namespace EngExtract
                         isCasino = sub.ContainsKey("mode_c")
                     };
                 }
-                else if (trimmedLine.StartsWith("@PlayVoice", StringComparison.InvariantCultureIgnoreCase) && captureSubtitlePlay)
+                else if (trimmedLine.StartsWith("@PlayVoice", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    captureSubtitlePlay = false;
-                    var data = ParseTag(line.Substring("@PlayVoice".Length));
-                    if (!data.TryGetValue("voice", out var voiceName))
+                    if (captureSubtitlePlay)
                     {
+                        captureSubtitlePlay = false;
+                        var data = ParseTag(trimmedLine.Substring("@PlayVoice".Length));
+                        if (!data.TryGetValue("voice", out var voiceName))
+                        {
+                            subData = null;
+                            continue;
+                        }
+
+                        subData.voice = voiceName;
+                        lineList.Add($"@VoiceSubtitle{JsonUtility.ToJson(subData, false)}");
                         subData = null;
-                        continue;
                     }
-                    subData.voice = voiceName;
-                    lineList.Add($"@VoiceSubtitle{JsonUtility.ToJson(subData, false)}");
-                    subData = null;
+                    else if (captureSubtitlesList.Count > 0)
+                    {
+                        var subTl = captureSubtitlesList[0];
+                        captureSubtitlesList.RemoveAt(0);
+
+                        subData = new SubtitleData
+                        {
+                            addDisplayTime = 0,
+                            displayTime = -1,
+                            isCasino = false,
+                            original = subTl.Key,
+                            translation = subTl.Value
+                        };
+
+                        var data = ParseTag(trimmedLine.Substring("@PlayVoice".Length));
+                        if (!data.TryGetValue("voice", out var voiceName))
+                        {
+                            subData = null;
+                            continue;
+                        }
+
+                        subData.voice = voiceName;
+                        lineList.Add($"@VoiceSubtitle{JsonUtility.ToJson(subData, false)}");
+                        subData = null;
+                    }
                 }
                 else if (trimmedLine.StartsWith("@talk", StringComparison.InvariantCultureIgnoreCase))
                 {
@@ -331,24 +383,25 @@ namespace EngExtract
             var scripts = GameUty.FileSystem.GetFileListAtExtension(".ks");
             Debug.Log($"Found {scripts.Length} scripts!");
 
-            foreach (string scriptFile in scripts)
+            foreach (var scriptFile in scripts)
                 using (var f = GameUty.FileOpen(scriptFile))
                 {
-                    string script = ShiftJisUtil.ToString(f.ReadAll());
+                    var script = NUty.SjisToUnicode(f.ReadAll());
                     Debug.Log(scriptFile);
                     ExtractTranslations(scriptFile, script);
                 }
 
-            string tlDir = Path.Combine(TL_DIR, "Script");
-            string namesFile = Path.Combine(tlDir, "__npc_names.txt");
+            var tlDir = Path.Combine(TL_DIR, "Script");
+            var namesFile = Path.Combine(tlDir, "__npc_names.txt");
             File.WriteAllLines(namesFile, NpcNames.Select(n => $"{n.Key}\t{n.Value}").ToArray(), UTF8);
             NpcNames.Clear();
+            filesToSkip.Clear();
         }
 
         private void DumpScenarioEvents(DumpOptions opts)
         {
-            string i2Path = Path.Combine(TL_DIR, "UI");
-            string unitPath = Path.Combine(i2Path, "zzz_scenario_events");
+            var i2Path = Path.Combine(TL_DIR, "UI");
+            var unitPath = Path.Combine(i2Path, "zzz_scenario_events");
             Directory.CreateDirectory(unitPath);
 
             Debug.Log("Getting scenario event data");
@@ -367,16 +420,16 @@ namespace EngExtract
                             if (!scenarioNei.IsCellToExistData(0, i))
                                 continue;
 
-                            int id = scenarioNei.GetCellAsInteger(0, i);
-                            string name = scenarioNei.GetCellAsString(1, i);
-                            string description = scenarioNei.GetCellAsString(2, i);
+                            var id = scenarioNei.GetCellAsInteger(0, i);
+                            var name = scenarioNei.GetCellAsString(1, i);
+                            var description = scenarioNei.GetCellAsString(2, i);
 
                             if (opts.skipTranslatedItems &&
                                 LocalizationManager.TryGetTranslation($"SceneScenarioSelect/{id}/タイトル", out _))
                                 continue;
 
-                            string csvName = EscapeCSVItem(name);
-                            string csvDescription = EscapeCSVItem(description);
+                            var csvName = EscapeCSVItem(name);
+                            var csvDescription = EscapeCSVItem(description);
                             sw.WriteLine($"{id}/タイトル,Text,,{csvName},{csvName}");
                             sw.WriteLine($"{id}/内容,Text,,{csvDescription},{csvDescription}");
                         }
@@ -385,8 +438,8 @@ namespace EngExtract
 
         private void DumpItemNames(DumpOptions opts)
         {
-            string i2Path = Path.Combine(TL_DIR, "UI");
-            string unitPath = Path.Combine(i2Path, "zzz_item_names");
+            var i2Path = Path.Combine(TL_DIR, "UI");
+            var unitPath = Path.Combine(i2Path, "zzz_item_names");
             Directory.CreateDirectory(unitPath);
 
             var encoding = new UTF8Encoding(true);
@@ -397,7 +450,7 @@ namespace EngExtract
 
             var swDict = new Dictionary<string, StreamWriter>();
 
-            foreach (string menu in menus)
+            foreach (var menu in menus)
                 using (var f = GameUty.FileOpen(menu))
                     using (var br = new BinaryReader(new MemoryStream(f.ReadAll())))
                     {
@@ -406,14 +459,15 @@ namespace EngExtract
                         br.ReadString();
                         br.ReadInt32();
                         br.ReadString();
-                        string filename = Path.GetFileNameWithoutExtension(menu);
-                        string name = br.ReadString();
-                        string category = br.ReadString().ToLowerInvariant();
-                        string info = br.ReadString();
+                        var filename = Path.GetFileNameWithoutExtension(menu);
+                        var name = br.ReadString();
+                        var category = br.ReadString().ToLowerInvariant();
+                        var info = br.ReadString();
 
                         if (!swDict.TryGetValue(category, out var sw))
                         {
-                            swDict[category] = sw = new StreamWriter(Path.Combine(unitPath, $"{category}.csv"), false, encoding);
+                            swDict[category] =
+                                sw = new StreamWriter(Path.Combine(unitPath, $"{category}.csv"), false, encoding);
                             sw.WriteLine("Key,Type,Desc,Japanese,English");
                         }
 
@@ -430,8 +484,8 @@ namespace EngExtract
 
         private void DumpPersonalityNames(DumpOptions opts)
         {
-            string i2Path = Path.Combine(TL_DIR, "UI");
-            string unitPath = Path.Combine(i2Path, "zzz_personalities");
+            var i2Path = Path.Combine(TL_DIR, "UI");
+            var unitPath = Path.Combine(i2Path, "zzz_personalities");
             Directory.CreateDirectory(unitPath);
 
             Debug.Log("Getting personality names");
@@ -450,14 +504,14 @@ namespace EngExtract
                             if (!scenarioNei.IsCellToExistData(0, i))
                                 continue;
 
-                            string uniqueName = scenarioNei.GetCellAsString(1, i);
-                            string displayName = scenarioNei.GetCellAsString(2, i);
+                            var uniqueName = scenarioNei.GetCellAsString(1, i);
+                            var displayName = scenarioNei.GetCellAsString(2, i);
 
                             if (opts.skipTranslatedItems &&
                                 LocalizationManager.TryGetTranslation($"MaidStatus/性格タイプ/{uniqueName}", out _))
                                 continue;
 
-                            string csvName = EscapeCSVItem(displayName);
+                            var csvName = EscapeCSVItem(displayName);
                             sw.WriteLine($"性格タイプ/{uniqueName},Text,,{csvName},{csvName}");
                         }
                     }
@@ -465,8 +519,8 @@ namespace EngExtract
 
         private void DumpYotogiData(DumpOptions opts)
         {
-            string i2Path = Path.Combine(TL_DIR, "UI");
-            string unitPath = Path.Combine(i2Path, "zzz_yotogi");
+            var i2Path = Path.Combine(TL_DIR, "UI");
+            var unitPath = Path.Combine(i2Path, "zzz_yotogi");
             Directory.CreateDirectory(unitPath);
 
             Debug.Log("Getting yotogi skills and commands");
@@ -484,13 +538,13 @@ namespace EngExtract
                             if (!scenarioNei.IsCellToExistData(0, i))
                                 continue;
 
-                            string skillName = scenarioNei.GetCellAsString(4, i);
+                            var skillName = scenarioNei.GetCellAsString(4, i);
 
                             if (opts.skipTranslatedItems &&
                                 LocalizationManager.TryGetTranslation($"YotogiSkillName/{skillName}", out _))
                                 continue;
 
-                            string csvName = EscapeCSVItem(skillName);
+                            var csvName = EscapeCSVItem(skillName);
                             sw.WriteLine($"{csvName},Text,,{csvName},{csvName}");
                         }
                     }
@@ -511,7 +565,7 @@ namespace EngExtract
                                 continue;
                             }
 
-                            string commandName = scenarioNei.GetCellAsString(2, i);
+                            var commandName = scenarioNei.GetCellAsString(2, i);
 
                             if (opts.skipTranslatedItems &&
                                 LocalizationManager.TryGetTranslation($"YotogiSkillCommand/{commandName}", out _))
@@ -522,7 +576,7 @@ namespace EngExtract
 
                             commandNames.Add(commandName);
 
-                            string csvName = EscapeCSVItem(commandName);
+                            var csvName = EscapeCSVItem(commandName);
                             sw.WriteLine($"{csvName},Text,,{csvName},{csvName}");
                         }
                     }
@@ -530,8 +584,8 @@ namespace EngExtract
 
         private void DumpVIPEvents(DumpOptions opts)
         {
-            string i2Path = Path.Combine(TL_DIR, "UI");
-            string unitPath = Path.Combine(i2Path, "zzz_vip_event");
+            var i2Path = Path.Combine(TL_DIR, "UI");
+            var unitPath = Path.Combine(i2Path, "zzz_vip_event");
             Directory.CreateDirectory(unitPath);
 
             Debug.Log("Getting VIP event names");
@@ -549,15 +603,15 @@ namespace EngExtract
                             if (!scenarioNei.IsCellToExistData(0, i))
                                 continue;
 
-                            string vipName = scenarioNei.GetCellAsString(1, i);
-                            string vipDescription = scenarioNei.GetCellAsString(7, i);
+                            var vipName = scenarioNei.GetCellAsString(1, i);
+                            var vipDescription = scenarioNei.GetCellAsString(7, i);
 
                             if (opts.skipTranslatedItems &&
                                 LocalizationManager.TryGetTranslation($"SceneDaily/スケジュール/項目/{vipName}", out _))
                                 continue;
 
-                            string csvName = EscapeCSVItem(vipName);
-                            string csvDesc = EscapeCSVItem(vipDescription);
+                            var csvName = EscapeCSVItem(vipName);
+                            var csvDesc = EscapeCSVItem(vipDescription);
                             sw.WriteLine($"スケジュール/項目/{vipName},Text,,{csvName},{csvName}");
                             sw.WriteLine($"スケジュール/説明/{vipName},Text,,{csvDesc},{csvDesc}");
                         }
@@ -584,22 +638,33 @@ namespace EngExtract
             if (opts.dumpItemNames)
                 DumpItemNames(opts);
 
-            if(opts.dumpEvents)
+            if (opts.dumpEvents)
                 DumpScenarioEvents(opts);
 
-            if(opts.dumpPersonalies)
+            if (opts.dumpPersonalies)
                 DumpPersonalityNames(opts);
 
-            if(opts.dumpYotogis)
+            if (opts.dumpYotogis)
                 DumpYotogiData(opts);
 
-            if(opts.dumpVIPEvents)
+            if (opts.dumpVIPEvents)
                 DumpVIPEvents(opts);
 
             if (opts.dumpScripts)
                 Debug.Log($"Dumped {translatedLines} lines");
             Debug.Log($"Done! Dumped translations are located in {TL_DIR}. You can now close the game!");
             Debug.Log("IMPORTANT: Delete this plugin (EngExtract.dll) if you want to play the game normally!");
+        }
+
+        [Serializable]
+        internal class SubtitleData
+        {
+            public int addDisplayTime;
+            public int displayTime = -1;
+            public bool isCasino;
+            public string original = string.Empty;
+            public string translation = string.Empty;
+            public string voice = string.Empty;
         }
 
         private class DumpOptions
@@ -626,28 +691,5 @@ namespace EngExtract
                 skipTranslatedItems = other.skipTranslatedItems;
             }
         }
-    }
-}
-
-
-internal static class ShiftJisUtil
-{
-    [DllImport("kernel32.dll")]
-    private static extern int MultiByteToWideChar(uint CodePage,
-                                                  uint dwFlags,
-                                                  [In] [MarshalAs(UnmanagedType.LPArray)] byte[] lpMultiByteStr,
-                                                  int cbMultiByte,
-                                                  [Out] [MarshalAs(UnmanagedType.LPArray)] byte[] lpWideCharStr,
-                                                  int cchWideChar);
-
-    public static string ToString(byte[] data)
-    {
-        // Can't get it to work with StringBuilder. Oh well, going the long route then...
-        int needed = MultiByteToWideChar(932, 0, data, data.Length, null,
-                                         0);
-        var c = new byte[needed * 2];
-        int sent = MultiByteToWideChar(932, 0, data, data.Length, c,
-                                       needed * 2);
-        return Encoding.Unicode.GetString(c);
     }
 }

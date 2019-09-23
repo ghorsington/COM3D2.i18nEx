@@ -32,8 +32,8 @@ namespace COM3D2.i18nEx.Core.Util
         {
             int pos;
             if ((pos = txt.IndexOf("<E>", StringComparison.InvariantCultureIgnoreCase)) > 0)
-                return new KeyValuePair<string, string>(txt.Substring(0, pos), txt.Substring(pos + 3));
-            return new KeyValuePair<string, string>(txt, string.Empty);
+                return new KeyValuePair<string, string>(txt.Substring(0, pos).Trim(), txt.Substring(pos + 3).Trim());
+            return new KeyValuePair<string, string>(txt.Trim(), string.Empty);
         }
 
         public static string Escape(this string txt)

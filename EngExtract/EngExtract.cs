@@ -140,12 +140,12 @@ namespace EngExtract
             if ((pos = txt.IndexOf("<E>", StringComparison.InvariantCultureIgnoreCase)) > 0)
             {
                 translatedLines++;
-                var orig = txt.Substring(0, pos);
+                var orig = txt.Substring(0, pos).Trim();
                 var tl = txt.Substring(pos + 3).Replace("…", "...").Trim();
                 return new KeyValuePair<string, string>(orig, tl);
             }
 
-            return new KeyValuePair<string, string>(txt, string.Empty);
+            return new KeyValuePair<string, string>(txt.Trim(), string.Empty);
         }
 
         private static Dictionary<string, string> ParseTag(string line)

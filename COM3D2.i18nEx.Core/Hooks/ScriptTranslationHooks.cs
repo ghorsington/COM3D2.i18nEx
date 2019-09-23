@@ -31,7 +31,7 @@ namespace COM3D2.i18nEx.Core.Hooks
             __instance.CheckAbsolutelyNecessaryTag(tag_data, "playvoice", "voice");
 
             var voice = tag_data.GetTagProperty("voice").AsString();
-            var subData = Core.ScriptTranslate.GetSubtitle(__instance.kag.GetCurrentFileName(), voice);
+            var subData = Core.ScriptTranslate.GetSubtitle(Path.GetFileNameWithoutExtension(__instance.kag.GetCurrentFileName()), voice);
             subData?.SetSubtitleData(___subtitle_data);
         }
 

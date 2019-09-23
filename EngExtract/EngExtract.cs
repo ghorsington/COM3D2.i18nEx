@@ -239,7 +239,7 @@ namespace EngExtract
             var captureSubtitlePlay = false;
             SubtitleData subData = null;
 
-            var captureSubtitlesList = new List<KeyValuePair<string, string>>();
+            var captureSubtitlesList = new List<SubtitleData>();
 
             foreach (var line in lines)
             {
@@ -257,18 +257,31 @@ namespace EngExtract
                     using (var f = GameUty.FileOpen($"{subFileName}.ks"))
                     {
                         var parseTalk = false;
+                        string[] talkTiming = null;
                         var subSb = new StringBuilder();
                         foreach (var subLine in NUty.SjisToUnicode(f.ReadAll()).Split('\n').Select(s => s.Trim())
                                                     .Where(s => s.Length != 0))
                             if (subLine.StartsWith("@talk", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                talkTiming = subLine.Substring("@talk".Length).Trim('[', ']', ' ').Split('-');
                                 parseTalk = true;
+                            }
                             else if (subLine.StartsWith("@hitret", StringComparison.InvariantCultureIgnoreCase) &&
                                      parseTalk)
                             {
                                 parseTalk = false;
+                                var startTime = int.Parse(talkTiming[0]);
+                                var endTime = int.Parse(talkTiming[1]);
                                 var parts = SplitTranslation(subSb.ToString());
-                                captureSubtitlesList.Add(parts);
+                                captureSubtitlesList.Add(new SubtitleData
+                                {
+                                    original = parts.Key,
+                                    translation = parts.Value,
+                                    startTime = startTime,
+                                    displayTime = endTime - startTime
+                                });
                                 subSb.Length = 0;
+                                talkTiming = null;
                             }
                             else
                                 subSb.Append(subLine);
@@ -310,25 +323,12 @@ namespace EngExtract
                         var subTl = captureSubtitlesList[0];
                         captureSubtitlesList.RemoveAt(0);
 
-                        subData = new SubtitleData
-                        {
-                            addDisplayTime = 0,
-                            displayTime = -1,
-                            isCasino = false,
-                            original = subTl.Key,
-                            translation = subTl.Value
-                        };
-
                         var data = ParseTag(trimmedLine.Substring("@PlayVoice".Length));
                         if (!data.TryGetValue("voice", out var voiceName))
-                        {
-                            subData = null;
                             continue;
-                        }
 
-                        subData.voice = voiceName;
-                        lineList.Add($"@VoiceSubtitle{JsonUtility.ToJson(subData, false)}");
-                        subData = null;
+                        subTl.voice = voiceName;
+                        lineList.Add($"@VoiceSubtitle{JsonUtility.ToJson(subTl, false)}");
                     }
                 }
                 else if (trimmedLine.StartsWith("@talk", StringComparison.InvariantCultureIgnoreCase))
@@ -660,6 +660,7 @@ namespace EngExtract
         [Serializable]
         internal class SubtitleData
         {
+            public int startTime;
             public int addDisplayTime;
             public int displayTime = -1;
             public bool isCasino;

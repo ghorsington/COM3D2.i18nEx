@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
@@ -25,7 +26,8 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
         static SubtitleHelper()
         {
-            subDataType = typeof(BaseKagManager).GetNestedType("SubtitleData");
+            subDataType = typeof(BaseKagManager).GetNestedTypes(BindingFlags.NonPublic | BindingFlags.Public)
+                                                .FirstOrDefault(t => t.Name == "SubtitleData");
 
             if (subDataType == null)
             {
@@ -87,6 +89,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             try
             {
                 var subData = JsonUtility.FromJson<SubtitleData>(line.Substring(VOICE_SUBTITLE_TAG.Length));
+                Core.Logger.LogInfo($"[{FileName}] Loaded subData: {subData.voice}; \"{subData.original}\" => \"{subData.translation}\"");
                 Subtitles[subData.voice] = subData;
             }
             catch (Exception e)

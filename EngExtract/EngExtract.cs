@@ -183,6 +183,7 @@ namespace EngExtract
                         keySb.Length = 0;
                         valueSb.Length = 0;
                         captureValue = false;
+                        continue;
                     }
 
                     valueSb.Append(c);

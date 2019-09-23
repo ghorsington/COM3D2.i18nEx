@@ -107,7 +107,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                     if (trimmed.Length == 0 || trimmed.StartsWith(";"))
                         continue;
 
-                    if (trimmed.StartsWith("@VoiceSubtitle"))
+                    if (trimmed.StartsWith(VOICE_SUBTITLE_TAG))
                     {
                         ParseVoiceSubtitle(trimmed);
                         continue;

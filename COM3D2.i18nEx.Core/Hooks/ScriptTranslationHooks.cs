@@ -35,12 +35,24 @@ namespace COM3D2.i18nEx.Core.Hooks
             subData?.SetSubtitleData(___subtitle_data);
         }
 
-        [HarmonyPatch(typeof(KagScript), nameof(KagScript.OnScenarioLoadEvent))]
+        [HarmonyPatch(typeof(BaseKagManager), nameof(BaseKagManager.TagVRChoicesSet))]
+        [HarmonyPatch(typeof(BaseKagManager), nameof(BaseKagManager.TagVRDialog))]
+        [HarmonyPatch(typeof(ADVKagManager), nameof(ADVKagManager.TagChoicesRandomSet))]
+        [HarmonyPatch(typeof(ADVKagManager), nameof(ADVKagManager.TagChoicesSet))]
+        [HarmonyPatch(typeof(ADVKagManager), nameof(ADVKagManager.TagTalk))]
         [HarmonyPrefix]
-        private static void OnScenarioLoad(string file_name)
+        private static void LogScriptName(BaseKagManager __instance)
         {
-            curScriptFileName = file_name;
+            curScriptFileName = __instance.kag.GetCurrentFileName();
         }
+
+        [HarmonyPatch(typeof(BaseKagManager), nameof(BaseKagManager.TagVRChoicesSet))]
+        [HarmonyPatch(typeof(BaseKagManager), nameof(BaseKagManager.TagVRDialog))]
+        [HarmonyPatch(typeof(ADVKagManager), nameof(ADVKagManager.TagChoicesRandomSet))]
+        [HarmonyPatch(typeof(ADVKagManager), nameof(ADVKagManager.TagChoicesSet))]
+        [HarmonyPatch(typeof(ADVKagManager), nameof(ADVKagManager.TagTalk))]
+        [HarmonyPostfix]
+        private static void ClearScriptName() { curScriptFileName = null; }
 
         [HarmonyPatch(typeof(ScriptManager), nameof(ScriptManager.ReplaceCharaName), typeof(string))]
         [HarmonyPrefix]

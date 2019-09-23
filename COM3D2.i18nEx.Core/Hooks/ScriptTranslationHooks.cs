@@ -5,6 +5,7 @@ using BepInEx.Harmony;
 using COM3D2.i18nEx.Core.TranslationManagers;
 using COM3D2.i18nEx.Core.Util;
 using HarmonyLib;
+using I2.Loc;
 
 namespace COM3D2.i18nEx.Core.Hooks
 {
@@ -85,7 +86,11 @@ namespace COM3D2.i18nEx.Core.Hooks
         private static void OnGetTranslationText(ref KeyValuePair<string, string> __result)
         {
             if (!string.IsNullOrEmpty(__result.Key) && string.IsNullOrEmpty(__result.Value))
-                __result = new KeyValuePair<string, string>(__result.Key, Core.ScriptTranslate.GetTranslation(null, __result.Key));
+            {
+                if (!LocalizationManager.TryGetTranslation($"{__result.Key}/名前", out var tl))
+                    tl = Core.ScriptTranslate.GetTranslation(null, __result.Key);
+                __result = new KeyValuePair<string, string>(__result.Key, tl);
+            }
         }
 
         [HarmonyPatch(typeof(KagScript), "GetText")]

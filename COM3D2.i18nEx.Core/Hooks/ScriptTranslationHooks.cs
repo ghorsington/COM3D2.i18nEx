@@ -32,7 +32,23 @@ namespace COM3D2.i18nEx.Core.Hooks
 
             var voice = tag_data.GetTagProperty("voice").AsString();
             var subData = Core.ScriptTranslate.GetSubtitle(Path.GetFileNameWithoutExtension(__instance.kag.GetCurrentFileName()), voice);
-            subData?.SetSubtitleData(___subtitle_data);
+
+            if (subData == null)
+                return;
+
+            var sub = SubtitleMovieManager.GetGlobalInstance(false);
+            sub.Clear();
+
+            if (subData.Count == 1 && subData[0].startTime == 0)
+                subData[0].SetSubtitleData(___subtitle_data);
+            else
+            {
+                sub.autoDestroy = true;
+                foreach (var subtitleData in subData)
+                    sub.AddData($"{subtitleData.original}<E>{subtitleData.translation}", subtitleData.startTime,
+                                subtitleData.displayTime);
+                sub.Play();
+            }
         }
 
         [HarmonyPatch(typeof(BaseKagManager), nameof(BaseKagManager.TagVRChoicesSet))]

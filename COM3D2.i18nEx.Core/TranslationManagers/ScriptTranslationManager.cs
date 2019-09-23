@@ -57,6 +57,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
     [Serializable]
     internal class SubtitleData
     {
+        public int startTime = 0;
         public int addDisplayTime = 0;
         public int displayTime = -1;
         public bool isCasino = false;
@@ -81,16 +82,17 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
         public Dictionary<string, string> Translations { get; } =
             new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
 
-        public Dictionary<string, SubtitleData> Subtitles { get; }
-            = new Dictionary<string, SubtitleData>(StringComparer.InvariantCultureIgnoreCase);
+        public Dictionary<string, List<SubtitleData>> Subtitles { get; }
+            = new Dictionary<string, List<SubtitleData>>(StringComparer.InvariantCultureIgnoreCase);
 
         private void ParseVoiceSubtitle(string line)
         {
             try
             {
                 var subData = JsonUtility.FromJson<SubtitleData>(line.Substring(VOICE_SUBTITLE_TAG.Length));
-                Core.Logger.LogInfo($"[{FileName}] Loaded subData: {subData.voice}; \"{subData.original}\" => \"{subData.translation}\"");
-                Subtitles[subData.voice] = subData;
+                if (!Subtitles.TryGetValue(subData.voice, out var list))
+                    Subtitles[subData.voice] = list = new List<SubtitleData>();
+                list.Add(subData);
             }
             catch (Exception e)
             {
@@ -189,7 +191,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             }
         }
 
-        public SubtitleData GetSubtitle(string fileName, string voiceName)
+        public List<SubtitleData> GetSubtitle(string fileName, string voiceName)
         {
             if (fileName == null || !translationFiles.ContainsKey(fileName))
                 return null;

@@ -52,6 +52,11 @@ namespace TranslationExtract
             }
         }
 
+        private GUIStyle bold = new GUIStyle(GUI.skin.label)
+        {
+            fontStyle = FontStyle.Bold
+        };
+
         private void OnGUI()
         {
             if (!displayGui)
@@ -66,7 +71,7 @@ namespace TranslationExtract
                 {
                     GUILayout.BeginVertical();
                     {
-                        GUILayout.Label("Refer to the README on how to use the tool!\n\n");
+                        GUILayout.Label("Refer to the README on how to use the tool!\n\n", bold);
                         GUILayout.Label("Base dumps");
                         Toggle("Story scripts", ref options.dumpScripts);
                         Toggle("UI translations", ref options.dumpUITranslations);

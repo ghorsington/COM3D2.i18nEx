@@ -28,12 +28,14 @@ namespace TranslationExtract
 
         private static readonly Dictionary<string, string> NpcNames = new Dictionary<string, string>();
 
-        private readonly DumpOptions options = new DumpOptions();
-        private bool displayGui;
-        private bool dumping;
-
 
         private readonly HashSet<string> filesToSkip = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+
+        private readonly DumpOptions options = new DumpOptions();
+
+        private GUIStyle bold;
+        private bool displayGui;
+        private bool dumping;
 
         private int translatedLines;
 
@@ -52,15 +54,13 @@ namespace TranslationExtract
             }
         }
 
-        private GUIStyle bold = new GUIStyle(GUI.skin.label)
-        {
-            fontStyle = FontStyle.Bold
-        };
-
         private void OnGUI()
         {
             if (!displayGui)
                 return;
+            if (bold == null)
+                bold = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold };
+
 
             void Toggle(string text, ref bool toggle) { toggle = GUILayout.Toggle(toggle, text); }
 
@@ -666,11 +666,11 @@ namespace TranslationExtract
         [Serializable]
         internal class SubtitleData
         {
-            public int startTime;
             public int addDisplayTime;
             public int displayTime = -1;
             public bool isCasino;
             public string original = string.Empty;
+            public int startTime;
             public string translation = string.Empty;
             public string voice = string.Empty;
         }

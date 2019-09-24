@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using COM3D2.i18nEx.Core.Util;
 using I2.Loc;
@@ -20,9 +21,9 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
         private void LoadTranslations()
         {
-            var files = Core.TranslationLoader.GetUITranslationFileNames();
+            var units = Core.TranslationLoader.GetUITranslationFileNames();
 
-            if (files == null)
+            if (units == null)
             {
                 Core.Logger.LogInfo("No UI translations found! Skipping...");
                 return;
@@ -32,7 +33,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             source.name = "i18nEx";
             source.ClearAllData();
 
-            foreach (var kv in files)
+            foreach (var kv in units.OrderByDescending(k => k.Key, StringComparer.InvariantCultureIgnoreCase))
             {
                 string unit = kv.Key;
                 var tlFiles = kv.Value;

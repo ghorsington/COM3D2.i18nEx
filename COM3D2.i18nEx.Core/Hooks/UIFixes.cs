@@ -4,6 +4,7 @@ using System.Reflection.Emit;
 using BepInEx.Harmony;
 using HarmonyLib;
 using I2.Loc;
+using MaidStatus;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,6 +24,13 @@ namespace COM3D2.i18nEx.Core.Hooks
             instance = HarmonyWrapper.PatchAll(typeof(UIFixes), "horse.coder.i18nex.ui_fixes");
 
             initialized = true;
+        }
+
+        [HarmonyPatch(typeof(Status), nameof(Status.maxNameLength), MethodType.Getter)]
+        [HarmonyPostfix]
+        public static void GetMaxNameLength(ref int __result)
+        {
+            __result = int.MaxValue;
         }
 
         [HarmonyPatch(typeof(Text), "text", MethodType.Setter)]

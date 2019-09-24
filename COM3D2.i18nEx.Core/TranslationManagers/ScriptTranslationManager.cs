@@ -181,9 +181,6 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                 {
                     namesFile = new ScriptTranslationFile(fileName, file);
                     namesFile.LoadTranslations();
-                    Core.Logger.LogInfo("Loaded __npc_names! Got names:");
-                    foreach (var namesFileTranslation in namesFile.Translations)
-                        Core.Logger.LogInfo($"\"{namesFileTranslation.Key}\" => \"{namesFileTranslation.Value}\"");
                     continue;
                 }
 

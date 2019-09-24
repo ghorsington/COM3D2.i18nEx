@@ -89,6 +89,9 @@ namespace COM3D2.i18nEx.Core.Hooks
             {
                 if (!LocalizationManager.TryGetTranslation($"{__result.Key}/名前", out var tl))
                     tl = Core.ScriptTranslate.GetTranslation(null, __result.Key);
+                else if (LocalizationManager.TryGetTranslation($"{__result.Key}/苗字", out var surnameTl) &&
+                         !surnameTl.IsNullOrWhiteSpace())
+                    tl = $"{tl} {surnameTl}";
                 __result = new KeyValuePair<string, string>(__result.Key, tl);
             }
         }

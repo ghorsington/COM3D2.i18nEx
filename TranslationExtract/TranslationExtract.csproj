@@ -7,8 +7,8 @@
     <ProjectGuid>{CC1CBEEC-828E-4231-8A5C-15A3B3155ABF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EngExtract</RootNamespace>
-    <AssemblyName>EngExtract</AssemblyName>
+    <RootNamespace>TranslationExtract</RootNamespace>
+    <AssemblyName>TranslationExtract</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -51,7 +51,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EngExtract.cs" />
+    <Compile Include="TranslationExtract.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

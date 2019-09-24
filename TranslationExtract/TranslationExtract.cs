@@ -10,14 +10,14 @@ using UnityEngine;
 using UnityInjector;
 using UnityInjector.Attributes;
 
-namespace EngExtract
+namespace TranslationExtract
 {
     [PluginName("Translation Extractor")]
-    public class EngExtract : PluginBase
+    public class TranslationExtract : PluginBase
     {
         public const string TL_DIR = "COM3D2_Localisation";
         private const int WIDTH = 200;
-        private const int HEIGHT = 300;
+        private const int HEIGHT = 400;
         private const int MARGIN_X = 5;
         private const int MARGIN_TOP = 20;
         private const int MARGIN_BOTTOM = 5;
@@ -66,6 +66,7 @@ namespace EngExtract
                 {
                     GUILayout.BeginVertical();
                     {
+                        GUILayout.Label("Refer to the README on how to use the tool!\n\n");
                         GUILayout.Label("Base dumps");
                         Toggle("Story scripts", ref options.dumpScripts);
                         Toggle("UI translations", ref options.dumpUITranslations);
@@ -95,7 +96,7 @@ namespace EngExtract
             }
 
             GUI.Window(6969, new Rect(Screen.width - WIDTH, (Screen.height - HEIGHT) / 2f, WIDTH, HEIGHT), Window,
-                       "EngExtract");
+                       "TranslationExtract");
         }
 
         private IEnumerator DumpGame()
@@ -654,7 +655,7 @@ namespace EngExtract
             if (opts.dumpScripts)
                 Debug.Log($"Dumped {translatedLines} lines");
             Debug.Log($"Done! Dumped translations are located in {TL_DIR}. You can now close the game!");
-            Debug.Log("IMPORTANT: Delete this plugin (EngExtract.dll) if you want to play the game normally!");
+            Debug.Log("IMPORTANT: Delete this plugin (TranslationExtract.dll) if you want to play the game normally!");
         }
 
         [Serializable]

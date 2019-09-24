@@ -87,7 +87,7 @@ If you do this in the Japanese game, you will only get untranslated story which 
 1. Download and install [COM3D2.BepInEx.AIO](https://github.com/NeighTools/COM3D2.BepInEx.AIO) as per requirements.
     * You can use Sybaris and any of its AIOs as well. However in that case you need to **make sure i18nEx** is disabled. To do that, remove `COM3D2.i18nEx.Patcher.dll` and `COM3D2.i18nEx.Managed.dll` from `Sybaris` folder.
 
-2. Download `EngExtract.dll` from [releases](https://github.com/denikson/COM3D2.i18nEx/releases) and place it into `Sybaris\UnityInjector` folder.  
+2. Download `TranslationExtract.dll` from [releases](https://github.com/denikson/COM3D2.i18nEx/releases) and place it into `Sybaris\UnityInjector` folder.  
 
 3. Open the game and **wait for it to load**.
 
@@ -103,7 +103,7 @@ After you press the dump button, observe the console output to see progress. It 
 
 7. From `COM3D2_Localisation`, take `Script` and `UI` folders and copy them over into `i18nEx/English` of your Japanese game. 
 
-8. **Remove `EngExtract.dll from your English game when you're done extracting all the text!**
+8. **Remove `TranslationExtract.dll from your English game when you're done extracting all the text!**
 
 9. Launch the Japanese game; if you have done everything correctly, you will now have i18nEx load the English translations into the game!
 

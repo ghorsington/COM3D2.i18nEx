@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "COM3D2.i18nEx.Sybaris.Patch
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "COM3D2.i18nEx.Sybaris.Managed", "COM3D2.i18nEx.Sybaris.Manager\COM3D2.i18nEx.Sybaris.Managed.csproj", "{0E500C01-84F7-4B01-9E05-10A11FE13DFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EngExtract", "EngExtract\EngExtract.csproj", "{CC1CBEEC-828E-4231-8A5C-15A3B3155ABF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TranslationExtract", "TranslationExtract\TranslationExtract.csproj", "{CC1CBEEC-828E-4231-8A5C-15A3B3155ABF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

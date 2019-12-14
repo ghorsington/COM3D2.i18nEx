@@ -83,7 +83,7 @@ namespace TranslationExtract
                         Toggle(".menu item names", ref options.dumpItemNames);
                         Toggle("VIP event names", ref options.dumpVIPEvents);
                         Toggle("Yotogi skills", ref options.dumpYotogis);
-                        Toggle("Personality names", ref options.dumpPersonalies);
+                        Toggle("Maid stats", ref options.dumpPersonalies);
                         Toggle("Event names", ref options.dumpEvents);
 
                         GUILayout.Label("Other");
@@ -511,14 +511,12 @@ namespace TranslationExtract
 
             Debug.Log("Getting personality names");
 
-            var encoding = new UTF8Encoding(true);
-            using (var sw = new StreamWriter(Path.Combine(unitPath, "MaidStatus.csv"), false, encoding))
+            void WriteSimpleData(string file, string prefix, StreamWriter sw, int dataCol = 2, int idCol = 1)
             {
-                using (var f = GameUty.FileOpen("maid_status_personal_list.nei"))
+                using (var f = GameUty.FileOpen(file))
                 {
                     using (var scenarioNei = new CsvParser())
                     {
-                        sw.WriteLine("Key,Type,Desc,Japanese,English");
 
                         scenarioNei.Open(f);
 
@@ -527,18 +525,35 @@ namespace TranslationExtract
                             if (!scenarioNei.IsCellToExistData(0, i))
                                 continue;
 
-                            var uniqueName = scenarioNei.GetCellAsString(1, i);
-                            var displayName = scenarioNei.GetCellAsString(2, i);
+                            var uniqueName = scenarioNei.GetCellAsString(idCol, i);
+                            var displayName = scenarioNei.GetCellAsString(dataCol, i);
 
                             if (opts.skipTranslatedItems &&
-                                LocalizationManager.TryGetTranslation($"MaidStatus/性格タイプ/{uniqueName}", out var _))
+                                LocalizationManager.TryGetTranslation($"MaidStatus/{prefix}/{uniqueName}", out var _))
                                 continue;
 
                             var csvName = EscapeCSVItem(displayName);
-                            sw.WriteLine($"性格タイプ/{uniqueName},Text,,{csvName},{csvName}");
+                            sw.WriteLine($"{prefix}/{uniqueName},Text,,{csvName},{csvName}");
                         }
                     }
                 }
+            }
+
+            var encoding = new UTF8Encoding(true);
+            using (var sw = new StreamWriter(Path.Combine(unitPath, "MaidStatus.csv"), false, encoding))
+            {
+                sw.WriteLine("Key,Type,Desc,Japanese,English");
+                
+                WriteSimpleData("maid_status_personal_list.nei", "性格タイプ", sw);
+                WriteSimpleData("maid_status_yotogiclass_list.nei", "夜伽クラス", sw);
+                WriteSimpleData("maid_status_jobclass_list.nei", "ジョブクラス", sw);
+                WriteSimpleData("maid_status_jobclass_list.nei", "ジョブクラス/説明", sw, 4);
+                
+                WriteSimpleData("maid_status_yotogiclass_list.nei", "夜伽クラス", sw);
+                
+                WriteSimpleData("maid_status_title_list.nei", "ステータス称号", sw, 0, 0);
+                
+                WriteSimpleData("maid_status_feature_list.nei", "特徴タイプ", sw, 1);
             }
         }
 

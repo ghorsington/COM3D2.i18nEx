@@ -30,11 +30,17 @@ namespace COM3D2.i18nEx.Core.Hooks
 
         [HarmonyPatch(typeof(Product), nameof(Product.supportMultiLanguage), MethodType.Getter)]
         [HarmonyPostfix]
-        private static void SupportMultiLanguage(ref bool __result) { __result = true; }
+        private static void SupportMultiLanguage(ref bool __result)
+        {
+            __result = true;
+        }
 
         [HarmonyPatch(typeof(Product), nameof(Product.isJapan), MethodType.Getter)]
         [HarmonyPostfix]
-        private static void IsJapan(ref bool __result) { __result = false; }
+        private static void IsJapan(ref bool __result)
+        {
+            __result = false;
+        }
 
         [HarmonyPatch(typeof(SceneNetorareCheck), "Start")]
         [HarmonyTranspiler]
@@ -68,6 +74,9 @@ namespace COM3D2.i18nEx.Core.Hooks
 
         [HarmonyPatch(typeof(ConfigMgr), nameof(ConfigMgr.Update))]
         [HarmonyPrefix]
-        private static bool OnConfigMgrUpdate() { return false; }
+        private static bool OnConfigMgrUpdate()
+        {
+            return false;
+        }
     }
 }

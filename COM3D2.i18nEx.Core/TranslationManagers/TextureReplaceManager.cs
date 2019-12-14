@@ -9,17 +9,17 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 {
     internal class TextureReplacement
     {
-        public string Name { get; }
-
-        public string FullPath { get; }
-
-        public byte[] Data { get; set; }
-
         public TextureReplacement(string name, string fullPath)
         {
             Name = name;
             FullPath = fullPath;
         }
+
+        public string Name { get; }
+
+        public string FullPath { get; }
+
+        public byte[] Data { get; set; }
 
         public void Load()
         {
@@ -61,14 +61,14 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                 return;
             }
 
-            foreach (string file in files)
+            foreach (var file in files)
             {
-                string name = Path.GetFileNameWithoutExtension(file);
+                var name = Path.GetFileNameWithoutExtension(file);
 
                 if (textureReplacements.ContainsKey(name))
                 {
                     Core.Logger.LogWarning(
-                        $"Found duplicate replacements for texture \"{name}\". Please name all your textures uniquely. If there are name collisions, name them by hash.");
+                                           $"Found duplicate replacements for texture \"{name}\". Please name all your textures uniquely. If there are name collisions, name them by hash.");
                     continue;
                 }
 
@@ -85,9 +85,15 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                 Core.Logger.LogInfo($"Supported fonts:\n{string.Join("\n", Font.GetOSInstalledFontNames())}");
         }
 
-        public bool ReplacementExists(string texName) { return textureReplacements.ContainsKey(texName); }
+        public bool ReplacementExists(string texName)
+        {
+            return textureReplacements.ContainsKey(texName);
+        }
 
-        public override void ReloadActiveTranslations() { LoadLanguage(); }
+        public override void ReloadActiveTranslations()
+        {
+            LoadLanguage();
+        }
 
         public byte[] GetReplacementTextureBytes(string texName, string tag = null, bool skipLogging = false)
         {
@@ -102,21 +108,21 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             if (!(tex is Texture2D tex2d))
                 return;
 
-            string dumpPath = Utility.CombinePaths(Paths.TranslationsRoot, Configuration.General.ActiveLanguage.Value,
-                                                   "Textures", "Dumped");
+            var dumpPath = Utility.CombinePaths(Paths.TranslationsRoot, Configuration.General.ActiveLanguage.Value,
+                                                "Textures", "Dumped");
 
             if (!Directory.Exists(dumpPath))
                 Directory.CreateDirectory(dumpPath);
 
             Core.Logger.LogInfo($"[DUMP] {texName}.png");
-            string p = Path.Combine(dumpPath, $"{texName}.png");
+            var p = Path.Combine(dumpPath, $"{texName}.png");
             File.WriteAllBytes(p, Utility.TexToPng(tex2d));
             dumpedItems.Add(texName);
         }
 
         private TextureReplacement GetReplacement(string texName, string tag = null, bool skipLogging = false)
         {
-            string hash = $"{texName}:{tag}".KnuthHash().ToString("X16");
+            var hash = $"{texName}:{tag}".KnuthHash().ToString("X16");
             string[] lookupNames =
             {
                 texName,
@@ -125,7 +131,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                 $"{hash}@{SceneManager.GetActiveScene().buildIndex}"
             };
 
-            foreach (string lookupName in lookupNames)
+            foreach (var lookupName in lookupNames)
             {
                 if (Configuration.TextureReplacement.VerboseLogging.Value && !skipLogging)
                     Core.Logger.LogInfo($"Trying with name {lookupName}.png");

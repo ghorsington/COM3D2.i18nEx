@@ -12,6 +12,7 @@ namespace COM3D2.i18nEx.Sybaris.Managed
     public static class Entrypoint
     {
         private static GameObject go;
+
         public static void Start()
         {
             AppDomain.CurrentDomain.AssemblyResolve += ResolveHarmony;

@@ -27,14 +27,14 @@ namespace COM3D2.i18nEx.Core
 
         internal static ITranslationLoader TranslationLoader { get; private set; }
 
-        private int GameVersion => (int)typeof(Misc).GetField(nameof(Misc.GAME_VERSION)).GetValue(null);
+        private int GameVersion => (int) typeof(Misc).GetField(nameof(Misc.GAME_VERSION)).GetValue(null);
 
         public void Initialize(ILogger logger, string gameRoot)
         {
             if (GameVersion < MIN_SUPPORTED_VERSION)
             {
                 logger.LogWarning(
-                    $"This version of i18nEx core supports only game versions {MIN_SUPPORTED_VERSION} or newer. Detected game version: {GameVersion}");
+                                  $"This version of i18nEx core supports only game versions {MIN_SUPPORTED_VERSION} or newer. Detected game version: {GameVersion}");
                 Destroy(this);
                 return;
             }
@@ -72,7 +72,7 @@ namespace COM3D2.i18nEx.Core
 
         private void LoadLanguage(string langName)
         {
-            string tlLang = Path.Combine(Paths.TranslationsRoot, langName);
+            var tlLang = Path.Combine(Paths.TranslationsRoot, langName);
 
             if (!Directory.Exists(tlLang))
             {
@@ -87,7 +87,7 @@ namespace COM3D2.i18nEx.Core
             TranslationLoader =
                 iniFile == null ? new BasicTranslationLoader() : GetLoader(iniFile["Info"]["Loader"].Value);
 
-            Core.Logger.LogInfo($"Selecting language for {TranslationLoader}");
+            Logger.LogInfo($"Selecting language for {TranslationLoader}");
             TranslationLoader.SelectLanguage(langName, tlLang, iniFile);
 
             foreach (var mgr in managers)
@@ -99,7 +99,7 @@ namespace COM3D2.i18nEx.Core
             if (string.IsNullOrEmpty(loaderName))
                 return new BasicTranslationLoader();
 
-            string loadersPath = Path.Combine(Paths.TranslationsRoot, "loaders");
+            var loadersPath = Path.Combine(Paths.TranslationsRoot, "loaders");
             if (!Directory.Exists(loadersPath))
                 Directory.CreateDirectory(loadersPath);
 
@@ -108,7 +108,7 @@ namespace COM3D2.i18nEx.Core
             if (loaderName == "BasicLoader")
                 return new BasicTranslationLoader();
 
-            string loaderPath = Path.Combine(loadersPath, $"{loaderName}.dll");
+            var loaderPath = Path.Combine(loadersPath, $"{loaderName}.dll");
             if (!File.Exists(loaderPath))
                 return new BasicTranslationLoader();
 
@@ -117,13 +117,13 @@ namespace COM3D2.i18nEx.Core
                 var ass = Assembly.LoadFile(loaderPath);
                 var loader = ass.GetTypes().FirstOrDefault(t => t.GetInterface(nameof(ITranslationLoader)) != null);
 
-                Core.Logger.LogInfo($"Invoking loader {loader}");
+                Logger.LogInfo($"Invoking loader {loader}");
 
                 if (loader != null)
                     return Activator.CreateInstance(loader) as ITranslationLoader;
 
                 Logger.LogWarning(
-                    $"Loader \"{loaderName}.dll\" doesn't contain any translation loader implementations!");
+                                  $"Loader \"{loaderName}.dll\" doesn't contain any translation loader implementations!");
                 return new BasicTranslationLoader();
             }
             catch (Exception e)
@@ -135,7 +135,7 @@ namespace COM3D2.i18nEx.Core
 
         private IniFile LoadLanguageConfig(string tlPath)
         {
-            string iniFile = Path.Combine(tlPath, "config.ini");
+            var iniFile = Path.Combine(tlPath, "config.ini");
             if (!File.Exists(iniFile))
                 return null;
             try
@@ -149,7 +149,10 @@ namespace COM3D2.i18nEx.Core
             }
         }
 
-        private void Awake() { DontDestroyOnLoad(this); }
+        private void Awake()
+        {
+            DontDestroyOnLoad(this);
+        }
 
         private void Update()
         {

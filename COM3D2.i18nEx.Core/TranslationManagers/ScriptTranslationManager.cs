@@ -32,7 +32,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             if (subDataType == null)
             {
                 Core.Logger.LogError(
-                    "BaseKagManager.SubtitleData class has not been found! Can't display subtitles! Check that you use the latest game version and latest i18nEx!");
+                                     "BaseKagManager.SubtitleData class has not been found! Can't display subtitles! Check that you use the latest game version and latest i18nEx!");
                 return;
             }
 
@@ -57,11 +57,11 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
     [Serializable]
     internal class SubtitleData
     {
-        public int startTime = 0;
-        public int addDisplayTime = 0;
+        public int addDisplayTime;
         public int displayTime = -1;
-        public bool isCasino = false;
+        public bool isCasino;
         public string original = string.Empty;
+        public int startTime;
         public string translation = string.Empty;
         public string voice = string.Empty;
     }
@@ -173,7 +173,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                 if (translationFiles.ContainsKey(fileName))
                 {
                     Core.Logger.LogWarning(
-                        $"Script translation file {fileName} is declared twice in different locations ({file} and {translationFiles[fileName]})");
+                                           $"Script translation file {fileName} is declared twice in different locations ({file} and {translationFiles[fileName]})");
                     continue;
                 }
 
@@ -271,7 +271,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
             node.Value.Translations.Add(original, translated);
             File.AppendAllText(translationFiles[fileName],
-                $"{Environment.NewLine}{original.Escape()}\t{translated.Escape()}");
+                               $"{Environment.NewLine}{original.Escape()}\t{translated.Escape()}");
             return true;
         }
 
@@ -306,7 +306,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             catch (Exception e)
             {
                 Core.Logger.LogError(
-                    $"Failed to load translations for file {fileName} because: {e.Message}. Skipping file...");
+                                     $"Failed to load translations for file {fileName} because: {e.Message}. Skipping file...");
                 translationFiles.Remove(fileName);
                 return null;
             }

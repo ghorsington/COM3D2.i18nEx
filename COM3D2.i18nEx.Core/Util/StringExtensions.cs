@@ -19,7 +19,7 @@ namespace COM3D2.i18nEx.Core.Util
         public static ulong KnuthHash(this string read)
         {
             var hashedValue = 3074457345618258791ul;
-            foreach (char t in read)
+            foreach (var t in read)
             {
                 hashedValue += t;
                 hashedValue *= 3074457345618258799ul;
@@ -41,7 +41,7 @@ namespace COM3D2.i18nEx.Core.Util
             if (string.IsNullOrEmpty(txt))
                 return txt;
             var stringBuilder = new StringBuilder(txt.Length + 2);
-            foreach (char c in txt)
+            foreach (var c in txt)
                 switch (c)
                 {
                     case '\0':
@@ -92,13 +92,13 @@ namespace COM3D2.i18nEx.Core.Util
             var stringBuilder = new StringBuilder(txt.Length);
             for (var i = 0; i < txt.Length;)
             {
-                int num = txt.IndexOf('\\', i);
+                var num = txt.IndexOf('\\', i);
                 if (num < 0 || num == txt.Length - 1)
                     num = txt.Length;
                 stringBuilder.Append(txt, i, num - i);
                 if (num >= txt.Length)
                     break;
-                char c = txt[num + 1];
+                var c = txt[num + 1];
                 switch (c)
                 {
                     case '0':

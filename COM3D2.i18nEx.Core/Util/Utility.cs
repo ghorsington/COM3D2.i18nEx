@@ -18,14 +18,17 @@ namespace COM3D2.i18nEx.Core.Util
         {
             var sb = new StringBuilder(val.Length);
 
-            foreach (char c in val)
+            foreach (var c in val)
                 if (c != '\r')
                     sb.Append(c);
 
             return sb.ToString();
         }
 
-        public static string CombinePaths(string part1, string part2) { return Path.Combine(part1, part2); }
+        public static string CombinePaths(string part1, string part2)
+        {
+            return Path.Combine(part1, part2);
+        }
 
         public static string CombinePaths(params string[] parts)
         {
@@ -34,7 +37,7 @@ namespace COM3D2.i18nEx.Core.Util
             if (parts.Length == 1)
                 return parts[0];
 
-            string result = parts[0];
+            var result = parts[0];
 
             for (var i = 1; i < parts.Length; i++)
                 result = Path.Combine(result, parts[i]);

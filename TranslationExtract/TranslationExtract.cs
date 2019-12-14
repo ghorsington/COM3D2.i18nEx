@@ -59,15 +59,18 @@ namespace TranslationExtract
             if (!displayGui)
                 return;
             if (bold == null)
-                bold = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold };
+                bold = new GUIStyle(GUI.skin.label) {fontStyle = FontStyle.Bold};
 
 
-            void Toggle(string text, ref bool toggle) { toggle = GUILayout.Toggle(toggle, text); }
+            void Toggle(string text, ref bool toggle)
+            {
+                toggle = GUILayout.Toggle(toggle, text);
+            }
 
             void Window(int id)
             {
                 GUILayout.BeginArea(new Rect(MARGIN_X, MARGIN_TOP, WIDTH - MARGIN_X * 2,
-                                             HEIGHT - MARGIN_TOP - MARGIN_BOTTOM));
+                                             HEIGHT - MARGIN_TOP         - MARGIN_BOTTOM));
                 {
                     GUILayout.BeginVertical();
                     {
@@ -112,7 +115,10 @@ namespace TranslationExtract
             dumping = false;
         }
 
-        private void Awake() { DontDestroyOnLoad(this); }
+        private void Awake()
+        {
+            DontDestroyOnLoad(this);
+        }
 
         private void Update()
         {
@@ -135,7 +141,7 @@ namespace TranslationExtract
             foreach (var languageSource in LocalizationManager.Sources)
             {
                 Debug.Log(
-                    $"Dumping {languageSource.name} with languages: {string.Join(",", languageSource.mLanguages.Select(d => d.Name).ToArray())}. GSheets: {languageSource.HasGoogleSpreadsheet()}");
+                          $"Dumping {languageSource.name} with languages: {string.Join(",", languageSource.mLanguages.Select(d => d.Name).ToArray())}. GSheets: {languageSource.HasGoogleSpreadsheet()}");
                 DumpI2Translations(languageSource);
             }
         }
@@ -290,7 +296,9 @@ namespace TranslationExtract
                                 talkTiming = null;
                             }
                             else
+                            {
                                 subSb.Append(subLine);
+                            }
                     }
                 }
                 else if (trimmedLine.StartsWith("@SubtitleDisplayForPlayVoice",
@@ -415,7 +423,9 @@ namespace TranslationExtract
 
             var encoding = new UTF8Encoding(true);
             using (var sw = new StreamWriter(Path.Combine(unitPath, "SceneScenarioSelect.csv"), false, encoding))
+            {
                 using (var f = GameUty.FileOpen("select_scenario_data.nei"))
+                {
                     using (var scenarioNei = new CsvParser())
                     {
                         sw.WriteLine("Key,Type,Desc,Japanese,English");
@@ -432,7 +442,7 @@ namespace TranslationExtract
                             var description = scenarioNei.GetCellAsString(2, i);
 
                             if (opts.skipTranslatedItems &&
-                                LocalizationManager.TryGetTranslation($"SceneScenarioSelect/{id}/タイトル", out _))
+                                LocalizationManager.TryGetTranslation($"SceneScenarioSelect/{id}/タイトル", out var _))
                                 continue;
 
                             var csvName = EscapeCSVItem(name);
@@ -441,6 +451,8 @@ namespace TranslationExtract
                             sw.WriteLine($"{id}/内容,Text,,{csvDescription},{csvDescription}");
                         }
                     }
+                }
+            }
         }
 
         private void DumpItemNames(DumpOptions opts)
@@ -459,6 +471,7 @@ namespace TranslationExtract
 
             foreach (var menu in menus)
                 using (var f = GameUty.FileOpen(menu))
+                {
                     using (var br = new BinaryReader(new MemoryStream(f.ReadAll())))
                     {
                         Debug.Log(menu);
@@ -479,11 +492,12 @@ namespace TranslationExtract
                         }
 
                         if (opts.skipTranslatedItems &&
-                            LocalizationManager.TryGetTranslation($"{category}/{filename}|name", out _))
+                            LocalizationManager.TryGetTranslation($"{category}/{filename}|name", out var _))
                             continue;
                         sw.WriteLine($"{filename}|name,Text,,{EscapeCSVItem(name)},{EscapeCSVItem(name)}");
                         sw.WriteLine($"{filename}|info,Text,,{EscapeCSVItem(info)},{EscapeCSVItem(info)}");
                     }
+                }
 
             foreach (var keyValuePair in swDict)
                 keyValuePair.Value.Dispose();
@@ -499,7 +513,9 @@ namespace TranslationExtract
 
             var encoding = new UTF8Encoding(true);
             using (var sw = new StreamWriter(Path.Combine(unitPath, "MaidStatus.csv"), false, encoding))
+            {
                 using (var f = GameUty.FileOpen("maid_status_personal_list.nei"))
+                {
                     using (var scenarioNei = new CsvParser())
                     {
                         sw.WriteLine("Key,Type,Desc,Japanese,English");
@@ -515,13 +531,15 @@ namespace TranslationExtract
                             var displayName = scenarioNei.GetCellAsString(2, i);
 
                             if (opts.skipTranslatedItems &&
-                                LocalizationManager.TryGetTranslation($"MaidStatus/性格タイプ/{uniqueName}", out _))
+                                LocalizationManager.TryGetTranslation($"MaidStatus/性格タイプ/{uniqueName}", out var _))
                                 continue;
 
                             var csvName = EscapeCSVItem(displayName);
                             sw.WriteLine($"性格タイプ/{uniqueName},Text,,{csvName},{csvName}");
                         }
                     }
+                }
+            }
         }
 
         private void DumpYotogiData(DumpOptions opts)
@@ -534,7 +552,9 @@ namespace TranslationExtract
 
             var encoding = new UTF8Encoding(true);
             using (var sw = new StreamWriter(Path.Combine(unitPath, "YotogiSkillName.csv"), false, encoding))
+            {
                 using (var f = GameUty.FileOpen("yotogi_skill_list.nei"))
+                {
                     using (var scenarioNei = new CsvParser())
                     {
                         sw.WriteLine("Key,Type,Desc,Japanese,English");
@@ -548,17 +568,21 @@ namespace TranslationExtract
                             var skillName = scenarioNei.GetCellAsString(4, i);
 
                             if (opts.skipTranslatedItems &&
-                                LocalizationManager.TryGetTranslation($"YotogiSkillName/{skillName}", out _))
+                                LocalizationManager.TryGetTranslation($"YotogiSkillName/{skillName}", out var _))
                                 continue;
 
                             var csvName = EscapeCSVItem(skillName);
                             sw.WriteLine($"{csvName},Text,,{csvName},{csvName}");
                         }
                     }
+                }
+            }
 
             var commandNames = new HashSet<string>();
             using (var sw = new StreamWriter(Path.Combine(unitPath, "YotogiSkillName.csv"), false, encoding))
+            {
                 using (var f = GameUty.FileOpen("yotogi_skill_command_data.nei"))
+                {
                     using (var scenarioNei = new CsvParser())
                     {
                         sw.WriteLine("Key,Type,Desc,Japanese,English");
@@ -575,7 +599,7 @@ namespace TranslationExtract
                             var commandName = scenarioNei.GetCellAsString(2, i);
 
                             if (opts.skipTranslatedItems &&
-                                LocalizationManager.TryGetTranslation($"YotogiSkillCommand/{commandName}", out _))
+                                LocalizationManager.TryGetTranslation($"YotogiSkillCommand/{commandName}", out var _))
                                 continue;
 
                             if (commandNames.Contains(commandName))
@@ -587,6 +611,8 @@ namespace TranslationExtract
                             sw.WriteLine($"{csvName},Text,,{csvName},{csvName}");
                         }
                     }
+                }
+            }
         }
 
         private void DumpVIPEvents(DumpOptions opts)
@@ -599,7 +625,9 @@ namespace TranslationExtract
 
             var encoding = new UTF8Encoding(true);
             using (var sw = new StreamWriter(Path.Combine(unitPath, "SceneDaily.csv"), false, encoding))
+            {
                 using (var f = GameUty.FileOpen("schedule_work_night.nei"))
+                {
                     using (var scenarioNei = new CsvParser())
                     {
                         sw.WriteLine("Key,Type,Desc,Japanese,English");
@@ -614,7 +642,7 @@ namespace TranslationExtract
                             var vipDescription = scenarioNei.GetCellAsString(7, i);
 
                             if (opts.skipTranslatedItems &&
-                                LocalizationManager.TryGetTranslation($"SceneDaily/スケジュール/項目/{vipName}", out _))
+                                LocalizationManager.TryGetTranslation($"SceneDaily/スケジュール/項目/{vipName}", out var _))
                                 continue;
 
                             var csvName = EscapeCSVItem(vipName);
@@ -623,6 +651,8 @@ namespace TranslationExtract
                             sw.WriteLine($"スケジュール/説明/{vipName},Text,,{csvDesc},{csvDesc}");
                         }
                     }
+                }
+            }
         }
 
         private string EscapeCSVItem(string str)

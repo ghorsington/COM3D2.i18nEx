@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using MethodAttributes = Mono.Cecil.MethodAttributes;
 
 namespace COM3D2.i18nEx.Sybaris.Patcher
 {
@@ -20,7 +19,10 @@ namespace COM3D2.i18nEx.Sybaris.Patcher
             try
             {
                 managedAd = AssemblyDefinition.ReadAssembly(Path.Combine(
-                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"{MANAGED_ASSEMBLY}.dll"));
+                                                                         Path.GetDirectoryName(Assembly
+                                                                                              .GetExecutingAssembly()
+                                                                                              .Location),
+                                                                         $"{MANAGED_ASSEMBLY}.dll"));
             }
             catch (Exception e)
             {
@@ -37,7 +39,7 @@ namespace COM3D2.i18nEx.Sybaris.Patcher
             var init = gameUty.Methods.FirstOrDefault(m => m.Name == "OnInitialize");
             var il = init.Body.GetILProcessor();
             var ins = il.Body.Instructions.First();
-                
+
             il.InsertBefore(ins, il.Create(OpCodes.Call, md.ImportReference(hookMethod)));
         }
     }

@@ -27,7 +27,7 @@ namespace COM3D2.i18nEx.Core
             if (scriptSection.HasKey("InsertJapaneseTextIntoEnglishText"))
             {
                 var key = scriptSection["InsertJapaneseTextIntoEnglishText"];
-                if (bool.TryParse(key.Value, out bool val))
+                if (bool.TryParse(key.Value, out var val))
                     ScriptTranslations.RerouteTranslationsTo.Value =
                         val ? TranslationsReroute.RouteToEnglish : TranslationsReroute.None;
                 scriptSection.DeleteKey("InsertJapaneseTextIntoEnglishText");
@@ -60,50 +60,63 @@ namespace COM3D2.i18nEx.Core
         internal class GeneralConfig
         {
             public ConfigWrapper<string> ActiveLanguage = Wrap(
-                "General", "ActiveLanguage", "Currently selected language", "English");
+                                                               "General", "ActiveLanguage",
+                                                               "Currently selected language", "English");
 
             public ConfigWrapper<KeyCommand> ReloadConfigKey = Wrap(
-                "General", "ReloadConfigKey", "The key to reload current configuration file",
-                new KeyCommand(KeyCode.LeftControl, KeyCode.F12), KeyCommand.KeyCommandToString,
-                KeyCommand.KeyCommandFromString);
+                                                                    "General", "ReloadConfigKey",
+                                                                    "The key to reload current configuration file",
+                                                                    new KeyCommand(KeyCode.LeftControl, KeyCode.F12),
+                                                                    KeyCommand.KeyCommandToString,
+                                                                    KeyCommand.KeyCommandFromString);
 
             public ConfigWrapper<KeyCommand> ReloadTranslationsKey = Wrap(
-                "General", "ReloadConfigKey", "The key to reload current configuration file",
-                new KeyCommand(KeyCode.LeftAlt, KeyCode.F12), KeyCommand.KeyCommandToString,
-                KeyCommand.KeyCommandFromString);
+                                                                          "General", "ReloadConfigKey",
+                                                                          "The key to reload current configuration file",
+                                                                          new KeyCommand(KeyCode.LeftAlt, KeyCode.F12),
+                                                                          KeyCommand.KeyCommandToString,
+                                                                          KeyCommand.KeyCommandFromString);
         }
 
         internal class ScriptTranslationsConfig
         {
             public ConfigWrapper<double> ClipboardCaptureTime = Wrap(
-                "ScriptTranslations", "ClipboardCaptureTime",
-                "If `SendScriptToClipboard` is enabled, specifies the time to wait before sending all input to clipboard.",
-                0.25);
+                                                                     "ScriptTranslations", "ClipboardCaptureTime",
+                                                                     "If `SendScriptToClipboard` is enabled, specifies the time to wait before sending all input to clipboard.",
+                                                                     0.25);
 
             public ConfigWrapper<bool> DumpScriptTranslations = Wrap(
-                "ScriptTranslations", "DumpUntranslatedLines",
-                "If enabled, dumps untranslated script lines (along with built-in translations, if present).", false);
+                                                                     "ScriptTranslations", "DumpUntranslatedLines",
+                                                                     "If enabled, dumps untranslated script lines (along with built-in translations, if present).",
+                                                                     false);
 
             public ConfigWrapper<int> MaxTranslationFilesCached = Wrap(
-                "ScriptTranslations", "CacheSize",
-                "Specifies how many text translation files should be kept in memory at once\nHaving bigger cache can improve performance at the cost of memory usage",
-                1);
+                                                                       "ScriptTranslations", "CacheSize",
+                                                                       "Specifies how many text translation files should be kept in memory at once\nHaving bigger cache can improve performance at the cost of memory usage",
+                                                                       1);
 
             public ConfigWrapper<KeyCommand> ReloadTranslationsKey = Wrap(
-                "ScriptTranslations", "ReloadTranslationsKey",
-                "The key (or key combination) to reload all translations.",
-                new KeyCommand(KeyCode.LeftAlt, KeyCode.Keypad1), KeyCommand.KeyCommandToString,
-                KeyCommand.KeyCommandFromString);
+                                                                          "ScriptTranslations", "ReloadTranslationsKey",
+                                                                          "The key (or key combination) to reload all translations.",
+                                                                          new KeyCommand(KeyCode.LeftAlt,
+                                                                                         KeyCode.Keypad1),
+                                                                          KeyCommand.KeyCommandToString,
+                                                                          KeyCommand.KeyCommandFromString);
 
             public ConfigWrapper<TranslationsReroute> RerouteTranslationsTo = Wrap(
-                "ScriptTranslations", "RerouteTranslationsTo",
-                "Allows you to route both English and Japanese translations into a single textbox instead of viewing both\nSupports the following values:\nNone -- Disabled. English text is written into English textbox; Japanese into Japanese\nRouteToEnglish -- Puts Japanese text into English textbox if there is no translation text available\nRouteToJapanese -- Puts translations into Japanese textbox if there is a translation available",
-                TranslationsReroute.None, EnumConverter<TranslationsReroute>.EnumToString,
-                EnumConverter<TranslationsReroute>.EnumFromString);
+                                                                                   "ScriptTranslations",
+                                                                                   "RerouteTranslationsTo",
+                                                                                   "Allows you to route both English and Japanese translations into a single textbox instead of viewing both\nSupports the following values:\nNone -- Disabled. English text is written into English textbox; Japanese into Japanese\nRouteToEnglish -- Puts Japanese text into English textbox if there is no translation text available\nRouteToJapanese -- Puts translations into Japanese textbox if there is a translation available",
+                                                                                   TranslationsReroute.None,
+                                                                                   EnumConverter<TranslationsReroute>
+                                                                                      .EnumToString,
+                                                                                   EnumConverter<TranslationsReroute>
+                                                                                      .EnumFromString);
 
             public ConfigWrapper<bool> SendScriptToClipboard = Wrap(
-                "ScriptTranslations", "SendToClipboard", "If enabled, sends untranslated story text to clipboard.",
-                false);
+                                                                    "ScriptTranslations", "SendToClipboard",
+                                                                    "If enabled, sends untranslated story text to clipboard.",
+                                                                    false);
 
             public ConfigWrapper<bool> VerboseLogging = Wrap("ScriptTranslations", "VerboseLogging",
                                                              "If enabled, logs precise translation info\nUseful if you're writing new translations.",
@@ -121,10 +134,12 @@ namespace COM3D2.i18nEx.Core
                                                                10);
 
             public ConfigWrapper<KeyCommand> ReloadTranslationsKey = Wrap(
-                "TextureReplacement", "ReloadTranslationsKey",
-                "The key (or key combination) to reload all translations.",
-                new KeyCommand(KeyCode.LeftAlt, KeyCode.Keypad2), KeyCommand.KeyCommandToString,
-                KeyCommand.KeyCommandFromString);
+                                                                          "TextureReplacement", "ReloadTranslationsKey",
+                                                                          "The key (or key combination) to reload all translations.",
+                                                                          new KeyCommand(KeyCode.LeftAlt,
+                                                                                         KeyCode.Keypad2),
+                                                                          KeyCommand.KeyCommandToString,
+                                                                          KeyCommand.KeyCommandFromString);
 
             public ConfigWrapper<bool> SkipDumpingCMTextures = Wrap("TextureReplacement", "SkipDumpingCMTextures",
                                                                     "If `DumpOriginalTextures` is enabled, setting this to `True` will disable dumping game's own .tex files\nUse this if you don't want to dump all in-game textures.",
@@ -148,9 +163,12 @@ namespace COM3D2.i18nEx.Core
                                                                       KeyCommand.KeyCommandFromString);
 
             public ConfigWrapper<KeyCommand> ReloadTranslationsKey = Wrap(
-                "I2Translation", "ReloadTranslationsKey", "The key (or key combination) to reload all translations.",
-                new KeyCommand(KeyCode.LeftAlt, KeyCode.Keypad3), KeyCommand.KeyCommandToString,
-                KeyCommand.KeyCommandFromString);
+                                                                          "I2Translation", "ReloadTranslationsKey",
+                                                                          "The key (or key combination) to reload all translations.",
+                                                                          new KeyCommand(KeyCode.LeftAlt,
+                                                                                         KeyCode.Keypad3),
+                                                                          KeyCommand.KeyCommandToString,
+                                                                          KeyCommand.KeyCommandFromString);
 
             public ConfigWrapper<bool> VerboseLogging = Wrap("I2Translation", "VerboseLogging",
                                                              "If enabled, logs precise I2Loc loading and translation info\nUseful if you're debugging.",

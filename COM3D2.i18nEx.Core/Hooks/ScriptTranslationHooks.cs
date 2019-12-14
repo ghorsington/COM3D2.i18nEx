@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using BepInEx.Harmony;
 using COM3D2.i18nEx.Core.TranslationManagers;
@@ -32,7 +31,9 @@ namespace COM3D2.i18nEx.Core.Hooks
             __instance.CheckAbsolutelyNecessaryTag(tag_data, "playvoice", "voice");
 
             var voice = tag_data.GetTagProperty("voice").AsString();
-            var subData = Core.ScriptTranslate.GetSubtitle(Path.GetFileNameWithoutExtension(__instance.kag.GetCurrentFileName()), voice);
+            var subData =
+                Core.ScriptTranslate.GetSubtitle(Path.GetFileNameWithoutExtension(__instance.kag.GetCurrentFileName()),
+                                                 voice);
 
             if (subData == null)
                 return;
@@ -41,7 +42,9 @@ namespace COM3D2.i18nEx.Core.Hooks
             sub.Clear();
 
             if (subData.Count == 1 && subData[0].startTime == 0)
+            {
                 subData[0].SetSubtitleData(___subtitle_data);
+            }
             else
             {
                 sub.autoDestroy = true;
@@ -69,7 +72,10 @@ namespace COM3D2.i18nEx.Core.Hooks
         [HarmonyPatch(typeof(ADVKagManager), nameof(ADVKagManager.TagChoicesSet))]
         [HarmonyPatch(typeof(ADVKagManager), nameof(ADVKagManager.TagTalk))]
         [HarmonyPostfix]
-        private static void ClearScriptName() { curScriptFileName = null; }
+        private static void ClearScriptName()
+        {
+            curScriptFileName = null;
+        }
 
         [HarmonyPatch(typeof(ScriptManager), nameof(ScriptManager.ReplaceCharaName), typeof(string))]
         [HarmonyPrefix]
@@ -119,7 +125,7 @@ namespace COM3D2.i18nEx.Core.Hooks
 
             if (!stop)
             {
-                string t = text.Replace("……", "…");
+                var t = text.Replace("……", "…");
                 if (t != text && TranslateLine(fileName, ref t, true))
                 {
                     text = t;
@@ -142,7 +148,7 @@ namespace COM3D2.i18nEx.Core.Hooks
             {
                 if (Configuration.ScriptTranslations.VerboseLogging.Value)
                     Core.Logger.LogInfo(
-                        $"[Script] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
+                                        $"[Script] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
                 return;
             }
 
@@ -154,19 +160,21 @@ namespace COM3D2.i18nEx.Core.Hooks
             }
 
             fileName = Path.GetFileNameWithoutExtension(fileName);
-            string res = Core.ScriptTranslate.GetTranslation(fileName, translationPair.Key);
+            var res = Core.ScriptTranslate.GetTranslation(fileName, translationPair.Key);
 
             if (!string.IsNullOrEmpty(res))
             {
                 translationPair = new KeyValuePair<string, string>(translationPair.Key, res);
                 if (Configuration.ScriptTranslations.VerboseLogging.Value)
                     Core.Logger.LogInfo(
-                        $"[Script] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
+                                        $"[Script] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
             }
             else if (Configuration.ScriptTranslations.DumpScriptTranslations.Value)
+            {
                 if (Core.ScriptTranslate.WriteTranslation(fileName, translationPair.Key, translationPair.Value))
                     Core.Logger.LogInfo(
-                        $"[DUMP] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
+                                        $"[DUMP] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
+            }
         }
     }
 }

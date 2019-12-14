@@ -21,25 +21,6 @@ namespace COM3D2.i18nEx.Core.Util
         private T prevValue;
         private string prevValueRaw;
 
-        public T Value
-        {
-            get => prevValue;
-            set
-            {
-                string val = toStringConvert(value);
-                if (val == prevValueRaw)
-                    return;
-
-                iniKey.Value = val;
-                UnloadValue();
-                prevValue = value;
-                prevValueRaw = iniKey.RawValue;
-                Save();
-
-                ValueChanged?.Invoke(value);
-            }
-        }
-
         public ConfigWrapper(IniFile file,
                              string savePath,
                              string section,
@@ -64,11 +45,13 @@ namespace COM3D2.i18nEx.Core.Util
             if (toStringConvert == null && !cvt.CanConvertTo(typeof(string)))
                 throw new ArgumentException("Default TypeConverter can't convert to String");
 
-            this.toStringConvert = toStringConvert ?? (v => cvt.ConvertToInvariantString(v));
-            this.fromStringConvert = fromStringConvert ?? (v => (T)cvt.ConvertFromInvariantString(v));
+            this.toStringConvert = toStringConvert     ?? (v => cvt.ConvertToInvariantString(v));
+            this.fromStringConvert = fromStringConvert ?? (v => (T) cvt.ConvertFromInvariantString(v));
 
             if (iniKey.Value == null)
+            {
                 Value = defaultValue;
+            }
             else
             {
                 prevValueRaw = iniKey.RawValue;
@@ -80,6 +63,25 @@ namespace COM3D2.i18nEx.Core.Util
                 {
                     Value = defaultValue;
                 }
+            }
+        }
+
+        public T Value
+        {
+            get => prevValue;
+            set
+            {
+                var val = toStringConvert(value);
+                if (val == prevValueRaw)
+                    return;
+
+                iniKey.Value = val;
+                UnloadValue();
+                prevValue = value;
+                prevValueRaw = iniKey.RawValue;
+                Save();
+
+                ValueChanged?.Invoke(value);
             }
         }
 
@@ -107,6 +109,9 @@ namespace COM3D2.i18nEx.Core.Util
                 disposable.Dispose();
         }
 
-        private void Save() { file.Save(savePath); }
+        private void Save()
+        {
+            file.Save(savePath);
+        }
     }
 }

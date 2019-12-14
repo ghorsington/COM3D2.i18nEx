@@ -29,7 +29,7 @@ namespace COM3D2.i18nEx.Core.Loaders
 
         public IEnumerable<string> GetScriptTranslationFileNames()
         {
-            string scriptPath = Path.Combine(langPath, "Script");
+            var scriptPath = Path.Combine(langPath, "Script");
             if (!Directory.Exists(scriptPath))
                 return null;
             return Directory.GetFiles(scriptPath, "*.txt", SearchOption.AllDirectories);
@@ -37,7 +37,7 @@ namespace COM3D2.i18nEx.Core.Loaders
 
         public IEnumerable<string> GetTextureTranslationFileNames()
         {
-            string texPath = Path.Combine(langPath, "Textures");
+            var texPath = Path.Combine(langPath, "Textures");
             if (!Directory.Exists(texPath))
                 return null;
             return Directory.GetFiles(texPath, "*.png", SearchOption.AllDirectories);
@@ -45,15 +45,15 @@ namespace COM3D2.i18nEx.Core.Loaders
 
         public SortedDictionary<string, IEnumerable<string>> GetUITranslationFileNames()
         {
-            string uiPath = Path.Combine(langPath, "UI");
+            var uiPath = Path.Combine(langPath, "UI");
             if (!Directory.Exists(uiPath))
                 return null;
 
             var dict = new SortedDictionary<string, IEnumerable<string>>(StringComparer.InvariantCultureIgnoreCase);
 
-            foreach (string directory in Directory.GetDirectories(uiPath, "*", SearchOption.TopDirectoryOnly))
+            foreach (var directory in Directory.GetDirectories(uiPath, "*", SearchOption.TopDirectoryOnly))
             {
-                string dirName = directory.Splice(uiPath.Length, -1).Trim('\\', '/');
+                var dirName = directory.Splice(uiPath.Length, -1).Trim('\\', '/');
                 dict.Add(dirName,
                          Directory.GetFiles(directory, "*.csv", SearchOption.AllDirectories)
                                   .Select(s => s.Splice(directory.Length + 1, -1)));
@@ -62,9 +62,15 @@ namespace COM3D2.i18nEx.Core.Loaders
             return dict;
         }
 
-        public Stream OpenScriptTranslation(string path) { return !File.Exists(path) ? null : File.OpenRead(path); }
+        public Stream OpenScriptTranslation(string path)
+        {
+            return !File.Exists(path) ? null : File.OpenRead(path);
+        }
 
-        public Stream OpenTextureTranslation(string path) { return !File.Exists(path) ? null : File.OpenRead(path); }
+        public Stream OpenTextureTranslation(string path)
+        {
+            return !File.Exists(path) ? null : File.OpenRead(path);
+        }
 
         public Stream OpenUiTranslation(string path)
         {

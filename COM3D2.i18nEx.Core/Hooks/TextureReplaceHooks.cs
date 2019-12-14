@@ -46,7 +46,7 @@ namespace COM3D2.i18nEx.Core.Hooks
                                         string f_strFileName,
                                         bool usePoolBuffer)
         {
-            string fileName = Path.GetFileNameWithoutExtension(f_strFileName);
+            var fileName = Path.GetFileNameWithoutExtension(f_strFileName);
             if (string.IsNullOrEmpty(fileName))
                 return true;
 
@@ -102,7 +102,7 @@ namespace COM3D2.i18nEx.Core.Hooks
                     break;
             }
 
-            if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("i18n_") ||
+            if (tex      == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("i18n_") ||
                 tex.name == FONT_TEX_NAME)
                 return;
 
@@ -134,7 +134,9 @@ namespace COM3D2.i18nEx.Core.Hooks
                 tex2d.name = $"i18n_{tex2d}";
             }
             else
+            {
                 Core.Logger.LogError($"Texture {tex.name} is of type {tex.GetType().FullName} and not tex2d!");
+            }
         }
 
         [HarmonyPatch(typeof(UITexture), nameof(UITexture.mainTexture), MethodType.Getter)]
@@ -173,7 +175,9 @@ namespace COM3D2.i18nEx.Core.Hooks
                 tex2d.name = $"i18n_{tex2d}";
             }
             else
+            {
                 Core.Logger.LogError($"Texture {tex.name} is of type {tex.GetType().FullName} and not tex2d!");
+            }
         }
 
         [HarmonyPatch(typeof(Image), nameof(Image.sprite), MethodType.Setter)]

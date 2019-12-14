@@ -35,15 +35,15 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
             foreach (var kv in units.OrderByDescending(k => k.Key, StringComparer.InvariantCultureIgnoreCase))
             {
-                string unit = kv.Key;
+                var unit = kv.Key;
                 var tlFiles = kv.Value;
 
                 if (Configuration.I2Translation.VerboseLogging.Value)
                     Core.Logger.LogInfo($"Loading unit {unit}");
 
-                foreach (string tlFile in tlFiles)
+                foreach (var tlFile in tlFiles)
                 {
-                    string categoryName = tlFile.Replace("\\", "/").Splice(0, -5);
+                    var categoryName = tlFile.Replace("\\", "/").Splice(0, -5);
 
                     if (Configuration.I2Translation.VerboseLogging.Value)
                         Core.Logger.LogInfo($"Loading category {categoryName}");
@@ -51,14 +51,18 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                     string csvFile;
                     using (var f =
                         new StreamReader(
-                            Core.TranslationLoader.OpenUiTranslation($"{unit}{Path.DirectorySeparatorChar}{tlFile}")))
+                                         Core.TranslationLoader
+                                             .OpenUiTranslation($"{unit}{Path.DirectorySeparatorChar}{tlFile}")))
+                    {
                         csvFile = f.ReadToEnd().ToLF();
+                    }
+
                     source.Import_CSV(categoryName, csvFile, eSpreadsheetUpdateMode.Merge);
                 }
             }
 
             Core.Logger.LogInfo(
-                $"Loaded the following languages: {string.Join(",", source.mLanguages.Select(d => d.Name).ToArray())}");
+                                $"Loaded the following languages: {string.Join(",", source.mLanguages.Select(d => d.Name).ToArray())}");
 
             LocalizationManager.LocalizeAll(true);
         }

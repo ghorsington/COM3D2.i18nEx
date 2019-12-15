@@ -12,6 +12,56 @@ using UnityInjector.Attributes;
 
 namespace TranslationExtract
 {
+    internal static class Extensions
+    {
+        private static string EscapeCSVItem(string str)
+        {
+            if (str.Contains("\n") || str.Contains("\"") || str.Contains(","))
+                return $"\"{str.Replace("\"", "\"\"")}\"";
+            return str;
+        }
+
+        private static IEnumerable<(T1, T2)> ZipWith<T1, T2>(this IEnumerable<T1> e1, IEnumerable<T2> e2)
+        {
+            if (e1 == null || e2 == null)
+                yield break;
+            using var enum1 = e1.GetEnumerator();
+            using var enum2 = e2.GetEnumerator();
+
+            while (enum1.MoveNext() && enum2.MoveNext())
+                yield return (enum1.Current, enum2.Current);
+        }
+
+        public static void WriteCSV<T>(this StreamWriter sw, string neiFile, string csvFile,
+                                       Func<CsvParser, int, T> selector,
+                                       Func<T, IEnumerable<string>> toString,
+                                       Func<T, IEnumerable<string>> toTranslation, bool skipIfExists = false)
+        {
+            using var f = GameUty.FileOpen(neiFile);
+            using var scenarioNei = new CsvParser();
+            scenarioNei.Open(f);
+
+            for (var i = 1; i < scenarioNei.max_cell_y; i++)
+            {
+                if (!scenarioNei.IsCellToExistData(0, i))
+                    continue;
+
+                var item = selector(scenarioNei, i);
+                var prefixes = toString(item);
+                var translations = toTranslation(item);
+
+                foreach (var (prefix, tl) in prefixes.ZipWith(translations))
+                {
+                    if (skipIfExists && LocalizationManager.TryGetTranslation($"{csvFile}/{prefix}", out var _))
+                        continue;
+
+                    var csvName = EscapeCSVItem(tl);
+                    sw.WriteLine($"{toString(item)},Text,,{csvName},{csvName}");
+                }
+            }
+        }
+    }
+
     [PluginName("Translation Extractor")]
     public class TranslationExtract : PluginBase
     {
@@ -266,40 +316,38 @@ namespace TranslationExtract
 
                     filesToSkip.Add(subFileName);
 
-                    using (var f = GameUty.FileOpen($"{subFileName}.ks"))
-                    {
-                        var parseTalk = false;
-                        string[] talkTiming = null;
-                        var subSb = new StringBuilder();
-                        foreach (var subLine in NUty.SjisToUnicode(f.ReadAll()).Split('\n').Select(s => s.Trim())
-                                                    .Where(s => s.Length != 0))
-                            if (subLine.StartsWith("@talk", StringComparison.InvariantCultureIgnoreCase))
+                    using var f = GameUty.FileOpen($"{subFileName}.ks");
+                    var parseTalk = false;
+                    string[] talkTiming = null;
+                    var subSb = new StringBuilder();
+                    foreach (var subLine in NUty.SjisToUnicode(f.ReadAll()).Split('\n').Select(s => s.Trim())
+                                                .Where(s => s.Length != 0))
+                        if (subLine.StartsWith("@talk", StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            talkTiming = subLine.Substring("@talk".Length).Trim('[', ']', ' ').Split('-');
+                            parseTalk = true;
+                        }
+                        else if (subLine.StartsWith("@hitret", StringComparison.InvariantCultureIgnoreCase) &&
+                                 parseTalk)
+                        {
+                            parseTalk = false;
+                            var startTime = int.Parse(talkTiming[0]);
+                            var endTime = int.Parse(talkTiming[1]);
+                            var parts = SplitTranslation(subSb.ToString());
+                            captureSubtitlesList.Add(new SubtitleData
                             {
-                                talkTiming = subLine.Substring("@talk".Length).Trim('[', ']', ' ').Split('-');
-                                parseTalk = true;
-                            }
-                            else if (subLine.StartsWith("@hitret", StringComparison.InvariantCultureIgnoreCase) &&
-                                     parseTalk)
-                            {
-                                parseTalk = false;
-                                var startTime = int.Parse(talkTiming[0]);
-                                var endTime = int.Parse(talkTiming[1]);
-                                var parts = SplitTranslation(subSb.ToString());
-                                captureSubtitlesList.Add(new SubtitleData
-                                {
-                                    original = parts.Key,
-                                    translation = parts.Value,
-                                    startTime = startTime,
-                                    displayTime = endTime - startTime
-                                });
-                                subSb.Length = 0;
-                                talkTiming = null;
-                            }
-                            else
-                            {
-                                subSb.Append(subLine);
-                            }
-                    }
+                                original = parts.Key,
+                                translation = parts.Value,
+                                startTime = startTime,
+                                displayTime = endTime - startTime
+                            });
+                            subSb.Length = 0;
+                            talkTiming = null;
+                        }
+                        else
+                        {
+                            subSb.Append(subLine);
+                        }
                 }
                 else if (trimmedLine.StartsWith("@SubtitleDisplayForPlayVoice",
                                                 StringComparison.InvariantCultureIgnoreCase))
@@ -399,12 +447,12 @@ namespace TranslationExtract
             Debug.Log($"Found {scripts.Length} scripts!");
 
             foreach (var scriptFile in scripts)
-                using (var f = GameUty.FileOpen(scriptFile))
-                {
-                    var script = NUty.SjisToUnicode(f.ReadAll());
-                    Debug.Log(scriptFile);
-                    ExtractTranslations(scriptFile, script);
-                }
+            {
+                using var f = GameUty.FileOpen(scriptFile);
+                var script = NUty.SjisToUnicode(f.ReadAll());
+                Debug.Log(scriptFile);
+                ExtractTranslations(scriptFile, script);
+            }
 
             var tlDir = Path.Combine(TL_DIR, "Script");
             var namesFile = Path.Combine(tlDir, "__npc_names.txt");
@@ -422,37 +470,18 @@ namespace TranslationExtract
             Debug.Log("Getting scenario event data");
 
             var encoding = new UTF8Encoding(true);
-            using (var sw = new StreamWriter(Path.Combine(unitPath, "SceneScenarioSelect.csv"), false, encoding))
-            {
-                using (var f = GameUty.FileOpen("select_scenario_data.nei"))
-                {
-                    using (var scenarioNei = new CsvParser())
-                    {
-                        sw.WriteLine("Key,Type,Desc,Japanese,English");
+            using var sw = new StreamWriter(Path.Combine(unitPath, "SceneScenarioSelect.csv"), false, encoding);
 
-                        scenarioNei.Open(f);
-
-                        for (var i = 1; i < scenarioNei.max_cell_y; i++)
+            sw.WriteLine("Key,Type,Desc,Japanese,English");
+            sw.WriteCSV("select_scenario_data.nei", "SceneScenarioSelect",
+                        (parser, i) => new
                         {
-                            if (!scenarioNei.IsCellToExistData(0, i))
-                                continue;
-
-                            var id = scenarioNei.GetCellAsInteger(0, i);
-                            var name = scenarioNei.GetCellAsString(1, i);
-                            var description = scenarioNei.GetCellAsString(2, i);
-
-                            if (opts.skipTranslatedItems &&
-                                LocalizationManager.TryGetTranslation($"SceneScenarioSelect/{id}/タイトル", out var _))
-                                continue;
-
-                            var csvName = EscapeCSVItem(name);
-                            var csvDescription = EscapeCSVItem(description);
-                            sw.WriteLine($"{id}/タイトル,Text,,{csvName},{csvName}");
-                            sw.WriteLine($"{id}/内容,Text,,{csvDescription},{csvDescription}");
-                        }
-                    }
-                }
-            }
+                            id = parser.GetCellAsInteger(0, i),
+                            name = parser.GetCellAsString(1, i),
+                            description = parser.GetCellAsString(2, i)
+                        },
+                        arg => new[] {$"{arg.id}/タイトル", $"{arg.id}/内容"},
+                        arg => new[] {arg.name, arg.description});
         }
 
         private void DumpItemNames(DumpOptions opts)
@@ -470,38 +499,37 @@ namespace TranslationExtract
             var swDict = new Dictionary<string, StreamWriter>();
 
             foreach (var menu in menus)
-                using (var f = GameUty.FileOpen(menu))
+            {
+                using var f = GameUty.FileOpen(menu);
+                using var br = new BinaryReader(new MemoryStream(f.ReadAll()));
+                Debug.Log(menu);
+
+                br.ReadString();
+                br.ReadInt32();
+                br.ReadString();
+                var filename = Path.GetFileNameWithoutExtension(menu);
+                var name = br.ReadString();
+                var category = br.ReadString().ToLowerInvariant();
+                var info = br.ReadString();
+
+                if (!swDict.TryGetValue(category, out var sw))
                 {
-                    using (var br = new BinaryReader(new MemoryStream(f.ReadAll())))
-                    {
-                        Debug.Log(menu);
-
-                        br.ReadString();
-                        br.ReadInt32();
-                        br.ReadString();
-                        var filename = Path.GetFileNameWithoutExtension(menu);
-                        var name = br.ReadString();
-                        var category = br.ReadString().ToLowerInvariant();
-                        var info = br.ReadString();
-
-                        if (!swDict.TryGetValue(category, out var sw))
-                        {
-                            swDict[category] =
-                                sw = new StreamWriter(Path.Combine(unitPath, $"{category}.csv"), false, encoding);
-                            sw.WriteLine("Key,Type,Desc,Japanese,English");
-                        }
-
-                        if (opts.skipTranslatedItems &&
-                            LocalizationManager.TryGetTranslation($"{category}/{filename}|name", out var _))
-                            continue;
-                        sw.WriteLine($"{filename}|name,Text,,{EscapeCSVItem(name)},{EscapeCSVItem(name)}");
-                        sw.WriteLine($"{filename}|info,Text,,{EscapeCSVItem(info)},{EscapeCSVItem(info)}");
-                    }
+                    swDict[category] =
+                        sw = new StreamWriter(Path.Combine(unitPath, $"{category}.csv"), false, encoding);
+                    sw.WriteLine("Key,Type,Desc,Japanese,English");
                 }
+
+                if (opts.skipTranslatedItems &&
+                    LocalizationManager.TryGetTranslation($"{category}/{filename}|name", out var _))
+                    continue;
+                sw.WriteLine($"{filename}|name,Text,,{EscapeCSVItem(name)},{EscapeCSVItem(name)}");
+                sw.WriteLine($"{filename}|info,Text,,{EscapeCSVItem(info)},{EscapeCSVItem(info)}");
+            }
 
             foreach (var keyValuePair in swDict)
                 keyValuePair.Value.Dispose();
         }
+
 
         private void DumpPersonalityNames(DumpOptions opts)
         {
@@ -513,46 +541,31 @@ namespace TranslationExtract
 
             void WriteSimpleData(string file, string prefix, StreamWriter sw, int dataCol = 2, int idCol = 1)
             {
-                using (var f = GameUty.FileOpen(file))
-                {
-                    using (var scenarioNei = new CsvParser())
-                    {
-
-                        scenarioNei.Open(f);
-
-                        for (var i = 1; i < scenarioNei.max_cell_y; i++)
-                        {
-                            if (!scenarioNei.IsCellToExistData(0, i))
-                                continue;
-
-                            var uniqueName = scenarioNei.GetCellAsString(idCol, i);
-                            var displayName = scenarioNei.GetCellAsString(dataCol, i);
-
-                            if (opts.skipTranslatedItems &&
-                                LocalizationManager.TryGetTranslation($"MaidStatus/{prefix}/{uniqueName}", out var _))
-                                continue;
-
-                            var csvName = EscapeCSVItem(displayName);
-                            sw.WriteLine($"{prefix}/{uniqueName},Text,,{csvName},{csvName}");
-                        }
-                    }
-                }
+                sw.WriteCSV(file, "MaidStatus", (parser, i) => new
+                            {
+                                uniqueName = parser.GetCellAsString(idCol, i),
+                                displayName = parser.GetCellAsString(dataCol, i)
+                            },
+                            arg => new[] {$"{prefix}/{arg.uniqueName}"},
+                            arg => new[] {arg.displayName},
+                            opts.skipTranslatedItems);
             }
 
             var encoding = new UTF8Encoding(true);
             using (var sw = new StreamWriter(Path.Combine(unitPath, "MaidStatus.csv"), false, encoding))
             {
                 sw.WriteLine("Key,Type,Desc,Japanese,English");
-                
+
                 WriteSimpleData("maid_status_personal_list.nei", "性格タイプ", sw);
+                
                 WriteSimpleData("maid_status_yotogiclass_list.nei", "夜伽クラス", sw);
+                WriteSimpleData("maid_status_yotogiclass_list.nei", "夜伽クラス", sw);
+                
                 WriteSimpleData("maid_status_jobclass_list.nei", "ジョブクラス", sw);
                 WriteSimpleData("maid_status_jobclass_list.nei", "ジョブクラス/説明", sw, 4);
-                
-                WriteSimpleData("maid_status_yotogiclass_list.nei", "夜伽クラス", sw);
-                
+
                 WriteSimpleData("maid_status_title_list.nei", "ステータス称号", sw, 0, 0);
-                
+
                 WriteSimpleData("maid_status_feature_list.nei", "特徴タイプ", sw, 1);
             }
         }
@@ -568,64 +581,46 @@ namespace TranslationExtract
             var encoding = new UTF8Encoding(true);
             using (var sw = new StreamWriter(Path.Combine(unitPath, "YotogiSkillName.csv"), false, encoding))
             {
-                using (var f = GameUty.FileOpen("yotogi_skill_list.nei"))
-                {
-                    using (var scenarioNei = new CsvParser())
-                    {
-                        sw.WriteLine("Key,Type,Desc,Japanese,English");
-                        scenarioNei.Open(f);
-
-                        for (var i = 1; i < scenarioNei.max_cell_y; i++)
-                        {
-                            if (!scenarioNei.IsCellToExistData(0, i))
-                                continue;
-
-                            var skillName = scenarioNei.GetCellAsString(4, i);
-
-                            if (opts.skipTranslatedItems &&
-                                LocalizationManager.TryGetTranslation($"YotogiSkillName/{skillName}", out var _))
-                                continue;
-
-                            var csvName = EscapeCSVItem(skillName);
-                            sw.WriteLine($"{csvName},Text,,{csvName},{csvName}");
-                        }
-                    }
-                }
+                sw.WriteLine("Key,Type,Desc,Japanese,English");
+                sw.WriteCSV("yotogi_skill_list.nei", "YotogiSkillName",
+                            (parser, i) => new
+                            {
+                                skillName = parser.GetCellAsString(4, i)
+                            },
+                            arg => new[] {arg.skillName},
+                            arg => new[] {arg.skillName},
+                            opts.skipTranslatedItems);
             }
 
             var commandNames = new HashSet<string>();
-            using (var sw = new StreamWriter(Path.Combine(unitPath, "YotogiSkillName.csv"), false, encoding))
+            using (var sw = new StreamWriter(Path.Combine(unitPath, "YotogiSkillCommand.csv"), false, encoding))
             {
-                using (var f = GameUty.FileOpen("yotogi_skill_command_data.nei"))
+                using var f = GameUty.FileOpen("yotogi_skill_command_data.nei");
+                using var scenarioNei = new CsvParser();
+                sw.WriteLine("Key,Type,Desc,Japanese,English");
+                scenarioNei.Open(f);
+
+                for (var i = 0; i < scenarioNei.max_cell_y; i++)
                 {
-                    using (var scenarioNei = new CsvParser())
+                    if (!scenarioNei.IsCellToExistData(0, i))
                     {
-                        sw.WriteLine("Key,Type,Desc,Japanese,English");
-                        scenarioNei.Open(f);
-
-                        for (var i = 0; i < scenarioNei.max_cell_y; i++)
-                        {
-                            if (!scenarioNei.IsCellToExistData(0, i))
-                            {
-                                i += 2;
-                                continue;
-                            }
-
-                            var commandName = scenarioNei.GetCellAsString(2, i);
-
-                            if (opts.skipTranslatedItems &&
-                                LocalizationManager.TryGetTranslation($"YotogiSkillCommand/{commandName}", out var _))
-                                continue;
-
-                            if (commandNames.Contains(commandName))
-                                continue;
-
-                            commandNames.Add(commandName);
-
-                            var csvName = EscapeCSVItem(commandName);
-                            sw.WriteLine($"{csvName},Text,,{csvName},{csvName}");
-                        }
+                        i += 2;
+                        continue;
                     }
+
+                    var commandName = scenarioNei.GetCellAsString(2, i);
+
+                    if (opts.skipTranslatedItems &&
+                        LocalizationManager.TryGetTranslation($"YotogiSkillCommand/{commandName}", out var _))
+                        continue;
+
+                    if (commandNames.Contains(commandName))
+                        continue;
+
+                    commandNames.Add(commandName);
+
+                    var csvName = EscapeCSVItem(commandName);
+                    sw.WriteLine($"{csvName},Text,,{csvName},{csvName}");
                 }
             }
         }
@@ -639,35 +634,17 @@ namespace TranslationExtract
             Debug.Log("Getting VIP event names");
 
             var encoding = new UTF8Encoding(true);
-            using (var sw = new StreamWriter(Path.Combine(unitPath, "SceneDaily.csv"), false, encoding))
-            {
-                using (var f = GameUty.FileOpen("schedule_work_night.nei"))
-                {
-                    using (var scenarioNei = new CsvParser())
-                    {
-                        sw.WriteLine("Key,Type,Desc,Japanese,English");
-                        scenarioNei.Open(f);
+            using var sw = new StreamWriter(Path.Combine(unitPath, "SceneDaily.csv"), false, encoding);
 
-                        for (var i = 1; i < scenarioNei.max_cell_y; i++)
+            sw.WriteLine("Key,Type,Desc,Japanese,English");
+            sw.WriteCSV("schedule_work_night.nei", "ScreneDaily", (parser, i) => new
                         {
-                            if (!scenarioNei.IsCellToExistData(0, i))
-                                continue;
-
-                            var vipName = scenarioNei.GetCellAsString(1, i);
-                            var vipDescription = scenarioNei.GetCellAsString(7, i);
-
-                            if (opts.skipTranslatedItems &&
-                                LocalizationManager.TryGetTranslation($"SceneDaily/スケジュール/項目/{vipName}", out var _))
-                                continue;
-
-                            var csvName = EscapeCSVItem(vipName);
-                            var csvDesc = EscapeCSVItem(vipDescription);
-                            sw.WriteLine($"スケジュール/項目/{vipName},Text,,{csvName},{csvName}");
-                            sw.WriteLine($"スケジュール/説明/{vipName},Text,,{csvDesc},{csvDesc}");
-                        }
-                    }
-                }
-            }
+                            vipName = parser.GetCellAsString(1, i),
+                            vipDescription = parser.GetCellAsString(7, i)
+                        },
+                        arg => new[] {$"スケジュール/項目/{arg.vipName}", $"スケジュール/説明/{arg.vipDescription}"},
+                        arg => new[] {arg.vipName, arg.vipDescription},
+                        opts.skipTranslatedItems);
         }
 
         private string EscapeCSVItem(string str)

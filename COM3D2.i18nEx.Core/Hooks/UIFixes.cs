@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Reflection.Emit;
 using BepInEx.Harmony;
+using COM3D2.i18nEx.Core.TranslationManagers;
 using HarmonyLib;
 using I2.Loc;
 using MaidStatus;
@@ -24,6 +25,20 @@ namespace COM3D2.i18nEx.Core.Hooks
             instance = HarmonyWrapper.PatchAll(typeof(UIFixes), "horse.coder.i18nex.ui_fixes");
 
             initialized = true;
+        }
+
+        [HarmonyPatch(typeof(CMSystem), "LoadIni")]
+        [HarmonyPostfix]
+        public static void PostLoadIni()
+        {
+            if (Configuration.General.FixSubtitleType.Value)
+            {
+                Configuration.ScriptTranslations.RerouteTranslationsTo.Value = TranslationsReroute.RouteToJapanese;
+                Configuration.General.FixSubtitleType.Value = false;
+                GameMain.Instance.CMSystem.SubtitleType = SubtitleDisplayManager.DisplayType.Original;
+                GameMain.Instance.CMSystem.SaveIni();
+                Core.Logger.LogInfo("Fixed game's subtitle type!");
+            }
         }
 
         [HarmonyPatch(typeof(Status), nameof(Status.maxNameLength), MethodType.Getter)]

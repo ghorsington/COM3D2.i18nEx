@@ -59,6 +59,10 @@ namespace COM3D2.i18nEx.Core
 
         internal class GeneralConfig
         {
+            public ConfigWrapper<bool> FixSubtitleType = Wrap(
+                                                               "General", "FixGameSubtitleType",
+                                                               "DO NOT TOUCH: If enabled, i18nEx will reset game subtitle type to Japanese on the next game run", true);
+            
             public ConfigWrapper<string> ActiveLanguage = Wrap(
                                                                "General", "ActiveLanguage",
                                                                "Currently selected language", "English");
@@ -107,7 +111,7 @@ namespace COM3D2.i18nEx.Core
                                                                                    "ScriptTranslations",
                                                                                    "RerouteTranslationsTo",
                                                                                    "Allows you to route both English and Japanese translations into a single textbox instead of viewing both\nSupports the following values:\nNone -- Disabled. English text is written into English textbox; Japanese into Japanese\nRouteToEnglish -- Puts Japanese text into English textbox if there is no translation text available\nRouteToJapanese -- Puts translations into Japanese textbox if there is a translation available",
-                                                                                   TranslationsReroute.None,
+                                                                                   TranslationsReroute.RouteToJapanese,
                                                                                    EnumConverter<TranslationsReroute>
                                                                                       .EnumToString,
                                                                                    EnumConverter<TranslationsReroute>

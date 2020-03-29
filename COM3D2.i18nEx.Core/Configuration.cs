@@ -177,6 +177,10 @@ namespace COM3D2.i18nEx.Core
             public ConfigWrapper<bool> VerboseLogging = Wrap("I2Translation", "VerboseLogging",
                                                              "If enabled, logs precise I2Loc loading and translation info\nUseful if you're debugging.",
                                                              false);
+            
+            public ConfigWrapper<bool> DumpTexts = Wrap("I2Translation", "DumpUntranslatedUITexts",
+                                                           "If enabled, dumps untranslated UI texts",
+                                                           false);
         }
     }
 }

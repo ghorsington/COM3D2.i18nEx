@@ -28,6 +28,8 @@ namespace COM3D2.i18nEx.Core
         internal static ITranslationLoader TranslationLoader { get; private set; }
 
         private int GameVersion => (int) typeof(Misc).GetField(nameof(Misc.GAME_VERSION)).GetValue(null);
+        
+        internal static string CurrentSelectedLanguage { get; private set; }
 
         public void Initialize(ILogger logger, string gameRoot)
         {
@@ -92,6 +94,10 @@ namespace COM3D2.i18nEx.Core
 
             foreach (var mgr in managers)
                 mgr.LoadLanguage();
+
+            CurrentSelectedLanguage = langName;
+            
+            I2TranslationDump.Initialize();
         }
 
         private ITranslationLoader GetLoader(string loaderName)

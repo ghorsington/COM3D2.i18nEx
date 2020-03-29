@@ -8,6 +8,7 @@ using I2.Loc;
 using MaidStatus;
 using UnityEngine;
 using UnityEngine.UI;
+using wf;
 
 namespace COM3D2.i18nEx.Core.Hooks
 {
@@ -70,7 +71,7 @@ namespace COM3D2.i18nEx.Core.Hooks
 
             var term = $"General/{text.Replace(" ", "_")}";
             if (Configuration.I2Translation.VerboseLogging.Value)
-                Core.Logger.LogInfo($"Trying to localize with term {term}");
+                Core.Logger.LogInfo($"Trying to localize with term \"{term}\"");
             loc = go.AddComponent<Localize>();
             loc.SetTerm(term);
         }
@@ -175,6 +176,18 @@ namespace COM3D2.i18nEx.Core.Hooks
 
                 yield return codeInstruction;
             }
+        }
+
+        [HarmonyPatch(typeof(Utility), nameof(Utility.SetLocalizeTerm), typeof(Localize), typeof(string), typeof(bool))]
+        [HarmonyPrefix]
+        public static bool OnSetLocalizeTerm(ref bool __result, string term)
+        {
+            if (LocalizationManager.TryGetTranslation(term, out var _)) 
+                return true;
+            if(Configuration.I2Translation.VerboseLogging.Value)
+                Core.Logger.LogInfo($"[I2Loc] term {term} does not exist, skipping translating the term.");
+            __result = false;
+            return false;
         }
 
         private delegate void TranslateInfo(ref string text);

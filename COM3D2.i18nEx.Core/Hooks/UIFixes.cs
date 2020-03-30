@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using BepInEx.Harmony;
@@ -182,12 +184,72 @@ namespace COM3D2.i18nEx.Core.Hooks
         [HarmonyPrefix]
         public static bool OnSetLocalizeTerm(ref bool __result, string term)
         {
-            if (LocalizationManager.TryGetTranslation(term, out var _)) 
+            if (LocalizationManager.TryGetTranslation(term, out var _))
                 return true;
-            if(Configuration.I2Translation.VerboseLogging.Value)
+            if (Configuration.I2Translation.VerboseLogging.Value)
                 Core.Logger.LogInfo($"[I2Loc] term {term} does not exist, skipping translating the term.");
             __result = false;
             return false;
+        }
+
+        [HarmonyPatch(typeof(LocalizeTarget_NGUI_Label), nameof(LocalizeTarget_NGUI_Label.DoLocalize))]
+        [HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> FixDoLocalize(IEnumerable<CodeInstruction> instrs)
+        {
+            var prop = AccessTools.PropertySetter(typeof(UILabel), nameof(UILabel.text));
+            foreach (var ins in instrs)
+                if (ins.opcode == OpCodes.Callvirt && (MethodInfo) ins.operand == prop)
+                    yield return HarmonyWrapper.EmitDelegate<Action<UILabel, string>>((label, text) =>
+                    {
+                        if (!string.IsNullOrEmpty(text))
+                            label.text = text;
+                    });
+                else
+                    yield return ins;
+        }
+
+        [HarmonyPatch(typeof(UIWFConditionList), nameof(UIWFConditionList.SetTexts),
+                         typeof(KeyValuePair<string[], Color>[]), typeof(int))]
+        [HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> FixSetTexts(IEnumerable<CodeInstruction> instrs)
+        {
+            var setActive = AccessTools.Method(typeof(GameObject), nameof(GameObject.SetActive));
+
+            var gotBool = false;
+            var done = false;
+            foreach (var ins in instrs)
+            {
+                yield return ins;
+
+                if (!done && ins.opcode == OpCodes.Ldc_I4_1)
+                    gotBool = true;
+                if (!gotBool || ins.opcode != OpCodes.Callvirt || (MethodInfo) ins.operand != setActive)
+                    continue;
+
+                gotBool = false;
+                done = true;
+                yield return new CodeInstruction(OpCodes.Ldarg_0);
+                yield return new CodeInstruction(OpCodes.Ldfld,
+                                                 AccessTools.Field(typeof(UIWFConditionList), "condition_label_list_"));
+                yield return new CodeInstruction(OpCodes.Ldarg_1);
+                yield return new CodeInstruction(OpCodes.Ldloc_3);
+                yield return
+                    HarmonyWrapper
+                       .EmitDelegate<Action<List<UILabel>, KeyValuePair<string[], Color>[], int>>
+                            ((labels, texts, index) =>
+                        {
+                            var curText = texts[index];
+                            var curLabel = labels[index];
+                            if (curText.Key.Length == 1)
+                                curLabel.text = Utility.GetTermLastWord(curText.Key[0]);
+                            else if (curText.Key.Length > 1)
+                                curLabel.text = string.Format(Utility.GetTermLastWord(curText.Key[0]),
+                                                              curText.Key
+                                                                     .Skip(1)
+                                                                     .Select(Utility.GetTermLastWord)
+                                                                     .Cast<object>().ToArray());
+                        });
+            }
         }
 
         private delegate void TranslateInfo(ref string text);

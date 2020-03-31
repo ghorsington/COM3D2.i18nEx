@@ -181,6 +181,14 @@ namespace COM3D2.i18nEx.Core
             public ConfigWrapper<bool> DumpTexts = Wrap("I2Translation", "DumpUntranslatedUITexts",
                                                            "If enabled, dumps untranslated UI texts",
                                                            false);
+            
+            public ConfigWrapper<bool> OverrideSubtitleOpacity = Wrap("I2Translation", "OverrideSubtitleOpacity",
+                                                        "If enabled, allows to change subtitle box opacity without affecting other elements.",
+                                                        false);
+            
+            public ConfigWrapper<float> SubtitleOpacity = Wrap("I2Translation", "SubtitleOpacity",
+                                                        "If OverrideSubtitleOpacity is true, specifies opacity of the subtitle box. Must be a decimal between 0 (transparent) and 1 (opaque).",
+                                                        1.0f);
         }
     }
 }

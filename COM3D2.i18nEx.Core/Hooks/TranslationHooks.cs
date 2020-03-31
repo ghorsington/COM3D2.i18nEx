@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using BepInEx.Harmony;
@@ -51,6 +52,21 @@ namespace COM3D2.i18nEx.Core.Hooks
                     yield return new CodeInstruction(OpCodes.Ldc_I4_1);
                 else
                     yield return ins;
+        }
+
+        [HarmonyPatch(typeof(SubtitleDisplayManager), nameof(SubtitleDisplayManager.messageBgAlpha), MethodType.Setter)]
+        [HarmonyPrefix]
+        private static bool OnGetConfigMessageAlpha(SubtitleDisplayManager __instance, ref float value)
+        {
+            var parent = __instance.transform.parent;
+            if (Configuration.I2Translation.OverrideSubtitleOpacity.Value &&
+                 parent && parent.name == "YotogiPlayPanel")
+            {
+                if (Math.Abs(value - __instance.messageBgAlpha) < 0.001)
+                    return false;
+                value = Mathf.Clamp(Configuration.I2Translation.SubtitleOpacity.Value, 0f, 1f);
+            }
+            return true;
         }
 
         [HarmonyPatch(typeof(LocalizationManager), nameof(LocalizationManager.GetTranslation))]

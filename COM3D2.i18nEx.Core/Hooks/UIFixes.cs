@@ -180,18 +180,6 @@ namespace COM3D2.i18nEx.Core.Hooks
             }
         }
 
-        [HarmonyPatch(typeof(Utility), nameof(Utility.SetLocalizeTerm), typeof(Localize), typeof(string), typeof(bool))]
-        [HarmonyPrefix]
-        public static bool OnSetLocalizeTerm(ref bool __result, string term)
-        {
-            if (LocalizationManager.TryGetTranslation(term, out var _))
-                return true;
-            if (Configuration.I2Translation.VerboseLogging.Value)
-                Core.Logger.LogInfo($"[I2Loc] term {term} does not exist, skipping translating the term.");
-            __result = false;
-            return false;
-        }
-
         [HarmonyPatch(typeof(LocalizeTarget_NGUI_Label), nameof(LocalizeTarget_NGUI_Label.DoLocalize))]
         [HarmonyTranspiler]
         public static IEnumerable<CodeInstruction> FixDoLocalize(IEnumerable<CodeInstruction> instrs)

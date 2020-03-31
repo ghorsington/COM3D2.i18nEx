@@ -11,6 +11,7 @@ using MaidStatus;
 using UnityEngine;
 using UnityEngine.UI;
 using wf;
+using Yotogis;
 
 namespace COM3D2.i18nEx.Core.Hooks
 {
@@ -225,18 +226,38 @@ namespace COM3D2.i18nEx.Core.Hooks
                     HarmonyWrapper
                        .EmitDelegate<Action<List<UILabel>, KeyValuePair<string[], Color>[], int>>
                             ((labels, texts, index) =>
-                        {
-                            var curText = texts[index];
-                            var curLabel = labels[index];
-                            if (curText.Key.Length == 1)
-                                curLabel.text = Utility.GetTermLastWord(curText.Key[0]);
-                            else if (curText.Key.Length > 1)
-                                curLabel.text = string.Format(Utility.GetTermLastWord(curText.Key[0]),
-                                                              curText.Key
-                                                                     .Skip(1)
-                                                                     .Select(Utility.GetTermLastWord)
-                                                                     .Cast<object>().ToArray());
-                        });
+                            {
+                                var curText = texts[index];
+                                var curLabel = labels[index];
+                                if (curText.Key.Length == 1)
+                                    curLabel.text = Utility.GetTermLastWord(curText.Key[0]);
+                                else if (curText.Key.Length > 1)
+                                    curLabel.text = string.Format(Utility.GetTermLastWord(curText.Key[0]),
+                                                                  curText.Key
+                                                                         .Skip(1)
+                                                                         .Select(Utility.GetTermLastWord)
+                                                                         .Cast<object>().ToArray());
+                            });
+            }
+        }
+
+        [HarmonyPatch(typeof(SkillAcquisitionCondition),
+                         nameof(SkillAcquisitionCondition.CreateConditionTextAndStaturResults))]
+        [HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> TranspileCreateConditionTextAndStaturResults(IEnumerable<CodeInstruction> instrs)
+        {
+            var supportMultiLang = AccessTools.PropertyGetter(typeof(Product), nameof(Product.supportMultiLanguage));
+            foreach (var ins in instrs)
+            {
+                if (ins.opcode == OpCodes.Call && (MethodInfo) ins.operand == supportMultiLang)
+                {
+                    yield return ins;
+                    yield return new CodeInstruction(OpCodes.Pop);
+                    yield return new CodeInstruction(OpCodes.Ldarg_0);
+                    yield return HarmonyWrapper.EmitDelegate<Func<SkillAcquisitionCondition, bool>>(sac => Product.supportMultiLanguage && LocalizationManager.TryGetTranslation(sac.yotogi_class.termName, out var _));
+                }
+                else
+                    yield return ins;
             }
         }
 

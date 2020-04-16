@@ -261,6 +261,20 @@ namespace COM3D2.i18nEx.Core.Hooks
             }
         }
 
+        [HarmonyPatch(typeof(MaidManagementMain), "OnSelectChara")]
+        [HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> FixNpcMaidBanishment(IEnumerable<CodeInstruction> instrs)
+        {
+            var isJapan = AccessTools.PropertyGetter(typeof(Product), nameof(Product.isJapan));
+            foreach (var ins in instrs)
+            {
+                if (ins.opcode == OpCodes.Call && (MethodInfo) ins.operand == isJapan)
+                    yield return new CodeInstruction(OpCodes.Ldc_I4_1);
+                else
+                    yield return ins;
+            }
+        }
+
         private delegate void TranslateInfo(ref string text);
     }
 }

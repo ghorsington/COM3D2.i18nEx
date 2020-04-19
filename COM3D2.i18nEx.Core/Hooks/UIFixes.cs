@@ -275,6 +275,35 @@ namespace COM3D2.i18nEx.Core.Hooks
             }
         }
 
+        [HarmonyPatch(typeof(ProfileCtrl), "Init")]
+        [HarmonyTranspiler]
+        public static IEnumerable<CodeInstruction> FixProfileCtrlPersonalityDisplay(IEnumerable<CodeInstruction> instrs)
+        {
+            var termNameProp = AccessTools.PropertyGetter(typeof(Personal.Data), nameof(Personal.Data.termName));
+            foreach (var ins in instrs)
+            {
+                if (ins.opcode == OpCodes.Callvirt && (MethodInfo) ins.operand == termNameProp)
+                {
+                    yield return HarmonyWrapper.EmitDelegate<Func<Personal.Data, string>>(data =>
+                    {
+                        if (LocalizationManager.TryGetTranslation(data.termName, out var _))
+                            return data.termName;
+                        return data.drawName;
+                    });
+                }
+                else
+                    yield return ins;
+            }
+        }
+
+        [HarmonyPatch(typeof(UILabel), nameof(UILabel.SetCurrentSelection))]
+        [HarmonyPrefix]
+        public static void OnSetCurrentSelection(UILabel __instance)
+        {
+            if (UIPopupList.current != null)
+                __instance.text = UIPopupList.current.value;
+        }
+
         private delegate void TranslateInfo(ref string text);
     }
 }

@@ -1,90 +1,14 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{1009E384-FACF-468A-8C86-E955C3F8E61C}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>COM3D2.i18nEx.Core</RootNamespace>
-    <AssemblyName>COM3D2.i18nEx.Core</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>..\bin\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <AssemblyTitle>COM3D2.i18nEx.Core</AssemblyTitle>
+    <Product>COM3D2.i18nEx.Core</Product>
     <DebugType>none</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>..\bin\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony">
-      <HintPath>..\lib\0Harmony.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\lib\Assembly-CSharp.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>..\lib\Assembly-CSharp-firstpass.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="BepInEx.Harmony">
-      <HintPath>..\lib\BepInEx.Harmony.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="ExIni">
-      <HintPath>..\lib\ExIni.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
+    <PackageReference Include="ExIni" Version="1.0.2" IncludeAssets="compile" />
+    <PackageReference Include="HarmonyX" Version="2.5.5" IncludeAssets="compile" />
+    <PackageReference Include="UnityEngine.Modules" Version="5.6.0" IncludeAssets="compile" />
+    <PackageReference Include="COM3D2.GameLibs" Version="2.*-*" IncludeAssets="compile" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="UnityEngine">
-      <HintPath>..\lib\UnityEngine.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>..\lib\UnityEngine.UI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Configuration.cs" />
-    <Compile Include="Loaders\BasicTranslationLoader.cs" />
-    <Compile Include="Loaders\ITranslationLoader.cs" />
-    <Compile Include="Hooks\ScriptTranslationHooks.cs" />
-    <Compile Include="Hooks\TextureReplaceHooks.cs" />
-    <Compile Include="Hooks\UIFixes.cs" />
-    <Compile Include="Paths.cs" />
-    <Compile Include="TranslationManagers\I2TranslationManager.cs" />
-    <Compile Include="TranslationManagers\TextureReplaceManager.cs" />
-    <Compile Include="TranslationManagers\TranslationManagerBase.cs" />
-    <Compile Include="Util\ConfigWrapper.cs" />
-    <Compile Include="ILogger.cs" />
-    <Compile Include="Core.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TranslationManagers\ScriptTranslationManager.cs" />
-    <Compile Include="Util\EnumConverter.cs" />
-    <Compile Include="Util\I2TranslationDump.cs" />
-    <Compile Include="Util\KeyCommand.cs" />
-    <Compile Include="Util\StringExtensions.cs" />
-    <Compile Include="Hooks\TranslationHooks.cs" />
-    <Compile Include="Util\Utility.cs" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

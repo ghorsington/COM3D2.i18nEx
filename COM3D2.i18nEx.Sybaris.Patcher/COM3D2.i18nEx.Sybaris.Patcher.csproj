@@ -1,9 +1,0 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <AssemblyTitle>COM3D2.i18nEx.Sybaris.Patcher</AssemblyTitle>
-        <Product>COM3D2.i18nEx.Sybaris.Patcher</Product>
-    </PropertyGroup>
-    <ItemGroup>
-        <PackageReference Include="Mono.Cecil" Version="0.10.4" IncludeAssets="compile"/>
-    </ItemGroup>
-</Project>

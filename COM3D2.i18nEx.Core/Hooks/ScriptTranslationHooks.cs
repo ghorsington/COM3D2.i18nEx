@@ -1,11 +1,8 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using COM3D2.i18nEx.Core.TranslationManagers;
-using COM3D2.i18nEx.Core.Util;
 using HarmonyLib;
 using Scourt.Loc;
-using LocalizationManager = I2.Loc.LocalizationManager;
 
 namespace COM3D2.i18nEx.Core.Hooks
 {
@@ -15,7 +12,10 @@ namespace COM3D2.i18nEx.Core.Hooks
         private static string curScriptFileName;
         private static bool initialized;
         private static string tlSeparator;
-        private static string TlSeparator => tlSeparator ??= Scourt.Loc.LocalizationManager.ScriptTranslationMark.FirstOrDefault(kv => kv.Value == Product.subTitleScenarioLanguage).Key;
+
+        private static string TlSeparator =>
+            tlSeparator ??= LocalizationManager.ScriptTranslationMark
+                                               .FirstOrDefault(kv => kv.Value == Product.subTitleScenarioLanguage).Key;
 
         public static void Initialize()
         {
@@ -23,13 +23,15 @@ namespace COM3D2.i18nEx.Core.Hooks
                 return;
 
             instance = Harmony.CreateAndPatchAll(typeof(ScriptTranslationHooks),
-                                               "horse.coder.com3d2.i18nex.hooks.scripts");
+                                                 "horse.coder.com3d2.i18nex.hooks.scripts");
             initialized = true;
         }
 
         [HarmonyPatch(typeof(BaseKagManager), nameof(BaseKagManager.TagPlayVoice))]
         [HarmonyPrefix]
-        private static void OnPlayVoice(BaseKagManager __instance, KagTagSupport tag_data, BaseKagManager.SubtitleData ___subtitle_data)
+        private static void OnPlayVoice(BaseKagManager __instance,
+                                        KagTagSupport tag_data,
+                                        BaseKagManager.SubtitleData ___subtitle_data)
         {
             __instance.CheckAbsolutelyNecessaryTag(tag_data, "playvoice", "voice");
 
@@ -56,7 +58,8 @@ namespace COM3D2.i18nEx.Core.Hooks
             {
                 sub.autoDestroy = true;
                 foreach (var subtitleData in subData)
-                    sub.AddData($"{subtitleData.original}<{TlSeparator}>{subtitleData.translation}", subtitleData.startTime,
+                    sub.AddData($"{subtitleData.original}<{TlSeparator}>{subtitleData.translation}",
+                                subtitleData.startTime,
                                 subtitleData.displayTime);
                 sub.Play();
             }
@@ -94,21 +97,21 @@ namespace COM3D2.i18nEx.Core.Hooks
             TranslateLine(curScriptFileName, ref text);
         }
 
-        [HarmonyPatch(typeof(Scourt.Loc.LocalizationManager), nameof(Scourt.Loc.LocalizationManager.GetTranslationText), typeof(string))]
+        [HarmonyPatch(typeof(LocalizationManager), nameof(LocalizationManager.GetTranslationText), typeof(string))]
         [HarmonyPostfix]
         private static void OnGetTranslationText(ref LocalizationString __result)
         {
             if (!__result.IsEmpty(Product.subTitleScenarioLanguage))
                 return;
             var orig = __result[Product.baseScenarioLanguage];
-            if (!LocalizationManager.TryGetTranslation($"SubMaid/{orig}/名前", out var tl))
+            if (!I2.Loc.LocalizationManager.TryGetTranslation($"SubMaid/{orig}/名前", out var tl))
                 tl = Core.ScriptTranslate.GetTranslation(null, orig);
             var tls = __result.ToDictionary(kv => kv.Key, kv => kv.Value);
             tls[Product.subTitleScenarioLanguage] = tl;
             __result = new LocalizationString(tls);
         }
 
-        [HarmonyPatch(typeof(Scourt.Loc.LocalizationManager), nameof(Scourt.Loc.LocalizationManager.GetTranslationText), typeof(string))]
+        [HarmonyPatch(typeof(LocalizationManager), nameof(LocalizationManager.GetTranslationText), typeof(string))]
         [HarmonyReversePatch]
         private static LocalizationString SplitTranslatedText(string baseText)
         {
@@ -130,8 +133,8 @@ namespace COM3D2.i18nEx.Core.Hooks
             var translationParts = SplitTranslatedText(text);
 
             ProcessTranslation(fileName, ref translationParts);
-            
-            var orig  = translationParts[Product.baseScenarioLanguage];
+
+            var orig = translationParts[Product.baseScenarioLanguage];
             var tl = translationParts[Product.subTitleScenarioLanguage];
 
             if (!string.IsNullOrEmpty(tl))

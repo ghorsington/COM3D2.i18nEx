@@ -33,15 +33,24 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
     internal class TextureReplaceManager : TranslationManagerBase
     {
-        private readonly HashSet<string> dumpedItems = new HashSet<string>();
-        private readonly HashSet<string> missingTextures = new HashSet<string>();
-        private readonly LinkedList<TextureReplacement> texReplacementCache = new LinkedList<TextureReplacement>();
+        private readonly HashSet<string> dumpedItems = new();
+        private readonly HashSet<string> missingTextures = new();
+        private readonly LinkedList<TextureReplacement> texReplacementCache = new();
 
         private readonly Dictionary<string, LinkedListNode<TextureReplacement>> texReplacementLookup =
-            new Dictionary<string, LinkedListNode<TextureReplacement>>(StringComparer.InvariantCultureIgnoreCase);
+            new(StringComparer.InvariantCultureIgnoreCase);
 
         private readonly Dictionary<string, string> textureReplacements =
-            new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+            new(StringComparer.InvariantCultureIgnoreCase);
+
+        private void Update()
+        {
+            if (Configuration.TextureReplacement.ReloadTranslationsKey.Value.IsPressed)
+                ReloadActiveTranslations();
+
+            if (Configuration.I2Translation.PrintFontNamesKey.Value.IsPressed)
+                Core.Logger.LogInfo($"Supported fonts:\n{string.Join("\n", Font.GetOSInstalledFontNames())}");
+        }
 
 
         public override void LoadLanguage()
@@ -74,15 +83,6 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
                 textureReplacements[name] = file;
             }
-        }
-
-        private void Update()
-        {
-            if (Configuration.TextureReplacement.ReloadTranslationsKey.Value.IsPressed)
-                ReloadActiveTranslations();
-
-            if (Configuration.I2Translation.PrintFontNamesKey.Value.IsPressed)
-                Core.Logger.LogInfo($"Supported fonts:\n{string.Join("\n", Font.GetOSInstalledFontNames())}");
         }
 
         public bool ReplacementExists(string texName)

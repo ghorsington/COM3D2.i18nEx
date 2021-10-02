@@ -19,7 +19,7 @@ namespace COM3D2.i18nEx.Core
         internal static ScriptTranslationManager ScriptTranslate;
         internal static TextureReplaceManager TextureReplace;
         internal static I2TranslationManager I2Translation;
-        private readonly List<TranslationManagerBase> managers = new List<TranslationManagerBase>();
+        private readonly List<TranslationManagerBase> managers = new();
 
         public static ILogger Logger { get; private set; }
 
@@ -27,9 +27,30 @@ namespace COM3D2.i18nEx.Core
 
         internal static ITranslationLoader TranslationLoader { get; private set; }
 
-        private int GameVersion => (int) typeof(Misc).GetField(nameof(Misc.GAME_VERSION)).GetValue(null);
-        
+        private int GameVersion => (int)typeof(Misc).GetField(nameof(Misc.GAME_VERSION)).GetValue(null);
+
         internal static string CurrentSelectedLanguage { get; private set; }
+
+        private void Awake()
+        {
+            DontDestroyOnLoad(this);
+        }
+
+        private void Update()
+        {
+            KeyCommandHandler.UpdateState();
+
+            if (Configuration.General.ReloadConfigKey.Value.IsPressed)
+                Configuration.Reload();
+
+            if (Configuration.General.ReloadTranslationsKey.Value.IsPressed)
+                foreach (var mgr in managers)
+                    mgr.ReloadActiveTranslations();
+
+            if (Input.GetKey(KeyCode.Keypad0))
+                foreach (var languageSource in LocalizationManager.Sources)
+                    Logger.LogInfo($"Got source {languageSource}");
+        }
 
         public void Initialize(ILogger logger, string gameRoot)
         {
@@ -96,7 +117,7 @@ namespace COM3D2.i18nEx.Core
                 mgr.LoadLanguage();
 
             CurrentSelectedLanguage = langName;
-            
+
             I2TranslationDump.Initialize();
         }
 
@@ -153,27 +174,6 @@ namespace COM3D2.i18nEx.Core
                 Logger.LogWarning($"Failed to read config.ini. Reason: {e.Message}");
                 return null;
             }
-        }
-
-        private void Awake()
-        {
-            DontDestroyOnLoad(this);
-        }
-
-        private void Update()
-        {
-            KeyCommandHandler.UpdateState();
-
-            if (Configuration.General.ReloadConfigKey.Value.IsPressed)
-                Configuration.Reload();
-
-            if (Configuration.General.ReloadTranslationsKey.Value.IsPressed)
-                foreach (var mgr in managers)
-                    mgr.ReloadActiveTranslations();
-
-            if (Input.GetKey(KeyCode.Keypad0))
-                foreach (var languageSource in LocalizationManager.Sources)
-                    Logger.LogInfo($"Got source {languageSource}");
         }
     }
 }

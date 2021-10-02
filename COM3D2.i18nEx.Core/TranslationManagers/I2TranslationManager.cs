@@ -9,7 +9,13 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 {
     internal class I2TranslationManager : TranslationManagerBase
     {
-        private readonly GameObject go = new GameObject();
+        private readonly GameObject go = new();
+
+        private void Update()
+        {
+            if (Configuration.I2Translation.ReloadTranslationsKey.Value.IsPressed)
+                ReloadActiveTranslations();
+        }
 
         public override void LoadLanguage()
         {
@@ -65,12 +71,6 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                                 $"Loaded the following languages: {string.Join(",", source.mLanguages.Select(d => d.Name).ToArray())}");
 
             LocalizationManager.LocalizeAll(true);
-        }
-
-        private void Update()
-        {
-            if (Configuration.I2Translation.ReloadTranslationsKey.Value.IsPressed)
-                ReloadActiveTranslations();
         }
 
         public override void ReloadActiveTranslations()

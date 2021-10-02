@@ -1,4 +1,5 @@
 ﻿// TODO: Fix for multi-language support
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -32,10 +33,13 @@ namespace TranslationExtract
                 yield return (enum1.Current, enum2.Current);
         }
 
-        public static void WriteCSV<T>(this StreamWriter sw, string neiFile, string csvFile,
+        public static void WriteCSV<T>(this StreamWriter sw,
+                                       string neiFile,
+                                       string csvFile,
                                        Func<CsvParser, int, T> selector,
                                        Func<T, IEnumerable<string>> toString,
-                                       Func<T, IEnumerable<string>> toTranslation, bool skipIfExists = false)
+                                       Func<T, IEnumerable<string>> toTranslation,
+                                       bool skipIfExists = false)
         {
             using var f = GameUty.FileOpen(neiFile);
             using var scenarioNei = new CsvParser();
@@ -72,16 +76,16 @@ namespace TranslationExtract
         private const int MARGIN_TOP = 20;
         private const int MARGIN_BOTTOM = 5;
 
-        private static readonly Regex textPattern = new Regex("text=\"(?<text>.*)\"");
-        private static readonly Regex namePattern = new Regex("name=(?<name>.*)");
+        private static readonly Regex textPattern = new("text=\"(?<text>.*)\"");
+        private static readonly Regex namePattern = new("name=(?<name>.*)");
         private static readonly Encoding UTF8 = new UTF8Encoding(true);
 
-        private static readonly Dictionary<string, string> NpcNames = new Dictionary<string, string>();
+        private static readonly Dictionary<string, string> NpcNames = new();
 
 
-        private readonly HashSet<string> filesToSkip = new HashSet<string>(StringComparer.InvariantCultureIgnoreCase);
+        private readonly HashSet<string> filesToSkip = new(StringComparer.InvariantCultureIgnoreCase);
 
-        private readonly DumpOptions options = new DumpOptions();
+        private readonly DumpOptions options = new();
 
         private GUIStyle bold;
         private bool displayGui;
@@ -89,19 +93,15 @@ namespace TranslationExtract
 
         private int translatedLines;
 
-        private static void DumpI2Translations(LanguageSource src)
+        private void Awake()
         {
-            var i2Path = Path.Combine(TL_DIR, "UI");
-            var sourcePath = Path.Combine(i2Path, src.name);
-            if (!Directory.Exists(sourcePath))
-                Directory.CreateDirectory(sourcePath);
-            var categories = src.GetCategories(true);
-            foreach (var category in categories)
-            {
-                var path = Path.Combine(sourcePath, $"{category}.csv");
-                Directory.CreateDirectory(Path.GetDirectoryName(path));
-                File.WriteAllText(path, src.Export_CSV(category), UTF8);
-            }
+            DontDestroyOnLoad(this);
+        }
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.D))
+                displayGui = !displayGui;
         }
 
         private void OnGUI()
@@ -109,7 +109,7 @@ namespace TranslationExtract
             if (!displayGui)
                 return;
             if (bold == null)
-                bold = new GUIStyle(GUI.skin.label) {fontStyle = FontStyle.Bold};
+                bold = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold };
 
 
             void Toggle(string text, ref bool toggle)
@@ -120,7 +120,7 @@ namespace TranslationExtract
             void Window(int id)
             {
                 GUILayout.BeginArea(new Rect(MARGIN_X, MARGIN_TOP, WIDTH - MARGIN_X * 2,
-                                             HEIGHT - MARGIN_TOP         - MARGIN_BOTTOM));
+                                             HEIGHT                      - MARGIN_TOP - MARGIN_BOTTOM));
                 {
                     GUILayout.BeginVertical();
                     {
@@ -157,23 +157,27 @@ namespace TranslationExtract
                        "TranslationExtract");
         }
 
+        private static void DumpI2Translations(LanguageSource src)
+        {
+            var i2Path = Path.Combine(TL_DIR, "UI");
+            var sourcePath = Path.Combine(i2Path, src.name);
+            if (!Directory.Exists(sourcePath))
+                Directory.CreateDirectory(sourcePath);
+            var categories = src.GetCategories(true);
+            foreach (var category in categories)
+            {
+                var path = Path.Combine(sourcePath, $"{category}.csv");
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                File.WriteAllText(path, src.Export_CSV(category), UTF8);
+            }
+        }
+
         private IEnumerator DumpGame()
         {
             var opts = new DumpOptions(options);
             yield return null;
             Dump(opts);
             dumping = false;
-        }
-
-        private void Awake()
-        {
-            DontDestroyOnLoad(this);
-        }
-
-        private void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.D))
-                displayGui = !displayGui;
         }
 
         private void DumpUI()
@@ -480,8 +484,8 @@ namespace TranslationExtract
                             name = parser.GetCellAsString(1, i),
                             description = parser.GetCellAsString(2, i)
                         },
-                        arg => new[] {$"{arg.id}/タイトル", $"{arg.id}/内容"},
-                        arg => new[] {arg.name, arg.description});
+                        arg => new[] { $"{arg.id}/タイトル", $"{arg.id}/内容" },
+                        arg => new[] { arg.name, arg.description });
         }
 
         private void DumpItemNames(DumpOptions opts)
@@ -546,8 +550,8 @@ namespace TranslationExtract
                                 uniqueName = parser.GetCellAsString(idCol, i),
                                 displayName = parser.GetCellAsString(dataCol, i)
                             },
-                            arg => new[] {$"{prefix}/{arg.uniqueName}"},
-                            arg => new[] {arg.displayName},
+                            arg => new[] { $"{prefix}/{arg.uniqueName}" },
+                            arg => new[] { arg.displayName },
                             opts.skipTranslatedItems);
             }
 
@@ -557,10 +561,10 @@ namespace TranslationExtract
                 sw.WriteLine("Key,Type,Desc,Japanese,English");
 
                 WriteSimpleData("maid_status_personal_list.nei", "性格タイプ", sw);
-                
+
                 WriteSimpleData("maid_status_yotogiclass_list.nei", "夜伽クラス", sw);
                 WriteSimpleData("maid_status_yotogiclass_list.nei", "夜伽クラス", sw);
-                
+
                 WriteSimpleData("maid_status_jobclass_list.nei", "ジョブクラス", sw);
                 WriteSimpleData("maid_status_jobclass_list.nei", "ジョブクラス/説明", sw, 4);
 
@@ -587,8 +591,8 @@ namespace TranslationExtract
                             {
                                 skillName = parser.GetCellAsString(4, i)
                             },
-                            arg => new[] {arg.skillName},
-                            arg => new[] {arg.skillName},
+                            arg => new[] { arg.skillName },
+                            arg => new[] { arg.skillName },
                             opts.skipTranslatedItems);
             }
 
@@ -642,8 +646,8 @@ namespace TranslationExtract
                             vipName = parser.GetCellAsString(1, i),
                             vipDescription = parser.GetCellAsString(7, i)
                         },
-                        arg => new[] {$"スケジュール/項目/{arg.vipName}", $"スケジュール/説明/{arg.vipDescription}"},
-                        arg => new[] {arg.vipName, arg.vipDescription},
+                        arg => new[] { $"スケジュール/項目/{arg.vipName}", $"スケジュール/説明/{arg.vipDescription}" },
+                        arg => new[] { arg.vipName, arg.vipDescription },
                         opts.skipTranslatedItems);
         }
 

@@ -18,7 +18,7 @@ namespace COM3D2.i18nEx.Core.Hooks
     {
         private static Harmony instance;
         private static bool initialized;
-        private static readonly Dictionary<string, Font> customFonts = new Dictionary<string, Font>();
+        private static readonly Dictionary<string, Font> customFonts = new();
 
         public static void Initialize()
         {
@@ -149,7 +149,7 @@ namespace COM3D2.i18nEx.Core.Hooks
                         codeInstruction.opcode.Value <= OpCodes.Ldloc_3.Value)
                         index = codeInstruction.opcode.Value - OpCodes.Ldloc_0.Value;
                     else if (codeInstruction.opcode == OpCodes.Ldloc_S || codeInstruction.opcode == OpCodes.Ldloc)
-                        index = (int) codeInstruction.operand;
+                        index = (int)codeInstruction.operand;
 
                     if (index < 0)
                     {
@@ -186,7 +186,7 @@ namespace COM3D2.i18nEx.Core.Hooks
         {
             var prop = AccessTools.PropertySetter(typeof(UILabel), nameof(UILabel.text));
             foreach (var ins in instrs)
-                if (ins.opcode == OpCodes.Callvirt && (MethodInfo) ins.operand == prop)
+                if (ins.opcode == OpCodes.Callvirt && (MethodInfo)ins.operand == prop)
                     yield return Transpilers.EmitDelegate<Action<UILabel, string>>((label, text) =>
                     {
                         if (!string.IsNullOrEmpty(text))
@@ -211,7 +211,7 @@ namespace COM3D2.i18nEx.Core.Hooks
 
                 if (!done && ins.opcode == OpCodes.Ldc_I4_1)
                     gotBool = true;
-                if (!gotBool || ins.opcode != OpCodes.Callvirt || (MethodInfo) ins.operand != setActive)
+                if (!gotBool || ins.opcode != OpCodes.Callvirt || (MethodInfo)ins.operand != setActive)
                     continue;
 
                 gotBool = false;
@@ -223,40 +223,43 @@ namespace COM3D2.i18nEx.Core.Hooks
                 yield return new CodeInstruction(OpCodes.Ldloc_3);
                 yield return
                     Transpilers.EmitDelegate<Action<List<UILabel>, KeyValuePair<string[], Color>[], int>>
-                            ((labels, texts, index) =>
-                            {
-                                var curText = texts[index];
-                                var curLabel = labels[index];
-                                if (curText.Key.Length == 1)
-                                    curLabel.text = Utility.GetTermLastWord(curText.Key[0]);
-                                else if (curText.Key.Length > 1)
-                                    curLabel.text = string.Format(Utility.GetTermLastWord(curText.Key[0]),
-                                                                  curText.Key
-                                                                         .Skip(1)
-                                                                         .Select(Utility.GetTermLastWord)
-                                                                         .Cast<object>().ToArray());
-                            });
+                        ((labels, texts, index) =>
+                        {
+                            var curText = texts[index];
+                            var curLabel = labels[index];
+                            if (curText.Key.Length == 1)
+                                curLabel.text = Utility.GetTermLastWord(curText.Key[0]);
+                            else if (curText.Key.Length > 1)
+                                curLabel.text = string.Format(Utility.GetTermLastWord(curText.Key[0]),
+                                                              curText.Key
+                                                                     .Skip(1)
+                                                                     .Select(Utility.GetTermLastWord)
+                                                                     .Cast<object>().ToArray());
+                        });
             }
         }
 
         [HarmonyPatch(typeof(SkillAcquisitionCondition),
                          nameof(SkillAcquisitionCondition.CreateConditionTextAndStaturResults))]
         [HarmonyTranspiler]
-        public static IEnumerable<CodeInstruction> TranspileCreateConditionTextAndStaturResults(IEnumerable<CodeInstruction> instrs)
+        public static IEnumerable<CodeInstruction> TranspileCreateConditionTextAndStaturResults(
+            IEnumerable<CodeInstruction> instrs)
         {
             var supportMultiLang = AccessTools.PropertyGetter(typeof(Product), nameof(Product.supportMultiLanguage));
             foreach (var ins in instrs)
-            {
-                if (ins.opcode == OpCodes.Call && (MethodInfo) ins.operand == supportMultiLang)
+                if (ins.opcode == OpCodes.Call && (MethodInfo)ins.operand == supportMultiLang)
                 {
                     yield return ins;
                     yield return new CodeInstruction(OpCodes.Pop);
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    yield return Transpilers.EmitDelegate<Func<SkillAcquisitionCondition, bool>>(sac => Product.supportMultiLanguage && LocalizationManager.TryGetTranslation(sac.yotogi_class.termName, out var _));
+                    yield return Transpilers.EmitDelegate<Func<SkillAcquisitionCondition, bool>>(sac =>
+                        Product.supportMultiLanguage &&
+                        LocalizationManager.TryGetTranslation(sac.yotogi_class.termName, out var _));
                 }
                 else
+                {
                     yield return ins;
-            }
+                }
         }
 
         [HarmonyPatch(typeof(MaidManagementMain), "OnSelectChara")]
@@ -265,12 +268,10 @@ namespace COM3D2.i18nEx.Core.Hooks
         {
             var isJapan = AccessTools.PropertyGetter(typeof(Product), nameof(Product.isJapan));
             foreach (var ins in instrs)
-            {
-                if (ins.opcode == OpCodes.Call && (MethodInfo) ins.operand == isJapan)
+                if (ins.opcode == OpCodes.Call && (MethodInfo)ins.operand == isJapan)
                     yield return new CodeInstruction(OpCodes.Ldc_I4_1);
                 else
                     yield return ins;
-            }
         }
 
         [HarmonyPatch(typeof(ProfileCtrl), "Init")]
@@ -279,19 +280,15 @@ namespace COM3D2.i18nEx.Core.Hooks
         {
             var termNameProp = AccessTools.PropertyGetter(typeof(Personal.Data), nameof(Personal.Data.termName));
             foreach (var ins in instrs)
-            {
-                if (ins.opcode == OpCodes.Callvirt && (MethodInfo) ins.operand == termNameProp)
-                {
+                if (ins.opcode == OpCodes.Callvirt && (MethodInfo)ins.operand == termNameProp)
                     yield return Transpilers.EmitDelegate<Func<Personal.Data, string>>(data =>
                     {
                         if (LocalizationManager.TryGetTranslation(data.termName, out var _))
                             return data.termName;
                         return data.drawName;
                     });
-                }
                 else
                     yield return ins;
-            }
         }
 
         [HarmonyPatch(typeof(UILabel), nameof(UILabel.SetCurrentSelection))]

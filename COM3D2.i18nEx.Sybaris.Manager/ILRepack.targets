@@ -1,24 +1,24 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Target Name="ILRepacker" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <Target Name="ILRepacker" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
 
-    <Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll" DestinationFiles="$(OutputPath)\$(AssemblyName)_1.dll"></Copy>
+        <Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll" DestinationFiles="$(OutputPath)\$(AssemblyName)_1.dll"></Copy>
 
-    <ItemGroup>
-      <InputAssemblies Include="$(OutputPath)\$(AssemblyName)_1.dll" />
-      <InputAssemblies Include="$(OutputPath)\0Harmony.dll" />
-      <InputAssemblies Include="$(OutputPath)\BepInEx.Harmony.dll" />
-    </ItemGroup>
+        <ItemGroup>
+            <InputAssemblies Include="$(OutputPath)\$(AssemblyName)_1.dll"/>
+            <InputAssemblies Include="$(OutputPath)\0Harmony.dll"/>
+            <InputAssemblies Include="$(OutputPath)\BepInEx.Harmony.dll"/>
+        </ItemGroup>
 
-    <ILRepack
-      Parallel="true"
-      Internalize="true"
-      InputAssemblies="@(InputAssemblies)"
-      TargetKind="Dll"
-      OutputFile="$(OutputPath)\$(AssemblyName).dll"
-    />
+        <ILRepack
+                Parallel="true"
+                Internalize="true"
+                InputAssemblies="@(InputAssemblies)"
+                TargetKind="Dll"
+                OutputFile="$(OutputPath)\$(AssemblyName).dll"
+        />
 
-    <Delete Files="@(InputAssemblies)"></Delete>
+        <Delete Files="@(InputAssemblies)"></Delete>
 
-  </Target>
+    </Target>
 </Project>

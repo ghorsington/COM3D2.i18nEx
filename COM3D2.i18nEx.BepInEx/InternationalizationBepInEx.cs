@@ -9,6 +9,17 @@ namespace COM3D2.i18nEx.BepInEx
     {
         private GameObject managerObject;
 
+        public void Awake()
+        {
+            DontDestroyOnLoad(this);
+
+            managerObject = new GameObject("i18nExManager");
+            DontDestroyOnLoad(managerObject);
+
+            var core = managerObject.AddComponent<Core.Core>();
+            core.Initialize(this, Paths.GameRootPath);
+        }
+
         public void LogInfo(object data)
         {
             Logger.LogInfo(data);
@@ -22,17 +33,6 @@ namespace COM3D2.i18nEx.BepInEx
         public void LogError(object data)
         {
             Logger.LogError(data);
-        }
-
-        public void Awake()
-        {
-            DontDestroyOnLoad(this);
-
-            managerObject = new GameObject("i18nExManager");
-            DontDestroyOnLoad(managerObject);
-
-            var core = managerObject.AddComponent<Core.Core>();
-            core.Initialize(this, Paths.GameRootPath);
         }
     }
 }

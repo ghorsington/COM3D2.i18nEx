@@ -1,16 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <AssemblyTitle>COM3D2.i18nEx.BepInEx</AssemblyTitle>
-    <Product>COM3D2.i18nEx.BepInEx</Product>
-    <Copyright>Copyright ©  2019</Copyright>
-    <DebugType>none</DebugType>
-  </PropertyGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\COM3D2.i18nEx.Core\COM3D2.i18nEx.Core.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="BepInEx.Core" Version="5.4.16" IncludeAssets="compile" />
-    <PackageReference Include="UnityEngine.Modules" Version="5.6.0" IncludeAssets="compile" />
-    <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*" />
-  </ItemGroup>
+    <PropertyGroup>
+        <AssemblyTitle>COM3D2.i18nEx.BepInEx</AssemblyTitle>
+        <Product>COM3D2.i18nEx.BepInEx</Product>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\COM3D2.i18nEx.Core\COM3D2.i18nEx.Core.csproj"/>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="BepInEx.Core" Version="5.4.16" IncludeAssets="compile"/>
+        <PackageReference Include="UnityEngine.Modules" Version="5.6.0" IncludeAssets="compile"/>
+        <PackageReference Include="BepInEx.PluginInfoProps" Version="1.*"/>
+    </ItemGroup>
 </Project>

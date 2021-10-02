@@ -14,12 +14,12 @@ namespace COM3D2.i18nEx.Core
             ? IniFile.FromFile(Paths.ConfigurationFilePath)
             : new IniFile();
 
-        private static readonly List<IReloadable> reloadableWrappers = new List<IReloadable>();
+        private static readonly List<IReloadable> reloadableWrappers = new();
 
-        public static readonly GeneralConfig General = new GeneralConfig();
-        public static readonly ScriptTranslationsConfig ScriptTranslations = new ScriptTranslationsConfig();
-        public static readonly TextureReplacementConfig TextureReplacement = new TextureReplacementConfig();
-        public static readonly I2TranslationConfig I2Translation = new I2TranslationConfig();
+        public static readonly GeneralConfig General = new();
+        public static readonly ScriptTranslationsConfig ScriptTranslations = new();
+        public static readonly TextureReplacementConfig TextureReplacement = new();
+        public static readonly I2TranslationConfig I2Translation = new();
 
         static Configuration()
         {
@@ -59,13 +59,14 @@ namespace COM3D2.i18nEx.Core
 
         internal class GeneralConfig
         {
-            public ConfigWrapper<bool> FixSubtitleType = Wrap(
-                                                               "General", "FixGameSubtitleType",
-                                                               "DO NOT TOUCH: If enabled, i18nEx will reset game subtitle type to Japanese on the next game run", true);
-            
             public ConfigWrapper<string> ActiveLanguage = Wrap(
                                                                "General", "ActiveLanguage",
                                                                "Currently selected language", "English");
+
+            public ConfigWrapper<bool> FixSubtitleType = Wrap(
+                                                              "General", "FixGameSubtitleType",
+                                                              "DO NOT TOUCH: If enabled, i18nEx will reset game subtitle type to Japanese on the next game run",
+                                                              true);
 
             public ConfigWrapper<KeyCommand> ReloadConfigKey = Wrap(
                                                                     "General", "ReloadConfigKey",
@@ -103,19 +104,19 @@ namespace COM3D2.i18nEx.Core
                                                                           "ScriptTranslations", "ReloadTranslationsKey",
                                                                           "The key (or key combination) to reload all translations.",
                                                                           new KeyCommand(KeyCode.LeftAlt,
-                                                                                         KeyCode.Keypad1),
+                                                                           KeyCode.Keypad1),
                                                                           KeyCommand.KeyCommandToString,
                                                                           KeyCommand.KeyCommandFromString);
 
             public ConfigWrapper<TranslationsReroute> RerouteTranslationsTo = Wrap(
-                                                                                   "ScriptTranslations",
-                                                                                   "RerouteTranslationsTo",
-                                                                                   "Allows you to route both English and Japanese translations into a single textbox instead of viewing both\nSupports the following values:\nNone -- Disabled. English text is written into English textbox; Japanese into Japanese\nRouteToEnglish -- Puts Japanese text into English textbox if there is no translation text available\nRouteToJapanese -- Puts translations into Japanese textbox if there is a translation available",
-                                                                                   TranslationsReroute.RouteToJapanese,
-                                                                                   EnumConverter<TranslationsReroute>
-                                                                                      .EnumToString,
-                                                                                   EnumConverter<TranslationsReroute>
-                                                                                      .EnumFromString);
+             "ScriptTranslations",
+             "RerouteTranslationsTo",
+             "Allows you to route both English and Japanese translations into a single textbox instead of viewing both\nSupports the following values:\nNone -- Disabled. English text is written into English textbox; Japanese into Japanese\nRouteToEnglish -- Puts Japanese text into English textbox if there is no translation text available\nRouteToJapanese -- Puts translations into Japanese textbox if there is a translation available",
+             TranslationsReroute.RouteToJapanese,
+             EnumConverter<TranslationsReroute>
+                .EnumToString,
+             EnumConverter<TranslationsReroute>
+                .EnumFromString);
 
             public ConfigWrapper<bool> SendScriptToClipboard = Wrap(
                                                                     "ScriptTranslations", "SendToClipboard",
@@ -141,7 +142,7 @@ namespace COM3D2.i18nEx.Core
                                                                           "TextureReplacement", "ReloadTranslationsKey",
                                                                           "The key (or key combination) to reload all translations.",
                                                                           new KeyCommand(KeyCode.LeftAlt,
-                                                                                         KeyCode.Keypad2),
+                                                                           KeyCode.Keypad2),
                                                                           KeyCommand.KeyCommandToString,
                                                                           KeyCommand.KeyCommandFromString);
 
@@ -160,6 +161,14 @@ namespace COM3D2.i18nEx.Core
                                                              "If specified, replaces the UI font with this one.\nIMPORTANT: The font **must** be installed on your machine and it **must** be a TrueType font.",
                                                              "");
 
+            public ConfigWrapper<bool> DumpTexts = Wrap("I2Translation", "DumpUntranslatedUITexts",
+                                                        "If enabled, dumps untranslated UI texts",
+                                                        false);
+
+            public ConfigWrapper<bool> OverrideSubtitleOpacity = Wrap("I2Translation", "OverrideSubtitleOpacity",
+                                                                      "If enabled, allows to change subtitle box opacity without affecting other elements.",
+                                                                      false);
+
             public ConfigWrapper<KeyCommand> PrintFontNamesKey = Wrap("I2Translation", "PrintFontNamesKey",
                                                                       "The key (or key combination) do display all supported UI fonts in the console.",
                                                                       new KeyCommand(KeyCode.LeftAlt, KeyCode.F11),
@@ -170,25 +179,17 @@ namespace COM3D2.i18nEx.Core
                                                                           "I2Translation", "ReloadTranslationsKey",
                                                                           "The key (or key combination) to reload all translations.",
                                                                           new KeyCommand(KeyCode.LeftAlt,
-                                                                                         KeyCode.Keypad3),
+                                                                           KeyCode.Keypad3),
                                                                           KeyCommand.KeyCommandToString,
                                                                           KeyCommand.KeyCommandFromString);
+
+            public ConfigWrapper<float> SubtitleOpacity = Wrap("I2Translation", "SubtitleOpacity",
+                                                               "If OverrideSubtitleOpacity is true, specifies opacity of the subtitle box. Must be a decimal between 0 (transparent) and 1 (opaque).",
+                                                               1.0f);
 
             public ConfigWrapper<bool> VerboseLogging = Wrap("I2Translation", "VerboseLogging",
                                                              "If enabled, logs precise I2Loc loading and translation info\nUseful if you're debugging.",
                                                              false);
-            
-            public ConfigWrapper<bool> DumpTexts = Wrap("I2Translation", "DumpUntranslatedUITexts",
-                                                           "If enabled, dumps untranslated UI texts",
-                                                           false);
-            
-            public ConfigWrapper<bool> OverrideSubtitleOpacity = Wrap("I2Translation", "OverrideSubtitleOpacity",
-                                                        "If enabled, allows to change subtitle box opacity without affecting other elements.",
-                                                        false);
-            
-            public ConfigWrapper<float> SubtitleOpacity = Wrap("I2Translation", "SubtitleOpacity",
-                                                        "If OverrideSubtitleOpacity is true, specifies opacity of the subtitle box. Must be a decimal between 0 (transparent) and 1 (opaque).",
-                                                        1.0f);
         }
     }
 }

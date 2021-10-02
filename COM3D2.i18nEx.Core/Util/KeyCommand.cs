@@ -11,8 +11,8 @@ namespace COM3D2.i18nEx.Core.Util
             kc => string.Join("+", kc.KeyCodes.Select(k => k.ToString()).ToArray());
 
         public static readonly Func<string, KeyCommand> KeyCommandFromString = s =>
-            new KeyCommand(s.Split(new[] {'+'}, StringSplitOptions.RemoveEmptyEntries)
-                            .Select(k => (KeyCode) Enum.Parse(typeof(KeyCode), k, true)).ToArray());
+            new KeyCommand(s.Split(new[] { '+' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Select(k => (KeyCode)Enum.Parse(typeof(KeyCode), k, true)).ToArray());
 
         public KeyCommand(params KeyCode[] keyCodes)
         {
@@ -55,7 +55,7 @@ namespace COM3D2.i18nEx.Core.Util
 
     internal static class KeyCommandHandler
     {
-        public static List<KeyCommand> KeyCommands = new List<KeyCommand>();
+        public static List<KeyCommand> KeyCommands = new();
 
         public static void Register(KeyCommand command)
         {

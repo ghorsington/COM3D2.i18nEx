@@ -2,12 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 using COM3D2.i18nEx.Core.Util;
-using HarmonyLib;
 using UnityEngine;
 
 namespace COM3D2.i18nEx.Core.TranslationManagers
@@ -45,10 +42,10 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
         public string FullPath { get; }
 
         public Dictionary<string, string> Translations { get; } =
-            new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+            new(StringComparer.InvariantCultureIgnoreCase);
 
         public Dictionary<string, List<SubtitleData>> Subtitles { get; }
-            = new Dictionary<string, List<SubtitleData>>(StringComparer.InvariantCultureIgnoreCase);
+            = new(StringComparer.InvariantCultureIgnoreCase);
 
         private void ParseVoiceSubtitle(string line)
         {
@@ -83,7 +80,7 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
                         continue;
                     }
 
-                    var parts = line.Split(new[] {'\t'}, StringSplitOptions.RemoveEmptyEntries);
+                    var parts = line.Split(new[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
 
                     var orig = parts[0].Unescape();
                     var tl = parts.Length > 1 ? parts[1].Unescape() : null;
@@ -96,18 +93,23 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
     internal class ScriptTranslationManager : TranslationManagerBase
     {
-        private readonly StringBuilder clipboardBuffer = new StringBuilder();
+        private readonly StringBuilder clipboardBuffer = new();
 
         private readonly LinkedList<ScriptTranslationFile> translationFileCache =
-            new LinkedList<ScriptTranslationFile>();
+            new();
 
         private readonly Dictionary<string, LinkedListNode<ScriptTranslationFile>> translationFileLookup =
-            new Dictionary<string, LinkedListNode<ScriptTranslationFile>>();
+            new();
 
         private readonly Dictionary<string, string> translationFiles =
-            new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
+            new(StringComparer.InvariantCultureIgnoreCase);
 
         private ScriptTranslationFile namesFile;
+
+        private void Awake()
+        {
+            StartCoroutine(SendToClipboardRoutine());
+        }
 
         private void Update()
         {
@@ -194,16 +196,11 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             return null;
         }
 
-        private void Awake()
-        {
-            StartCoroutine(SendToClipboardRoutine());
-        }
-
         private IEnumerator SendToClipboardRoutine()
         {
             while (true)
             {
-                yield return new WaitForSeconds((float) Configuration.ScriptTranslations.ClipboardCaptureTime.Value);
+                yield return new WaitForSeconds((float)Configuration.ScriptTranslations.ClipboardCaptureTime.Value);
 
                 if (clipboardBuffer.Length > 0)
                 {

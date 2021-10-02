@@ -35,7 +35,7 @@ namespace COM3D2.i18nEx.Core.Hooks
             // TODO: Might need smarter logic if/when game supports multiple TL
             __result = Product.Language.English;
         }
-        
+
         [HarmonyPatch(typeof(Product), nameof(Product.IsSupportLanguage))]
         [HarmonyPrefix]
         private static bool OnIsSupportLanguage(ref bool __result)
@@ -44,14 +44,14 @@ namespace COM3D2.i18nEx.Core.Hooks
             __result = true;
             return false;
         }
-        
+
         [HarmonyPatch(typeof(Product), nameof(Product.supportSubtitles), MethodType.Getter)]
         [HarmonyPostfix]
         private static void SupportSubtitle(ref bool __result)
         {
             __result = true;
         }
-        
+
         [HarmonyPatch(typeof(Product), nameof(Product.supportMultiLanguage), MethodType.Getter)]
         [HarmonyPostfix]
         private static void SupportMultiLanguage(ref bool __result)
@@ -83,12 +83,13 @@ namespace COM3D2.i18nEx.Core.Hooks
         {
             var parent = __instance.transform.parent;
             if (Configuration.I2Translation.OverrideSubtitleOpacity.Value &&
-                 parent && parent.name == "YotogiPlayPanel")
+                parent                                                    && parent.name == "YotogiPlayPanel")
             {
                 if (Math.Abs(value - __instance.messageBgAlpha) < 0.001)
                     return false;
                 value = Mathf.Clamp(Configuration.I2Translation.SubtitleOpacity.Value, 0f, 1f);
             }
+
             return true;
         }
 

@@ -5,6 +5,8 @@
         <Version>1.5.0</Version>
         <LangVersion>9.0</LangVersion>
         <OutputPath>..\bin\</OutputPath>
+        <DebugType>none</DebugType>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Copyright>Copyright © Geoffrey Horsington 2021</Copyright>
     </PropertyGroup>
 </Project>

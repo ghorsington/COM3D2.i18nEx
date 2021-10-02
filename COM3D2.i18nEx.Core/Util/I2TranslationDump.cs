@@ -9,23 +9,23 @@ namespace COM3D2.i18nEx.Core.Util
 {
     public static class I2TranslationDump
     {
-        private static readonly HashSet<string> DumpedTerms = new HashSet<string>();
+        private static readonly HashSet<string> DumpedTerms = new();
         private static string extractPath;
         private static readonly Encoding Utf8 = new UTF8Encoding(true);
 
-        private static bool initialized = false;
+        private static bool initialized;
 
         public static void Initialize()
         {
             if (!Configuration.I2Translation.DumpTexts.Value)
                 return;
 
-            if(!initialized)
+            if (!initialized)
                 Harmony.CreateAndPatchAll(typeof(I2TranslationDump));
 
             initialized = true;
             DumpedTerms.Clear();
-            
+
             var langPath = Path.Combine(Paths.TranslationsRoot, Core.CurrentSelectedLanguage);
             var dumpPath = Path.Combine(langPath, "UI_Dump");
             extractPath = Path.Combine(dumpPath, DateTime.Now.ToString("yyyy_MM_dd__HHmmss"));

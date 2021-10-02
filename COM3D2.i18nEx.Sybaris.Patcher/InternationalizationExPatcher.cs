@@ -10,7 +10,7 @@ namespace COM3D2.i18nEx.Sybaris.Patcher
     public static class InternationalizationExPatcher
     {
         private const string MANAGED_ASSEMBLY = "COM3D2.i18nEx.Sybaris.Managed";
-        public static readonly string[] TargetAssemblyNames = {"Assembly-CSharp.dll"};
+        public static readonly string[] TargetAssemblyNames = { "Assembly-CSharp.dll" };
 
 
         public static void Patch(AssemblyDefinition ad)
@@ -20,8 +20,8 @@ namespace COM3D2.i18nEx.Sybaris.Patcher
             {
                 managedAd = AssemblyDefinition.ReadAssembly(Path.Combine(
                                                                          Path.GetDirectoryName(Assembly
-                                                                                              .GetExecutingAssembly()
-                                                                                              .Location),
+                                                                            .GetExecutingAssembly()
+                                                                            .Location),
                                                                          $"{MANAGED_ASSEMBLY}.dll"));
             }
             catch (Exception e)

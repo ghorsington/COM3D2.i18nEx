@@ -190,7 +190,7 @@ namespace COM3D2.i18nEx.Core.Hooks
             if (!string.IsNullOrEmpty(res))
             {
                 var tls = tlString.ToDictionary(kv => kv.Key, kv => kv.Value);
-                tls[Product.subTitleScenarioLanguage] = tl;
+                tls[Product.subTitleScenarioLanguage] = res;
                 tlString = new LocalizationString(tls);
                 if (Configuration.ScriptTranslations.VerboseLogging.Value)
                     Core.Logger.LogInfo(

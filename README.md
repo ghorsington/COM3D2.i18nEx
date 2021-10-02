@@ -15,8 +15,8 @@ This plug-in allows lightweight and simple way to use official English translati
 
 You will need these:
 
-* COM3D2 build version 1.32 or newer
-* **Either** Sybaris ([Noct's AIO](https://custommaid3d2.com/index.php?downloads/noctsouls-sybaris-for-com3d2.63/) recommended) **or** [COM3D2.BepInEx.AIO](https://github.com/NeighTools/COM3D2.BepInEx.AIO)
+* COM3D2 build version 2.7.0 or newer
+* BepInEx 5.4.15 or newer ([CMI recommended](https://git.io/J3mIL))
 * [*Optional*] COM3D2 English version if you want to get the official English translations
 
 ## Installing
@@ -31,7 +31,7 @@ You will need these:
 > [XUnity.AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator/) as it shouldn't cause any
 > translation mixups compared to `CM3D2.AutoTranslator.Plugin.dll`.
 
-1. Download the latest version from the [releases](https://github.com/denikson/COM3D2.i18nEx/releases). Pick either the `_Sybaris.zip` or `_BepInEx.zip` depending on which loader you have.
+1. Download the latest version from the [releases](https://github.com/denikson/COM3D2.i18nEx/releases).
 
 2. After downloading, put the contents of the archive into the game folder (i.e. where `COM3D2.exe` is located).  
 
@@ -84,10 +84,9 @@ Inside the created folder, create the following subfolders:
 If you do this in the Japanese game, you will only get untranslated story which you will need to translate manually 
 (if you're a translator, this is probably what you want).  
 
-1. Download and install [COM3D2.BepInEx.AIO](https://github.com/NeighTools/COM3D2.BepInEx.AIO) as per requirements.
-    * You can use Sybaris and any of its AIOs as well. However in that case you need to **make sure i18nEx** is disabled. To do that, remove `COM3D2.i18nEx.Patcher.dll` and `COM3D2.i18nEx.Managed.dll` from `Sybaris` folder.
+1. Download and install [CMI](https://git.io/J3mIL) as per requirements.
 
-2. Download `TranslationExtract.dll` from [releases](https://github.com/denikson/COM3D2.i18nEx/releases) and place it into `Sybaris\UnityInjector` folder.  
+2. Download `TranslationExtract.dll` from [releases](https://github.com/denikson/COM3D2.i18nEx/releases) and place it into `BepInEx\plugins` folder.  
 
 3. Open the game and **wait for it to load**.
 

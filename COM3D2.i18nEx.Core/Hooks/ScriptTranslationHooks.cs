@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using COM3D2.i18nEx.Core.TranslationManagers;
+using COM3D2.i18nEx.Core.Util;
 using HarmonyLib;
 using Scourt.Loc;
 
@@ -108,6 +109,9 @@ namespace COM3D2.i18nEx.Core.Hooks
                 tl = Core.ScriptTranslate.GetTranslation(null, orig);
             var tls = __result.ToDictionary(kv => kv.Key, kv => kv.Value);
             tls[Product.subTitleScenarioLanguage] = tl;
+            if (!string.IsNullOrEmpty(tl))
+                foreach (var language in tls.Keys.ToList())
+                    tls[language] = XUATInterop.MarkTranslated(tls[language]);
             __result = new LocalizationString(tls);
         }
 
@@ -191,6 +195,9 @@ namespace COM3D2.i18nEx.Core.Hooks
             {
                 var tls = tlString.ToDictionary(kv => kv.Key, kv => kv.Value);
                 tls[Product.subTitleScenarioLanguage] = res;
+                foreach (var language in tls.Keys.ToList())
+                    tls[language] = XUATInterop.MarkTranslated(tls[language]);
+                
                 tlString = new LocalizationString(tls);
                 if (Configuration.ScriptTranslations.VerboseLogging.Value)
                     Core.Logger.LogInfo(

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using BepInEx.Harmony;
 using COM3D2.i18nEx.Core.TranslationManagers;
 using HarmonyLib;
 using I2.Loc;
@@ -26,7 +25,7 @@ namespace COM3D2.i18nEx.Core.Hooks
             if (initialized)
                 return;
 
-            instance = HarmonyWrapper.PatchAll(typeof(UIFixes), "horse.coder.i18nex.ui_fixes");
+            instance = Harmony.CreateAndPatchAll(typeof(UIFixes), "horse.coder.i18nex.ui_fixes");
 
             initialized = true;
         }
@@ -161,7 +160,7 @@ namespace COM3D2.i18nEx.Core.Hooks
 
                     yield return new CodeInstruction(OpCodes.Pop);
                     yield return new CodeInstruction(OpCodes.Ldloca, index);
-                    yield return HarmonyWrapper.EmitDelegate<TranslateInfo>((ref string text) =>
+                    yield return Transpilers.EmitDelegate<TranslateInfo>((ref string text) =>
                     {
                         if (LocalizationManager.TryGetTranslation("System/GameInfo_Description", out var tl))
                             text = string.Format(tl, Product.gameTitle, GameUty.GetBuildVersionText(),
@@ -188,7 +187,7 @@ namespace COM3D2.i18nEx.Core.Hooks
             var prop = AccessTools.PropertySetter(typeof(UILabel), nameof(UILabel.text));
             foreach (var ins in instrs)
                 if (ins.opcode == OpCodes.Callvirt && (MethodInfo) ins.operand == prop)
-                    yield return HarmonyWrapper.EmitDelegate<Action<UILabel, string>>((label, text) =>
+                    yield return Transpilers.EmitDelegate<Action<UILabel, string>>((label, text) =>
                     {
                         if (!string.IsNullOrEmpty(text))
                             label.text = text;
@@ -223,8 +222,7 @@ namespace COM3D2.i18nEx.Core.Hooks
                 yield return new CodeInstruction(OpCodes.Ldarg_1);
                 yield return new CodeInstruction(OpCodes.Ldloc_3);
                 yield return
-                    HarmonyWrapper
-                       .EmitDelegate<Action<List<UILabel>, KeyValuePair<string[], Color>[], int>>
+                    Transpilers.EmitDelegate<Action<List<UILabel>, KeyValuePair<string[], Color>[], int>>
                             ((labels, texts, index) =>
                             {
                                 var curText = texts[index];
@@ -254,7 +252,7 @@ namespace COM3D2.i18nEx.Core.Hooks
                     yield return ins;
                     yield return new CodeInstruction(OpCodes.Pop);
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    yield return HarmonyWrapper.EmitDelegate<Func<SkillAcquisitionCondition, bool>>(sac => Product.supportMultiLanguage && LocalizationManager.TryGetTranslation(sac.yotogi_class.termName, out var _));
+                    yield return Transpilers.EmitDelegate<Func<SkillAcquisitionCondition, bool>>(sac => Product.supportMultiLanguage && LocalizationManager.TryGetTranslation(sac.yotogi_class.termName, out var _));
                 }
                 else
                     yield return ins;
@@ -284,7 +282,7 @@ namespace COM3D2.i18nEx.Core.Hooks
             {
                 if (ins.opcode == OpCodes.Callvirt && (MethodInfo) ins.operand == termNameProp)
                 {
-                    yield return HarmonyWrapper.EmitDelegate<Func<Personal.Data, string>>(data =>
+                    yield return Transpilers.EmitDelegate<Func<Personal.Data, string>>(data =>
                     {
                         if (LocalizationManager.TryGetTranslation(data.termName, out var _))
                             return data.termName;

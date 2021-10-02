@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using BepInEx.Harmony;
+using System.Linq;
 using COM3D2.i18nEx.Core.TranslationManagers;
 using COM3D2.i18nEx.Core.Util;
 using HarmonyLib;
-using I2.Loc;
+using Scourt.Loc;
+using LocalizationManager = I2.Loc.LocalizationManager;
 
 namespace COM3D2.i18nEx.Core.Hooks
 {
@@ -13,20 +14,22 @@ namespace COM3D2.i18nEx.Core.Hooks
         private static Harmony instance;
         private static string curScriptFileName;
         private static bool initialized;
+        private static string tlSeparator;
+        private static string TlSeparator => tlSeparator ??= Scourt.Loc.LocalizationManager.ScriptTranslationMark.FirstOrDefault(kv => kv.Value == Product.subTitleScenarioLanguage).Key;
 
         public static void Initialize()
         {
             if (initialized)
                 return;
 
-            instance = HarmonyWrapper.PatchAll(typeof(ScriptTranslationHooks),
+            instance = Harmony.CreateAndPatchAll(typeof(ScriptTranslationHooks),
                                                "horse.coder.com3d2.i18nex.hooks.scripts");
             initialized = true;
         }
 
         [HarmonyPatch(typeof(BaseKagManager), nameof(BaseKagManager.TagPlayVoice))]
         [HarmonyPrefix]
-        private static void OnPlayVoice(BaseKagManager __instance, KagTagSupport tag_data, object ___subtitle_data)
+        private static void OnPlayVoice(BaseKagManager __instance, KagTagSupport tag_data, BaseKagManager.SubtitleData ___subtitle_data)
         {
             __instance.CheckAbsolutelyNecessaryTag(tag_data, "playvoice", "voice");
 
@@ -43,13 +46,17 @@ namespace COM3D2.i18nEx.Core.Hooks
 
             if (subData.Count == 1 && subData[0].startTime == 0)
             {
-                subData[0].SetSubtitleData(___subtitle_data);
+                var data = subData[0];
+                ___subtitle_data.text = $"{data.original}<{TlSeparator}>{data.translation}";
+                ___subtitle_data.displayTime = data.displayTime;
+                ___subtitle_data.addDisplayTime = data.addDisplayTime;
+                ___subtitle_data.casinoType = data.isCasino;
             }
             else
             {
                 sub.autoDestroy = true;
                 foreach (var subtitleData in subData)
-                    sub.AddData($"{subtitleData.original}<E>{subtitleData.translation}", subtitleData.startTime,
+                    sub.AddData($"{subtitleData.original}<{TlSeparator}>{subtitleData.translation}", subtitleData.startTime,
                                 subtitleData.displayTime);
                 sub.Play();
             }
@@ -87,16 +94,25 @@ namespace COM3D2.i18nEx.Core.Hooks
             TranslateLine(curScriptFileName, ref text);
         }
 
-        [HarmonyPatch(typeof(MessageClass), nameof(MessageClass.GetTranslationText))]
+        [HarmonyPatch(typeof(Scourt.Loc.LocalizationManager), nameof(Scourt.Loc.LocalizationManager.GetTranslationText), typeof(string))]
         [HarmonyPostfix]
-        private static void OnGetTranslationText(ref KeyValuePair<string, string> __result)
+        private static void OnGetTranslationText(ref LocalizationString __result)
         {
-            if (!string.IsNullOrEmpty(__result.Key) && string.IsNullOrEmpty(__result.Value))
-            {
-                if (!LocalizationManager.TryGetTranslation($"SubMaid/{__result.Key}/名前", out var tl))
-                    tl = Core.ScriptTranslate.GetTranslation(null, __result.Key);
-                __result = new KeyValuePair<string, string>(__result.Key, tl);
-            }
+            if (!__result.IsEmpty(Product.subTitleScenarioLanguage))
+                return;
+            var orig = __result[Product.baseScenarioLanguage];
+            if (!LocalizationManager.TryGetTranslation($"SubMaid/{orig}/名前", out var tl))
+                tl = Core.ScriptTranslate.GetTranslation(null, orig);
+            var tls = __result.ToDictionary(kv => kv.Key, kv => kv.Value);
+            tls[Product.subTitleScenarioLanguage] = tl;
+            __result = new LocalizationString(tls);
+        }
+
+        [HarmonyPatch(typeof(Scourt.Loc.LocalizationManager), nameof(Scourt.Loc.LocalizationManager.GetTranslationText), typeof(string))]
+        [HarmonyReversePatch]
+        private static LocalizationString SplitTranslatedText(string baseText)
+        {
+            return null;
         }
 
         [HarmonyPatch(typeof(KagScript), "GetText")]
@@ -111,15 +127,18 @@ namespace COM3D2.i18nEx.Core.Hooks
 
         private static bool TranslateLine(string fileName, ref string text, bool stop = false)
         {
-            var translationParts = text.SplitTranslation();
+            var translationParts = SplitTranslatedText(text);
 
             ProcessTranslation(fileName, ref translationParts);
+            
+            var orig  = translationParts[Product.baseScenarioLanguage];
+            var tl = translationParts[Product.subTitleScenarioLanguage];
 
-            if (!string.IsNullOrEmpty(translationParts.Value))
+            if (!string.IsNullOrEmpty(tl))
             {
-                text = $"{translationParts.Key}<E>{translationParts.Value}";
+                text = $"{orig}<{TlSeparator}>{tl}";
                 if (Configuration.ScriptTranslations.RerouteTranslationsTo.Value == TranslationsReroute.RouteToJapanese)
-                    text = $"{translationParts.Value}<E>{translationParts.Value}";
+                    text = $"{tl}<{TlSeparator}>{tl}";
                 return true;
             }
 
@@ -134,7 +153,7 @@ namespace COM3D2.i18nEx.Core.Hooks
 
                 if (Configuration.ScriptTranslations.RerouteTranslationsTo.Value == TranslationsReroute.RouteToEnglish)
                 {
-                    text = $"{translationParts.Key}<E>{translationParts.Key}";
+                    text = $"{orig}<{TlSeparator}>{orig}";
                     return true;
                 }
             }
@@ -142,13 +161,16 @@ namespace COM3D2.i18nEx.Core.Hooks
             return false;
         }
 
-        private static void ProcessTranslation(string fileName, ref KeyValuePair<string, string> translationPair)
+        private static void ProcessTranslation(string fileName, ref LocalizationString tlString)
         {
-            if (string.IsNullOrEmpty(translationPair.Key))
+            // TODO: Support for multi language
+            var orig = tlString[Product.baseScenarioLanguage];
+            var tl = tlString[Product.subTitleScenarioLanguage];
+            if (string.IsNullOrEmpty(orig))
             {
                 if (Configuration.ScriptTranslations.VerboseLogging.Value)
                     Core.Logger.LogInfo(
-                                        $"[Script] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
+                                        $"[Script] [{fileName}] \"{orig}\" => \"{tl}\"");
                 return;
             }
 
@@ -160,20 +182,22 @@ namespace COM3D2.i18nEx.Core.Hooks
             }
 
             fileName = Path.GetFileNameWithoutExtension(fileName);
-            var res = Core.ScriptTranslate.GetTranslation(fileName, translationPair.Key);
+            var res = Core.ScriptTranslate.GetTranslation(fileName, orig);
 
             if (!string.IsNullOrEmpty(res))
             {
-                translationPair = new KeyValuePair<string, string>(translationPair.Key, res);
+                var tls = tlString.ToDictionary(kv => kv.Key, kv => kv.Value);
+                tls[Product.subTitleScenarioLanguage] = tl;
+                tlString = new LocalizationString(tls);
                 if (Configuration.ScriptTranslations.VerboseLogging.Value)
                     Core.Logger.LogInfo(
-                                        $"[Script] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
+                                        $"[Script] [{fileName}] \"{orig}\" => \"{res}\"");
             }
             else if (Configuration.ScriptTranslations.DumpScriptTranslations.Value)
             {
-                if (Core.ScriptTranslate.WriteTranslation(fileName, translationPair.Key, translationPair.Value))
+                if (Core.ScriptTranslate.WriteTranslation(fileName, orig, tl))
                     Core.Logger.LogInfo(
-                                        $"[DUMP] [{fileName}] \"{translationPair.Key}\" => \"{translationPair.Value}\"");
+                                        $"[DUMP] [{fileName}] \"{orig}\" => \"{tl}\"");
             }
         }
     }

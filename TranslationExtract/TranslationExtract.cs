@@ -1,14 +1,14 @@
-﻿using System;
+﻿// TODO: Fix for multi-language support
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using BepInEx;
 using I2.Loc;
 using UnityEngine;
-using UnityInjector;
-using UnityInjector.Attributes;
 
 namespace TranslationExtract
 {
@@ -62,8 +62,8 @@ namespace TranslationExtract
         }
     }
 
-    [PluginName("Translation Extractor")]
-    public class TranslationExtract : PluginBase
+    [BepInPlugin("horse.coder.com3d2.tlextract", "Translation Extractor", PluginInfo.PLUGIN_VERSION)]
+    public class TranslationExtract : BaseUnityPlugin
     {
         public const string TL_DIR = "COM3D2_Localisation";
         private const int WIDTH = 200;
@@ -199,7 +199,7 @@ namespace TranslationExtract
         private KeyValuePair<string, string> SplitTranslation(string txt)
         {
             int pos;
-            if ((pos = txt.IndexOf("<E>", StringComparison.InvariantCultureIgnoreCase)) > 0)
+            if ((pos = txt.IndexOf("<e>", StringComparison.InvariantCultureIgnoreCase)) > 0)
             {
                 translatedLines++;
                 var orig = txt.Substring(0, pos).Trim();

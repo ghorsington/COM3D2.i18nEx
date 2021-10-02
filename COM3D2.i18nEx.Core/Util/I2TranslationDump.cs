@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using BepInEx.Harmony;
 using HarmonyLib;
 using I2.Loc;
 
@@ -22,7 +21,7 @@ namespace COM3D2.i18nEx.Core.Util
                 return;
 
             if(!initialized)
-                HarmonyWrapper.PatchAll(typeof(I2TranslationDump));
+                Harmony.CreateAndPatchAll(typeof(I2TranslationDump));
 
             initialized = true;
             DumpedTerms.Clear();

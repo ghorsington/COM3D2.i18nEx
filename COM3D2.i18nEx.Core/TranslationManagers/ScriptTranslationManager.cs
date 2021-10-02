@@ -19,41 +19,6 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
         RouteToJapanese
     }
 
-    internal static class SubtitleHelper
-    {
-        private static readonly FieldInfo textField, displayTimeField, addDisplayTimeField, casinoTypeField;
-        private static readonly Type subDataType;
-
-        static SubtitleHelper()
-        {
-            subDataType = typeof(BaseKagManager).GetNestedTypes(BindingFlags.NonPublic | BindingFlags.Public)
-                                                .FirstOrDefault(t => t.Name == "SubtitleData");
-
-            if (subDataType == null)
-            {
-                Core.Logger.LogError(
-                                     "BaseKagManager.SubtitleData class has not been found! Can't display subtitles! Check that you use the latest game version and latest i18nEx!");
-                return;
-            }
-
-            textField = AccessTools.Field(subDataType, "text");
-            displayTimeField = AccessTools.Field(subDataType, "displayTime");
-            addDisplayTimeField = AccessTools.Field(subDataType, "addDisplayTime");
-            casinoTypeField = AccessTools.Field(subDataType, "casinoType");
-        }
-
-        public static void SetSubtitleData(this SubtitleData subData, object kagSubtitleData)
-        {
-            if (subDataType == null)
-                return;
-
-            textField?.SetValue(kagSubtitleData, $"{subData.original}<E>{subData.translation}");
-            displayTimeField?.SetValue(kagSubtitleData, subData.displayTime);
-            addDisplayTimeField?.SetValue(kagSubtitleData, subData.addDisplayTime);
-            casinoTypeField?.SetValue(kagSubtitleData, subData.isCasino);
-        }
-    }
-
     [Serializable]
     internal class SubtitleData
     {

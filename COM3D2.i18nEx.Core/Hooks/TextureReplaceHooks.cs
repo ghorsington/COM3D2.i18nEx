@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using BepInEx.Harmony;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,7 +19,7 @@ namespace COM3D2.i18nEx.Core.Hooks
             if (initialized)
                 return;
 
-            instance = HarmonyWrapper.PatchAll(typeof(TextureReplaceHooks), "horse.coder.i18nex.hooks.textures");
+            instance = Harmony.CreateAndPatchAll(typeof(TextureReplaceHooks), "horse.coder.i18nex.hooks.textures");
             initialized = true;
         }
 
@@ -218,7 +217,7 @@ namespace COM3D2.i18nEx.Core.Hooks
         private static void OnMaskableGraphicEnable(MaskableGraphic __instance)
         {
             // Force replacement of Images
-            if (!(__instance is Image img) || img.sprite == null)
+            if (__instance is not Image img || img.sprite == null)
                 return;
             var tmp = img.sprite;
             img.sprite = tmp;

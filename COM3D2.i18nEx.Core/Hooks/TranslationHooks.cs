@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
-using BepInEx.Harmony;
 using COM3D2.i18nEx.Core.Util;
 using HarmonyLib;
 using I2.Loc;
@@ -24,11 +23,35 @@ namespace COM3D2.i18nEx.Core.Hooks
             TextureReplaceHooks.Initialize();
             UIFixes.Initialize();
 
-            instance = HarmonyWrapper.PatchAll(typeof(TranslationHooks), "horse.coder.i18nex.hooks.base");
+            instance = Harmony.CreateAndPatchAll(typeof(TranslationHooks), "horse.coder.i18nex.hooks.base");
 
             initialized = true;
         }
 
+        [HarmonyPatch(typeof(Product), nameof(Product.subTitleScenarioLanguage), MethodType.Getter)]
+        [HarmonyPostfix]
+        private static void SupportSubtitle(ref Product.Language __result)
+        {
+            // TODO: Might need smarter logic if/when game supports multiple TL
+            __result = Product.Language.English;
+        }
+        
+        [HarmonyPatch(typeof(Product), nameof(Product.IsSupportLanguage))]
+        [HarmonyPrefix]
+        private static bool OnIsSupportLanguage(ref bool __result)
+        {
+            // TODO: Might need smarter logic if/when game supports multiple TL
+            __result = true;
+            return false;
+        }
+        
+        [HarmonyPatch(typeof(Product), nameof(Product.supportSubtitles), MethodType.Getter)]
+        [HarmonyPostfix]
+        private static void SupportSubtitle(ref bool __result)
+        {
+            __result = true;
+        }
+        
         [HarmonyPatch(typeof(Product), nameof(Product.supportMultiLanguage), MethodType.Getter)]
         [HarmonyPostfix]
         private static void SupportMultiLanguage(ref bool __result)

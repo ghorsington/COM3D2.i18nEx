@@ -28,14 +28,6 @@ namespace COM3D2.i18nEx.Core.Util
             return hashedValue;
         }
 
-        public static KeyValuePair<string, string> SplitTranslation(this string txt)
-        {
-            int pos;
-            if ((pos = txt.IndexOf("<E>", StringComparison.InvariantCultureIgnoreCase)) > 0)
-                return new KeyValuePair<string, string>(txt.Substring(0, pos).Trim(), txt.Substring(pos + 3).Trim());
-            return new KeyValuePair<string, string>(txt.Trim(), string.Empty);
-        }
-
         public static string Escape(this string txt)
         {
             if (string.IsNullOrEmpty(txt))

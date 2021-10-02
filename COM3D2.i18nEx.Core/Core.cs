@@ -48,8 +48,8 @@ namespace COM3D2.i18nEx.Core
             Logger.LogInfo("Initializing i18nEx...");
 
             Paths.Initialize(gameRoot);
-            InitializeTranslationManagers();
             TranslationHooks.Initialize();
+            InitializeTranslationManagers();
 
             Logger.LogInfo("i18nEx initialized!");
             Initialized = true;

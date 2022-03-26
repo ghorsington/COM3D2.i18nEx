@@ -27,6 +27,14 @@ namespace COM3D2.i18nEx.Core.Loaders
             langPath = null;
         }
 
+        public IEnumerable<string> GetScriptTranslationZipNames()
+        {
+            string path = Path.Combine(this.langPath, "Script");
+            if (!Directory.Exists(path))            
+                return null;            
+            return Directory.GetFiles(path, "*.zip", SearchOption.AllDirectories);
+        }
+
         public IEnumerable<string> GetScriptTranslationFileNames()
         {
             var scriptPath = Path.Combine(langPath, "Script");

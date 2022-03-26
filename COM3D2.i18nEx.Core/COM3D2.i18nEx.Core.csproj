@@ -4,10 +4,13 @@
         <Product>COM3D2.i18nEx.Core</Product>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="ExIni" Version="1.0.2" IncludeAssets="compile"/>
-        <PackageReference Include="HarmonyX" Version="2.5.5" IncludeAssets="compile"/>
-        <PackageReference Include="UnityEngine.Modules" Version="5.6.0" IncludeAssets="compile"/>
-        <PackageReference Include="COM3D2.GameLibs" Version="2.*-*" IncludeAssets="compile"/>
-        <Reference Include="System.Windows.Forms"/>
+        <PackageReference Include="ExIni" Version="1.0.2" IncludeAssets="compile" />
+        <PackageReference Include="HarmonyX" Version="2.5.5" IncludeAssets="compile" />
+        <PackageReference Include="UnityEngine.Modules" Version="5.6.0" IncludeAssets="compile" />
+        <PackageReference Include="COM3D2.GameLibs" Version="2.*-*" IncludeAssets="compile" />
+        <Reference Include="ICSharpCode.SharpZipLib">
+          <HintPath>H:\COM3D2_5\COM3D2x64_Data\Managed\ICSharpCode.SharpZipLib.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Windows.Forms" />
     </ItemGroup>
 </Project>

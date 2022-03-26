@@ -14,6 +14,8 @@ namespace COM3D2.i18nEx.Core.Loaders
 
         IEnumerable<string> GetScriptTranslationFileNames();
 
+		IEnumerable<string> GetScriptTranslationZipNames();
+
         IEnumerable<string> GetTextureTranslationFileNames();
 
         SortedDictionary<string, IEnumerable<string>> GetUITranslationFileNames();

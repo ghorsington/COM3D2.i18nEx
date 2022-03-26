@@ -1,11 +1,13 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
 using COM3D2.i18nEx.Core.Util;
+using ICSharpCode.SharpZipLib.Zip;
 using UnityEngine;
+
 
 namespace COM3D2.i18nEx.Core.TranslationManagers
 {
@@ -28,69 +30,6 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
         public string voice = string.Empty;
     }
 
-    internal class ScriptTranslationFile
-    {
-        private const string VOICE_SUBTITLE_TAG = "@VoiceSubtitle";
-
-        public ScriptTranslationFile(string fileName, string path)
-        {
-            FileName = fileName;
-            FullPath = path;
-        }
-
-        public string FileName { get; }
-        public string FullPath { get; }
-
-        public Dictionary<string, string> Translations { get; } =
-            new(StringComparer.InvariantCultureIgnoreCase);
-
-        public Dictionary<string, List<SubtitleData>> Subtitles { get; }
-            = new(StringComparer.InvariantCultureIgnoreCase);
-
-        private void ParseVoiceSubtitle(string line)
-        {
-            try
-            {
-                var subData = JsonUtility.FromJson<SubtitleData>(line.Substring(VOICE_SUBTITLE_TAG.Length));
-                if (!Subtitles.TryGetValue(subData.voice, out var list))
-                    Subtitles[subData.voice] = list = new List<SubtitleData>();
-                list.Add(subData);
-            }
-            catch (Exception e)
-            {
-                Core.Logger.LogWarning($"Failed to load subtitle line from {FileName}. Reason: {e}\n Line: {line}");
-            }
-        }
-
-        public void LoadTranslations()
-        {
-            Translations.Clear();
-            using (var sr = new StreamReader(Core.TranslationLoader.OpenScriptTranslation(FullPath)))
-            {
-                string line;
-                while ((line = sr.ReadLine()) != null)
-                {
-                    var trimmed = line.Trim();
-                    if (trimmed.Length == 0 || trimmed.StartsWith(";"))
-                        continue;
-
-                    if (trimmed.StartsWith(VOICE_SUBTITLE_TAG))
-                    {
-                        ParseVoiceSubtitle(trimmed);
-                        continue;
-                    }
-
-                    var parts = line.Split(new[] { '\t' }, StringSplitOptions.RemoveEmptyEntries);
-
-                    var orig = parts[0].Unescape();
-                    var tl = parts.Length > 1 ? parts[1].Unescape() : null;
-
-                    Translations[orig] = tl;
-                }
-            }
-        }
-    }
-
     internal class ScriptTranslationManager : TranslationManagerBase
     {
         private readonly StringBuilder clipboardBuffer = new();
@@ -103,6 +42,10 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
         private readonly Dictionary<string, string> translationFiles =
             new(StringComparer.InvariantCultureIgnoreCase);
+
+
+
+
 
         private ScriptTranslationFile namesFile;
 
@@ -127,15 +70,17 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
             translationFileLookup.Clear();
 
             var files = Core.TranslationLoader.GetScriptTranslationFileNames();
+            var files2 = Core.TranslationLoader.GetScriptTranslationZipNames();
 
-            if (files == null)
+            if (files == null && files2 == null)
             {
                 Core.Logger.LogInfo("No script translation found! Skipping...");
                 return;
             }
 
+            
             foreach (var file in files)
-            {
+            {                
                 var fileName = Path.GetFileNameWithoutExtension(file);
                 if (translationFiles.ContainsKey(fileName))
                 {
@@ -153,7 +98,64 @@ namespace COM3D2.i18nEx.Core.TranslationManagers
 
                 translationFiles[fileName] = file;
             }
+
+            Core.Logger.LogInfo($"script count {translationFiles.Count}");
+
+            if (files2 == null)
+            {
+                return;
+            }
+
+            ZipConstants.DefaultCodePage = Encoding.UTF8.CodePage;
+
+            Core.Logger.LogInfo($"DefaultCodePage : {ZipConstants.DefaultCodePage}");
+
+            foreach (string zipPath in files2)
+            {
+
+                ZipFile zip = new ZipFile(zipPath);
+                {
+                    Core.Logger.LogInfo($"zip : {zipPath} , {zip.Count}");
+                    foreach (ZipEntry zfile in zip)
+                    {
+                        if (zfile.IsFile)
+                        {
+                            //var name= Path.GetFileName(file.Name);
+                            var fileName = Path.GetFileNameWithoutExtension(zfile.Name);
+                            //Core.Logger.LogInfo($"{fileName} , {zfile.Name} , {zfile.IsDirectory} , {zfile.IsFile} , {zfile.AESKeySize}");//  , {zip.FindEntry(name, true)}
+
+                            if (translationFiles.ContainsKey(fileName))
+                            {
+                                Core.Logger.LogWarning(
+                                                       $"Script translation file {fileName} is declared twice in different locations ({zfile} and {translationFiles[fileName]})");
+                                continue;
+                            }
+
+                            ScriptTranslationFile.translationZips[fileName] = zip;
+                            ScriptTranslationFile.translationZipEntrys[fileName] = zfile;
+
+                            if (fileName == "__npc_names" && namesFile == null)
+                            {
+                                namesFile = new ScriptTranslationFile(fileName, zfile.Name);
+                                namesFile.LoadTranslations();
+                                continue;
+                            }
+
+                            translationFiles[fileName] = zfile.Name;
+
+                            //zip.GetInputStream(zfile);
+                        }
+                    }
+
+
+                }
+            }
+
+            Core.Logger.LogInfo($"script count {translationFiles.Count}");
         }
+
+
+
 
         public List<SubtitleData> GetSubtitle(string fileName, string voiceName)
         {
